@@ -182,21 +182,62 @@ func TestGetCadenceWithReplacedImports(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetCadenceWithReplacedImports(parsedTemplate, tt.network)
+			cadence, err := parsedTemplate.GetCadenceWithReplacedImports(tt.network)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCadenceWithReplacedImports() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
+			// Check that the original contract import address has been replaced.
 			if !tt.wantErr {
-				if strings.Contains(got, "0xFUNGIBLETOKENADDRESS") {
-					t.Errorf("GetCadenceWithReplacedImports() = %v, still contains original import address", got)
+				if strings.Contains(cadence, "0xFUNGIBLETOKENADDRESS") {
+					t.Errorf("GetCadenceWithReplacedImports() = %v, still contains original import address", cadence)
 				}
 
-				if !strings.Contains(got, tt.wantImport) {
-					t.Errorf("GetCadenceWithReplacedImports() = %v, want import %v", got, tt.wantImport)
+				if !strings.Contains(cadence, tt.wantImport) {
+					t.Errorf("GetCadenceWithReplacedImports() = %v, want import %v", cadence, tt.wantImport)
 				}
 			}
 		})
+	}
+}
+
+func TestIsScript(t *testing.T) {
+	scriptTemplate := &FlowInteractionTemplate{
+		Data: Data{
+			Type: "script",
+		},
+	}
+	if !scriptTemplate.isScript() {
+		t.Error("isScript() = false; want true")
+	}
+
+	transactionTemplate := &FlowInteractionTemplate{
+		Data: Data{
+			Type: "transaction",
+		},
+	}
+	if transactionTemplate.isScript() {
+		t.Error("isScript() = true; want false")
+	}
+}
+
+func TestIsTransaction(t *testing.T) {
+	scriptTemplate := &FlowInteractionTemplate{
+		Data: Data{
+			Type: "script",
+		},
+	}
+	if scriptTemplate.isTransaction() {
+		t.Error("isTransaction() = true; want false")
+	}
+
+	transactionTemplate := &FlowInteractionTemplate{
+		Data: Data{
+			Type: "transaction",
+		},
+	}
+	if !transactionTemplate.isTransaction() {
+		t.Error("isTransaction() = false; want true")
 	}
 }

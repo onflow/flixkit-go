@@ -55,21 +55,18 @@ type FlowInteractionTemplate struct {
 	Data     Data   `json:"data"`
 }
 
-func ParseTemplate(template string) (*FlowInteractionTemplate, error) {
-	var flowTemplate FlowInteractionTemplate
-
-	err := json.Unmarshal([]byte(template), &flowTemplate)
-	if err != nil {
-		return nil, err
-	}
-
-	return &flowTemplate, nil
+func (t *FlowInteractionTemplate) isScript() bool {
+	return t.Data.Type == "script"
 }
 
-func GetCadenceWithReplacedImports(template *FlowInteractionTemplate, networkName string) (string, error) {
-	cadence := template.Data.Cadence
+func (t *FlowInteractionTemplate) isTransaction() bool {
+	return t.Data.Type == "transaction"
+}
 
-	for dependencyAddress, contracts := range template.Data.Dependencies {
+func (t *FlowInteractionTemplate) GetCadenceWithReplacedImports(networkName string) (string, error) {
+	cadence := t.Data.Cadence
+
+	for dependencyAddress, contracts := range t.Data.Dependencies {
 		for contractName, networks := range contracts {
 			network, ok := networks[networkName]
 			if !ok {
@@ -88,4 +85,15 @@ func GetCadenceWithReplacedImports(template *FlowInteractionTemplate, networkNam
 	}
 
 	return cadence, nil
+}
+
+func ParseTemplate(template string) (*FlowInteractionTemplate, error) {
+	var flowTemplate FlowInteractionTemplate
+
+	err := json.Unmarshal([]byte(template), &flowTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	return &flowTemplate, nil
 }

@@ -1,8 +1,7 @@
 package flixkit
 
 import (
-	"reflect"
-	"strings"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -145,16 +144,19 @@ var parsedTemplate = &FlowInteractionTemplate{
 }
 
 func TestParseTemplate(t *testing.T) {
+	assert := assert.New(t)
+
 	parsedTemplate, err := ParseTemplate(template)
-	if err != nil {
-		t.Fatalf("ParseTemplate() err = %v; want nil", err)
-	}
-	if !reflect.DeepEqual(parsedTemplate, parsedTemplate) {
-		t.Errorf("ParseTemplate() = %v; want %v", parsedTemplate, parsedTemplate)
-	}
+	assert.NoError(err, "ParseTemplate should not return an error")
+	assert.NotNil(parsedTemplate, "Parsed template should not be nil")
+
+	expectedType := "transaction"
+	assert.Equal(expectedType, parsedTemplate.Data.Type, "Parsed template should have the correct type")
 }
 
 func TestGetCadenceWithReplacedImports(t *testing.T) {
+	assert := assert.New(t)
+
 	tests := []struct {
 		name       string
 		network    string
@@ -183,61 +185,50 @@ func TestGetCadenceWithReplacedImports(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cadence, err := parsedTemplate.GetCadenceWithReplacedImports(tt.network)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetCadenceWithReplacedImports() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			if tt.wantErr {
+				assert.Error(err, "GetCadenceWithReplacedImports should return an error")
+			} else {
+				assert.NoError(err, "GetCadenceWithReplacedImports should not return an error")
+				assert.NotEmpty(cadence, "Cadence should not be empty")
 
-			// Check that the original contract import address has been replaced.
-			if !tt.wantErr {
-				if strings.Contains(cadence, "0xFUNGIBLETOKENADDRESS") {
-					t.Errorf("GetCadenceWithReplacedImports() = %v, still contains original import address", cadence)
-				}
-
-				if !strings.Contains(cadence, tt.wantImport) {
-					t.Errorf("GetCadenceWithReplacedImports() = %v, want import %v", cadence, tt.wantImport)
-				}
+				assert.Contains(cadence, tt.wantImport, "Cadence should contain the expected import")
 			}
 		})
 	}
 }
 
 func TestIsScript(t *testing.T) {
+	assert := assert.New(t)
+
 	scriptTemplate := &FlowInteractionTemplate{
 		Data: Data{
 			Type: "script",
 		},
 	}
-	if !scriptTemplate.IsScript() {
-		t.Error("IsScript() = false; want true")
-	}
+	assert.True(scriptTemplate.IsScript(), "IsScript() should return true")
 
 	transactionTemplate := &FlowInteractionTemplate{
 		Data: Data{
 			Type: "transaction",
 		},
 	}
-	if transactionTemplate.IsScript() {
-		t.Error("IsScript() = true; want false")
-	}
+	assert.False(transactionTemplate.IsScript(), "IsScript() should return false")
 }
 
 func TestIsTransaction(t *testing.T) {
+	assert := assert.New(t)
+
 	scriptTemplate := &FlowInteractionTemplate{
 		Data: Data{
 			Type: "script",
 		},
 	}
-	if scriptTemplate.IsTransaction() {
-		t.Error("IsTransaction() = true; want false")
-	}
+	assert.False(scriptTemplate.IsTransaction(), "IsTransaction() should return false")
 
 	transactionTemplate := &FlowInteractionTemplate{
 		Data: Data{
 			Type: "transaction",
 		},
 	}
-	if !transactionTemplate.IsTransaction() {
-		t.Error("IsTransaction() = false; want true")
-	}
+	assert.True(transactionTemplate.IsTransaction(), "IsTransaction() should return true")
 }

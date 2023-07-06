@@ -2,6 +2,8 @@ package flixkit
 
 import (
 	"encoding/json"
+	"fmt"
+	"regexp"
 )
 
 type Network struct {
@@ -62,4 +64,28 @@ func ParseTemplate(template string) (*FlowInteractionTemplate, error) {
 	}
 
 	return &flowTemplate, nil
+}
+
+func GetCadenceWithReplacedImports(template *FlowInteractionTemplate, networkName string) (string, error) {
+	cadence := template.Data.Cadence
+
+	for dependencyAddress, contracts := range template.Data.Dependencies {
+		for contractName, networks := range contracts {
+			network, ok := networks[networkName]
+			if !ok {
+				return "", fmt.Errorf("network %s not found for contract %s", networkName, contractName)
+			}
+
+			pattern := fmt.Sprintf(`import\s*%s\s*from\s*%s`, contractName, dependencyAddress)
+			re, err := regexp.Compile(pattern)
+			if err != nil {
+				return "", fmt.Errorf("invalid regex pattern: %v", err)
+			}
+
+			replacement := fmt.Sprintf("import %s from %s", contractName, network.Address)
+			cadence = re.ReplaceAllString(cadence, replacement)
+		}
+	}
+
+	return cadence, nil
 }

@@ -2,6 +2,7 @@ package flixkit
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -150,5 +151,52 @@ func TestParseTemplate(t *testing.T) {
 	}
 	if !reflect.DeepEqual(parsedTemplate, parsedTemplate) {
 		t.Errorf("ParseTemplate() = %v; want %v", parsedTemplate, parsedTemplate)
+	}
+}
+
+func TestGetCadenceWithReplacedImports(t *testing.T) {
+	tests := []struct {
+		name       string
+		network    string
+		wantErr    bool
+		wantImport string
+	}{
+		{
+			name:       "Mainnet",
+			network:    "mainnet",
+			wantErr:    false,
+			wantImport: "import FungibleToken from 0xf233dcee88fe0abe",
+		},
+		{
+			name:       "Testnet",
+			network:    "testnet",
+			wantErr:    false,
+			wantImport: "import FungibleToken from 0x9a0766d93b6608b7",
+		},
+		{
+			name:    "MissingNetwork",
+			network: "missing",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetCadenceWithReplacedImports(parsedTemplate, tt.network)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetCadenceWithReplacedImports() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr {
+				if strings.Contains(got, "0xFUNGIBLETOKENADDRESS") {
+					t.Errorf("GetCadenceWithReplacedImports() = %v, still contains original import address", got)
+				}
+
+				if !strings.Contains(got, tt.wantImport) {
+					t.Errorf("GetCadenceWithReplacedImports() = %v, want import %v", got, tt.wantImport)
+				}
+			}
+		})
 	}
 }

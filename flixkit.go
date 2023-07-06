@@ -55,11 +55,11 @@ type FlowInteractionTemplate struct {
 	Data     Data   `json:"data"`
 }
 
-func (t *FlowInteractionTemplate) isScript() bool {
+func (t *FlowInteractionTemplate) IsScript() bool {
 	return t.Data.Type == "script"
 }
 
-func (t *FlowInteractionTemplate) isTransaction() bool {
+func (t *FlowInteractionTemplate) IsTransaction() bool {
 	return t.Data.Type == "transaction"
 }
 

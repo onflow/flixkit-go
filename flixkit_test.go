@@ -208,8 +208,8 @@ func TestIsScript(t *testing.T) {
 			Type: "script",
 		},
 	}
-	if !scriptTemplate.isScript() {
-		t.Error("isScript() = false; want true")
+	if !scriptTemplate.IsScript() {
+		t.Error("IsScript() = false; want true")
 	}
 
 	transactionTemplate := &FlowInteractionTemplate{
@@ -217,8 +217,8 @@ func TestIsScript(t *testing.T) {
 			Type: "transaction",
 		},
 	}
-	if transactionTemplate.isScript() {
-		t.Error("isScript() = true; want false")
+	if transactionTemplate.IsScript() {
+		t.Error("IsScript() = true; want false")
 	}
 }
 
@@ -228,8 +228,8 @@ func TestIsTransaction(t *testing.T) {
 			Type: "script",
 		},
 	}
-	if scriptTemplate.isTransaction() {
-		t.Error("isTransaction() = true; want false")
+	if scriptTemplate.IsTransaction() {
+		t.Error("IsTransaction() = true; want false")
 	}
 
 	transactionTemplate := &FlowInteractionTemplate{
@@ -237,7 +237,7 @@ func TestIsTransaction(t *testing.T) {
 			Type: "transaction",
 		},
 	}
-	if !transactionTemplate.isTransaction() {
-		t.Error("isTransaction() = false; want true")
+	if !transactionTemplate.IsTransaction() {
+		t.Error("IsTransaction() = false; want true")
 	}
 }

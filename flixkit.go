@@ -3,6 +3,9 @@ package flixkit
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
 	"regexp"
 )
 
@@ -63,7 +66,7 @@ func (t *FlowInteractionTemplate) IsTransaction() bool {
 	return t.Data.Type == "transaction"
 }
 
-func (t *FlowInteractionTemplate) GetCadenceWithReplacedImports(networkName string) (string, error) {
+func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
 	cadence := t.Data.Cadence
 
 	for dependencyAddress, contracts := range t.Data.Dependencies {
@@ -87,7 +90,7 @@ func (t *FlowInteractionTemplate) GetCadenceWithReplacedImports(networkName stri
 	return cadence, nil
 }
 
-func ParseTemplate(template string) (*FlowInteractionTemplate, error) {
+func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 	var flowTemplate FlowInteractionTemplate
 
 	err := json.Unmarshal([]byte(template), &flowTemplate)
@@ -96,4 +99,63 @@ func ParseTemplate(template string) (*FlowInteractionTemplate, error) {
 	}
 
 	return &flowTemplate, nil
+}
+
+func GetFlix(url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			log.Printf("Warning: error while closing the response body: %v", err)
+		}
+	}()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	sb := string(body)
+
+	return sb, nil
+}
+
+func GetFlixByName(flixBaseURL string, templateName string) (string, error) {
+	url := fmt.Sprintf("%s?name=%s", flixBaseURL, templateName)
+	return GetFlix(url)
+}
+
+func GetParsedFlixByName(flixBaseURL string, templateName string) (*FlowInteractionTemplate, error) {
+	template, err := GetFlixByName(flixBaseURL, templateName)
+	if err != nil {
+		return nil, err
+	}
+
+	parsedTemplate, err := ParseFlix(template)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedTemplate, nil
+}
+
+func GetFlixByID(flixBaseURL string, templateID string) (string, error) {
+	url := fmt.Sprintf("%s/%s", flixBaseURL, templateID)
+	return GetFlix(url)
+}
+
+func GetParsedFlixByID(flixBaseURL string, templateID string) (*FlowInteractionTemplate, error) {
+	template, err := GetFlixByID(flixBaseURL, templateID)
+	if err != nil {
+		return nil, err
+	}
+
+	parsedTemplate, err := ParseFlix(template)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedTemplate, nil
 }

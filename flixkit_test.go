@@ -2,6 +2,8 @@ package flixkit
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -143,10 +145,10 @@ var parsedTemplate = &FlowInteractionTemplate{
 	},
 }
 
-func TestParseTemplate(t *testing.T) {
+func TestParseFlix(t *testing.T) {
 	assert := assert.New(t)
 
-	parsedTemplate, err := ParseTemplate(template)
+	parsedTemplate, err := ParseFlix(template)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(parsedTemplate, "Parsed template should not be nil")
 
@@ -154,7 +156,7 @@ func TestParseTemplate(t *testing.T) {
 	assert.Equal(expectedType, parsedTemplate.Data.Type, "Parsed template should have the correct type")
 }
 
-func TestGetCadenceWithReplacedImports(t *testing.T) {
+func TestGetAndReplaceCadenceImports(t *testing.T) {
 	assert := assert.New(t)
 
 	tests := []struct {
@@ -184,7 +186,7 @@ func TestGetCadenceWithReplacedImports(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cadence, err := parsedTemplate.GetCadenceWithReplacedImports(tt.network)
+			cadence, err := parsedTemplate.GetAndReplaceCadenceImports(tt.network)
 			if tt.wantErr {
 				assert.Error(err, "GetCadenceWithReplacedImports should return an error")
 			} else {
@@ -231,4 +233,73 @@ func TestIsTransaction(t *testing.T) {
 		},
 	}
 	assert.True(transactionTemplate.IsTransaction(), "IsTransaction() should return true")
+}
+
+func TestGetFlix(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte("Hello World"))
+	}))
+	defer server.Close()
+
+	body, err := GetFlix(server.URL)
+	assert.NoError(err, "GetFlix should not return an error")
+	assert.Equal("Hello World", body, "GetFlix should return the correct body")
+}
+
+func TestGetFlixByID(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		assert.Equal("/templateID", req.URL.String(), "GetFlixByID should request the correct path")
+		rw.Write([]byte("Hello World"))
+	}))
+	defer server.Close()
+
+	body, err := GetFlixByID(server.URL, "templateID")
+	assert.NoError(err, "GetFlixByID should not return an error")
+	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
+}
+
+func TestGetFlixByName(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		assert.Equal("/?name=templateName", req.URL.String(), "GetFlixByName should request the correct query string")
+		rw.Write([]byte("Hello World"))
+	}))
+	defer server.Close()
+
+	body, err := GetFlixByName(server.URL, "templateName")
+	assert.NoError(err, "GetFlixByName should not return an error")
+	assert.Equal("Hello World", body, "GetFlixByName should return the correct body")
+}
+
+func TestGetParsedFlixByID(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(template))
+	}))
+	defer server.Close()
+
+	flix, err := GetParsedFlixByID(server.URL, "templateID")
+	assert.NoError(err, "GetParsedFlixByID should not return an error")
+	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
+	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
+}
+
+func TestGetParsedFlixByName(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(template))
+	}))
+	defer server.Close()
+
+	flix, err := GetParsedFlixByName(server.URL, "templateName")
+	assert.NoError(err, "GetParsedFlixByName should not return an error")
+	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
+	assert.Equal(parsedTemplate, flix, "GetParsedFlixByName should return the correct Flix")
 }

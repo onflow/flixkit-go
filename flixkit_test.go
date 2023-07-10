@@ -235,7 +235,7 @@ func TestIsTransaction(t *testing.T) {
 	assert.True(transactionTemplate.IsTransaction(), "IsTransaction() should return true")
 }
 
-func TestGetFlix(t *testing.T) {
+func TestFetchFlix(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -243,7 +243,7 @@ func TestGetFlix(t *testing.T) {
 	}))
 	defer server.Close()
 
-	body, err := GetFlix(server.URL)
+	body, err := FetchFlix(server.URL)
 	assert.NoError(err, "GetFlix should not return an error")
 	assert.Equal("Hello World", body, "GetFlix should return the correct body")
 }

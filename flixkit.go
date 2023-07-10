@@ -101,7 +101,7 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 	return &flowTemplate, nil
 }
 
-func GetFlix(url string) (string, error) {
+func FetchFlix(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
@@ -124,7 +124,7 @@ func GetFlix(url string) (string, error) {
 
 func GetFlixByName(flixBaseURL string, templateName string) (string, error) {
 	url := fmt.Sprintf("%s?name=%s", flixBaseURL, templateName)
-	return GetFlix(url)
+	return FetchFlix(url)
 }
 
 func GetParsedFlixByName(flixBaseURL string, templateName string) (*FlowInteractionTemplate, error) {
@@ -143,7 +143,7 @@ func GetParsedFlixByName(flixBaseURL string, templateName string) (*FlowInteract
 
 func GetFlixByID(flixBaseURL string, templateID string) (string, error) {
 	url := fmt.Sprintf("%s/%s", flixBaseURL, templateID)
-	return GetFlix(url)
+	return FetchFlix(url)
 }
 
 func GetParsedFlixByID(flixBaseURL string, templateID string) (*FlowInteractionTemplate, error) {

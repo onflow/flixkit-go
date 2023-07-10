@@ -248,21 +248,7 @@ func TestFetchFlix(t *testing.T) {
 	assert.Equal("Hello World", body, "GetFlix should return the correct body")
 }
 
-func TestGetFlixByID(t *testing.T) {
-	assert := assert.New(t)
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		assert.Equal("/templateID", req.URL.String(), "GetFlixByID should request the correct path")
-		rw.Write([]byte("Hello World"))
-	}))
-	defer server.Close()
-
-	body, err := GetFlixByID(server.URL, "templateID")
-	assert.NoError(err, "GetFlixByID should not return an error")
-	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
-}
-
-func TestGetFlixByName(t *testing.T) {
+func TestGetFlixRaw(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -271,12 +257,12 @@ func TestGetFlixByName(t *testing.T) {
 	}))
 	defer server.Close()
 
-	body, err := GetFlixByName(server.URL, "templateName")
+	body, err := GetFlixRaw(server.URL, "templateName")
 	assert.NoError(err, "GetFlixByName should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByName should return the correct body")
 }
 
-func TestGetParsedFlixByID(t *testing.T) {
+func TestGetFlix(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -284,22 +270,36 @@ func TestGetParsedFlixByID(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flix, err := GetParsedFlixByID(server.URL, "templateID")
-	assert.NoError(err, "GetParsedFlixByID should not return an error")
-	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
-	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
-}
-
-func TestGetParsedFlixByName(t *testing.T) {
-	assert := assert.New(t)
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(template))
-	}))
-	defer server.Close()
-
-	flix, err := GetParsedFlixByName(server.URL, "templateName")
+	flix, err := GetFlix(server.URL, "templateName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByName should return the correct Flix")
+}
+
+func TestGetFlixByIDRaw(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		assert.Equal("/templateID", req.URL.String(), "GetFlixByID should request the correct path")
+		rw.Write([]byte("Hello World"))
+	}))
+	defer server.Close()
+
+	body, err := GetFlixByIDRaw(server.URL, "templateID")
+	assert.NoError(err, "GetFlixByID should not return an error")
+	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
+}
+
+func TestGetFlixByID(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(template))
+	}))
+	defer server.Close()
+
+	flix, err := GetFlixByID(server.URL, "templateID")
+	assert.NoError(err, "GetParsedFlixByID should not return an error")
+	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
+	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
 }

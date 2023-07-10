@@ -122,13 +122,13 @@ func FetchFlix(url string) (string, error) {
 	return sb, nil
 }
 
-func GetFlixByName(flixBaseURL string, templateName string) (string, error) {
+func GetFlixRaw(flixBaseURL string, templateName string) (string, error) {
 	url := fmt.Sprintf("%s?name=%s", flixBaseURL, templateName)
 	return FetchFlix(url)
 }
 
-func GetParsedFlixByName(flixBaseURL string, templateName string) (*FlowInteractionTemplate, error) {
-	template, err := GetFlixByName(flixBaseURL, templateName)
+func GetFlix(flixBaseURL string, templateName string) (*FlowInteractionTemplate, error) {
+	template, err := GetFlixRaw(flixBaseURL, templateName)
 	if err != nil {
 		return nil, err
 	}
@@ -141,13 +141,13 @@ func GetParsedFlixByName(flixBaseURL string, templateName string) (*FlowInteract
 	return parsedTemplate, nil
 }
 
-func GetFlixByID(flixBaseURL string, templateID string) (string, error) {
+func GetFlixByIDRaw(flixBaseURL string, templateID string) (string, error) {
 	url := fmt.Sprintf("%s/%s", flixBaseURL, templateID)
 	return FetchFlix(url)
 }
 
-func GetParsedFlixByID(flixBaseURL string, templateID string) (*FlowInteractionTemplate, error) {
-	template, err := GetFlixByID(flixBaseURL, templateID)
+func GetFlixByID(flixBaseURL string, templateID string) (*FlowInteractionTemplate, error) {
+	template, err := GetFlixByIDRaw(flixBaseURL, templateID)
 	if err != nil {
 		return nil, err
 	}

@@ -257,7 +257,7 @@ func TestGetFlixRaw(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{})
+	flixService := NewFlixService(&Config{FlixURL: server.URL})
 	body, err := flixService.GetFlixRaw("templateName")
 	assert.NoError(err, "GetFlixByName should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByName should return the correct body")
@@ -271,7 +271,7 @@ func TestGetFlix(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{})
+	flixService := NewFlixService(&Config{FlixURL: server.URL})
 	flix, err := flixService.GetFlix("templateName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
@@ -287,7 +287,7 @@ func TestGetFlixByIDRaw(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{})
+	flixService := NewFlixService(&Config{FlixURL: server.URL})
 	body, err := flixService.GetFlixByIDRaw("templateID")
 	assert.NoError(err, "GetFlixByID should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
@@ -301,7 +301,7 @@ func TestGetFlixByID(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{})
+	flixService := NewFlixService(&Config{FlixURL: server.URL})
 	flix, err := flixService.GetFlixByID("templateID")
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")

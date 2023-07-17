@@ -1,6 +1,7 @@
 package flixkit
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -59,10 +60,10 @@ type FlowInteractionTemplate struct {
 }
 
 type FlixService interface {
-	GetFlixRaw(templateName string) (string, error)
-	GetFlix(templateName string) (*FlowInteractionTemplate, error)
-	GetFlixByIDRaw(templateID string) (string, error)
-	GetFlixByID(templateID string) (*FlowInteractionTemplate, error)
+	GetFlixRaw(ctx context.Context, templateName string) (string, error)
+	GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)
+	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
+	GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error)
 }
 
 type flixServiceImpl struct {
@@ -83,13 +84,13 @@ func NewFlixService(config *Config) FlixService {
 	}
 }
 
-func (s *flixServiceImpl) GetFlixRaw(templateName string) (string, error) {
+func (s *flixServiceImpl) GetFlixRaw(ctx context.Context, templateName string) (string, error) {
 	url := fmt.Sprintf("%s?name=%s", s.config.FlixServerURL, templateName)
-	return FetchFlix(url)
+	return FetchFlixWithContext(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlix(templateName string) (*FlowInteractionTemplate, error) {
-	template, err := s.GetFlixRaw(templateName)
+func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error) {
+	template, err := s.GetFlixRaw(ctx, templateName)
 	if err != nil {
 		return nil, err
 	}
@@ -102,13 +103,13 @@ func (s *flixServiceImpl) GetFlix(templateName string) (*FlowInteractionTemplate
 	return parsedTemplate, nil
 }
 
-func (s *flixServiceImpl) GetFlixByIDRaw(templateID string) (string, error) {
+func (s *flixServiceImpl) GetFlixByIDRaw(ctx context.Context, templateID string) (string, error) {
 	url := fmt.Sprintf("%s/%s", s.config.FlixServerURL, templateID)
-	return FetchFlix(url)
+	return FetchFlixWithContext(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlixByID(templateID string) (*FlowInteractionTemplate, error) {
-	template, err := s.GetFlixByIDRaw(templateID)
+func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error) {
+	template, err := s.GetFlixByIDRaw(ctx, templateID)
 	if err != nil {
 		return nil, err
 	}
@@ -164,8 +165,13 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 	return &flowTemplate, nil
 }
 
-func FetchFlix(url string) (string, error) {
-	resp, err := http.Get(url)
+func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}

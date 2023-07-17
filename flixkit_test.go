@@ -1,6 +1,7 @@
 package flixkit
 
 import (
+	"context"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
@@ -243,7 +244,8 @@ func TestFetchFlix(t *testing.T) {
 	}))
 	defer server.Close()
 
-	body, err := FetchFlix(server.URL)
+	ctx := context.Background()
+	body, err := FetchFlixWithContext(ctx, server.URL)
 	assert.NoError(err, "GetFlix should not return an error")
 	assert.Equal("Hello World", body, "GetFlix should return the correct body")
 }
@@ -258,7 +260,8 @@ func TestGetFlixRaw(t *testing.T) {
 	defer server.Close()
 
 	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
-	body, err := flixService.GetFlixRaw("templateName")
+	ctx := context.Background()
+	body, err := flixService.GetFlixRaw(ctx, "templateName")
 	assert.NoError(err, "GetFlixByName should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByName should return the correct body")
 }
@@ -272,7 +275,8 @@ func TestGetFlix(t *testing.T) {
 	defer server.Close()
 
 	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
-	flix, err := flixService.GetFlix("templateName")
+	ctx := context.Background()
+	flix, err := flixService.GetFlix(ctx, "templateName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByName should return the correct Flix")
@@ -288,7 +292,8 @@ func TestGetFlixByIDRaw(t *testing.T) {
 	defer server.Close()
 
 	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
-	body, err := flixService.GetFlixByIDRaw("templateID")
+	ctx := context.Background()
+	body, err := flixService.GetFlixByIDRaw(ctx, "templateID")
 	assert.NoError(err, "GetFlixByID should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
 }
@@ -302,7 +307,8 @@ func TestGetFlixByID(t *testing.T) {
 	defer server.Close()
 
 	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
-	flix, err := flixService.GetFlixByID("templateID")
+	ctx := context.Background()
+	flix, err := flixService.GetFlixByID(ctx, "templateID")
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")

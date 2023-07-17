@@ -70,12 +70,12 @@ type flixServiceImpl struct {
 }
 
 type Config struct {
-	FlixURL string
+	FlixServerURL string
 }
 
 func NewFlixService(config *Config) FlixService {
-	if config.FlixURL == "" {
-		config.FlixURL = "https://flix.flow.com/v1/templates"
+	if config.FlixServerURL == "" {
+		config.FlixServerURL = "https://flix.flow.com/v1/templates"
 	}
 
 	return &flixServiceImpl{
@@ -84,7 +84,7 @@ func NewFlixService(config *Config) FlixService {
 }
 
 func (s *flixServiceImpl) GetFlixRaw(templateName string) (string, error) {
-	url := fmt.Sprintf("%s?name=%s", s.config.FlixURL, templateName)
+	url := fmt.Sprintf("%s?name=%s", s.config.FlixServerURL, templateName)
 	return FetchFlix(url)
 }
 
@@ -103,7 +103,7 @@ func (s *flixServiceImpl) GetFlix(templateName string) (*FlowInteractionTemplate
 }
 
 func (s *flixServiceImpl) GetFlixByIDRaw(templateID string) (string, error) {
-	url := fmt.Sprintf("%s/%s", s.config.FlixURL, templateID)
+	url := fmt.Sprintf("%s/%s", s.config.FlixServerURL, templateID)
 	return FetchFlix(url)
 }
 

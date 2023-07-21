@@ -41,11 +41,7 @@ Each `FlowInteractionTemplate` instance also provides the following methods:
 Here is a simple example of creating a new FlixService and fetching a template:
 
 ```go
-config := &flixkit.Config{
-    FlixServerURL: "https://flix.flow.com/v1/templates",
-}
-
-flixService := flixkit.NewFlixService(config)
+flixService := flixkit.NewFlixService(&flixkit.Config{})
 
 template, err := flixService.GetFlix(context.Background(), "transfer-flow")
 if err != nil {

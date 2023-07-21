@@ -56,3 +56,5 @@ fmt.Println(template)
 ```
 
 Note: Remember to replace "transfer-flow" with the actual name of the template you wish to fetch.
+
+To read more about Flow Interaction Templates, [see the docs](https://developers.flow.com/tooling/fcl-js/interaction-templates).

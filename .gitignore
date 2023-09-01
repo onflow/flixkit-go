@@ -1,2 +1,2 @@
  *.DS_Store
- cmd/templates/**
+ cmd/templates

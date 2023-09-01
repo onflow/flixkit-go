@@ -6,12 +6,12 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./flow-transfer-tokens.template.json"
 
-const parameterNames = ["to", "amount"];
+const parameterNames = ["amount", "to"];
 
-export async function transferTokens({to, amount}) {
+export async function transferTokens({amount, to}) {
   const transactionId = await fcl.mutate({
     template: flixTemplate,
-    args: (arg, t) => [arg(to, t.Address), arg(amount, t.UFix64)]
+    args: (arg, t) => [arg(amount, t.UFix64), arg(to, t.Address)]
   });
 
   return transactionId

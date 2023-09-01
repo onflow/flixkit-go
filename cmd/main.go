@@ -4,16 +4,12 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
+	"path"
 
 	"github.com/onflow/flixkit-go"
 )
-
-type TemplateInfo struct {
-	flixQuery string
-	tmplReferencePath string
-	filename string
-}
 
 func main() {
 	action := flag.String("action", "", "Specify the action to take.")
@@ -22,20 +18,14 @@ func main() {
 	switch *action {
 	case "generate":
 		fmt.Println("Generating ...")
-		
-		templates := [2]TemplateInfo{TemplateInfo{
-			"file://templates/flow-transfer-tokens.template.json",
-			"../templates/flow-transfer-tokens.template.json",
-			"flow-transfer-tokens.template.js",
-		}, TemplateInfo{
-			"file://templates/multiply.template.json",
-			"../templates/multiply.template.json",
-			"multiply.template.js",
-		}}
-		bindingDirectory := "./bindings"
 
-		for _, element := range templates {
-			GenerateTemplateBinding(element.flixQuery, element.tmplReferencePath, element.filename, bindingDirectory)
+		templates := []string{
+			"./templates/flow-transfer-tokens.template.json",
+			"./templates/multiply.template.json",
+		}
+
+		for _, value := range templates {
+			GenerateTemplateBinding(value)
 		}
 	
 	default:
@@ -43,16 +33,20 @@ func main() {
 	}
 }
 
-func GenerateTemplateBinding(flixQuery string, tmplReferencePath string, filename string, bindingDirectory string) {
+func GenerateTemplateBinding(flixQuery string) {
 	flixService := flixkit.NewFlixService(&flixkit.Config{})
 	ctx := context.Background()
 
-	code, err := flixService.GenFlixBinding(ctx, flixQuery, "javascript", tmplReferencePath)
+	code, err := flixService.GenFlixBinding(ctx, flixQuery, "javascript")
 	if err != nil {
 		fmt.Errorf("could not process flix with path of %s: %w", flixQuery, err)
 	}
 	fmt.Println(code)
-	SaveBindingFile(bindingDirectory, filename, code)
+	parsedURL, err := url.Parse(flixQuery)
+	filename := path.Base(parsedURL.Path)
+	outputDirectory := path.Dir(parsedURL.Path)
+	filenameNoExt := filename[0 : len(filename)-len("json")] + "js"
+	SaveBindingFile(outputDirectory, filenameNoExt, code)
 }
 
 func SaveBindingFile(dirPath string, filename string, code string) error {

@@ -7,9 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
-	"strings"
 
 	"github.com/onflow/flixkit-go/bindings"
 	"github.com/onflow/flixkit-go/common"
@@ -21,7 +19,7 @@ type FlixService interface {
 	GetFlix(ctx context.Context, templateName string) (*common.FlowInteractionTemplate, error)
 	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
 	GetFlixByID(ctx context.Context, templateID string) (*common.FlowInteractionTemplate, error)
-	GenFlixBinding(ctx context.Context, templateID string, lang string, tmplReferencePath string) (string, error)
+	GenFlixBinding(ctx context.Context, templateID string, lang string) (string, error)
 }
 
 type flixServiceImpl struct {
@@ -81,9 +79,10 @@ func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*
 }
 
 
-func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string, tmplReferencePath string) (string, error) {
+func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string) (string, error) {
 	template, err := FetchFlix(ctx, templateLocation)
 	if err != nil {
+		fmt.Println("can not get flix:", err)
 		return "", err
 	}
 
@@ -92,7 +91,7 @@ func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation s
 		return "", err
 	}
 
-	contents, bindingErr := bindings.Generate(lang, parsedTemplate, tmplReferencePath);
+	contents, bindingErr := bindings.Generate(lang, parsedTemplate, templateLocation);
 
 	return contents, bindingErr
 }
@@ -110,19 +109,12 @@ func ParseFlix(template string) (*common.FlowInteractionTemplate, error) {
 }
 
 func FetchFlix(ctx context.Context, fileUrl string) (string, error) {
-	u, err := url.Parse(fileUrl)
+	IsLocal := common.IsLocalTemplate(fileUrl)
 
-	if err != nil {
-		return "", err
-	}
-
-	switch u.Scheme {
-	case "file":
+	if (IsLocal) {
 		return FetchFlixWithContextFromFile(ctx, fileUrl)
-	case "http", "https":
+	} else {
 		return FetchFlixWithContext(ctx, fileUrl)
-	default:
-		return "", fmt.Errorf("Unsupported URL scheme", u.Scheme)
 	}
 
 }
@@ -151,10 +143,7 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 }
 
 func FetchFlixWithContextFromFile(ctx context.Context, url string) (string, error) {
-	localFilePath := strings.TrimPrefix(url, "file://")
-
-	// Read the file
-	body, err := os.ReadFile(localFilePath)
+	body, err := os.ReadFile(url)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v", err)
 	}

@@ -1,0 +1,26 @@
+/**
+    This binding file was auto generated based on FLIX template. 
+    Changes to this file might get overwritten 
+**/
+
+import * as fcl from "@onflow/fcl"
+{{- if .IsLocalTemplate }}
+import flixTemplate from "{{.Location}}"
+{{- else}}
+const flixTemplate = "{{.Location}}"
+{{- end}}
+
+const parameterNames = [
+  {{- range $index, $ele := .Parameters -}}
+     {{if $index}}, {{end}}"{{$ele.Name}}"
+  {{- end -}}
+];
+
+{{if .IsScript}}
+{{- template "script.tmpl" .}}
+{{else}}
+{{- template "tx.tmpl" .}}
+{{end}}
+
+
+

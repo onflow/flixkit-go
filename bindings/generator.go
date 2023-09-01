@@ -8,12 +8,12 @@ import (
 	"github.com/onflow/flixkit-go/common"
 )
 
-func Generate(lang string, flix *common.FlowInteractionTemplate, templatePath string) (string, error) {
+func Generate(lang string, flix *common.FlowInteractionTemplate, templateLocation string) (string, error) {
 	var contents string
 	var err error
 	switch lang {
 		case "javascript", "js":
-			contents, err = javascript.GenerateJavaScript(flix, templatePath)
+			contents, err = javascript.GenerateJavaScript(flix, templateLocation)
 		default:
 			return "", fmt.Errorf("language %s not supported", lang)
 	}

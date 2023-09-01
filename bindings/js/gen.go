@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"embed"
 	_ "embed"
+	"fmt"
+	"net/url"
+	"path"
 	"text/template"
 
 	"github.com/onflow/flixkit-go/common"
@@ -18,37 +21,34 @@ type TemplateData struct {
     Parameters []SimpleParameter
     Title       string
     Location    string
+    IsScript    bool
+    IsLocalTemplate bool
 }
 
-//go:embed js_script_template.tpl
-var scriptTmpl embed.FS
-//go:embed js_tx_template.tpl
-var txTmpl embed.FS
+//go:embed templates/*.tmpl
+var templateFiles embed.FS
 
-func GenerateJavaScript(flix *common.FlowInteractionTemplate, templatePath string) (string, error) {
-    var buffer bytes.Buffer
-    var t *template.Template
-    var err error
-
-    switch flix.Data.Type {
-        case "script":
-            t, err = template.ParseFS(scriptTmpl, "js_script_template.tpl")
-        default:
-            t, err = template.ParseFS(txTmpl, "js_tx_template.tpl")
-    }
-
+func GenerateJavaScript(flix *common.FlowInteractionTemplate, templateLocation string) (string, error) {
+    tmpl, err := template.ParseFS(templateFiles, "templates/*.tmpl")
     if err != nil {
+        fmt.Println("Error executing template:", err)
         return "", err
     }
 
+    templatePath, IsLocal, _ := GetTemplateReference(templateLocation)
     methodName := common.TitleToMethodName(flix.Data.Messages.Title.I18N["en-US"])
     data := TemplateData{
         Parameters: TransformArguments(flix.Data.Arguments),
         Title: methodName,
         Location: templatePath,
+        IsScript: flix.IsScript(),
+        IsLocalTemplate: IsLocal,
     }
-    t.Execute(&buffer, data)
-    return buffer.String(), nil
+
+    var buf bytes.Buffer
+    err = tmpl.Execute(&buf, data)
+    fmt.Println("Error executing template 2:", err)
+    return buf.String(), err    
 }
 
 
@@ -58,4 +58,18 @@ func TransformArguments(args common.Arguments) []SimpleParameter {
 		simpleArgs = append(simpleArgs, SimpleParameter{Name: name, Type: arg.Type})
 	}
 	return simpleArgs
+}
+
+func GetTemplateReference(templateLocation string) (string, bool, error) {
+    var err error
+    templatePath := templateLocation
+    IsLocal := common.IsLocalTemplate(templateLocation)
+    if (IsLocal) {
+        parsedURL, err := url.Parse(templateLocation)
+        if err != nil {
+            return templatePath, IsLocal, err
+        }
+        templatePath = "./" + path.Base(parsedURL.Path)   
+    }
+    return templatePath, IsLocal, err
 }

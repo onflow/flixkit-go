@@ -67,3 +67,10 @@ func TitleToMethodName(s string) string {
 
 	return result
 }
+
+func IsLocalTemplate(templateLocation string) bool {
+	return strings.HasPrefix(templateLocation, "/") || 
+		strings.HasPrefix(templateLocation, "./") || 
+		strings.HasPrefix(templateLocation, "../")
+}
+

@@ -2,10 +2,12 @@ package flixkit
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/onflow/flixkit-go/common"
+	"github.com/stretchr/testify/assert"
 )
 
 var template = `{
@@ -77,37 +79,37 @@ var template = `{
 	  }
 	}`
 
-var parsedTemplate = &FlowInteractionTemplate{
+var parsedTemplate = &common.FlowInteractionTemplate{
 	FType:    "InteractionTemplate",
 	FVersion: "1.0.0",
 	ID:       "290b6b6222b2a77b16db896a80ddf29ebd1fa3038c9e6625a933fa213fce51fa",
-	Data: Data{
+	Data: common.Data{
 		Type:      "transaction",
 		Interface: "",
-		Messages: Messages{
-			Title: &Title{
+		Messages: common.Messages{
+			Title: &common.Title{
 				I18N: map[string]string{
 					"en-US": "Transfer Tokens",
 				},
 			},
-			Description: &Description{
+			Description: &common.Description{
 				I18N: map[string]string{
 					"en-US": "Transfer tokens from one account to another",
 				},
 			},
 		},
 		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
-		Dependencies: Dependencies{
-			"0xFUNGIBLETOKENADDRESS": Contracts{
-				"FungibleToken": Networks{
-					"mainnet": Network{
+		Dependencies: common.Dependencies{
+			"0xFUNGIBLETOKENADDRESS": common.Contracts{
+				"FungibleToken": common.Networks{
+					"mainnet": common.Network{
 						Address:        "0xf233dcee88fe0abe",
 						FqAddress:      "A.0xf233dcee88fe0abe.FungibleToken",
 						Contract:       "FungibleToken",
 						Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
 						PinBlockHeight: 34166296,
 					},
-					"testnet": Network{
+					"testnet": common.Network{
 						Address:        "0x9a0766d93b6608b7",
 						FqAddress:      "A.0x9a0766d93b6608b7.FungibleToken",
 						Contract:       "FungibleToken",
@@ -117,12 +119,12 @@ var parsedTemplate = &FlowInteractionTemplate{
 				},
 			},
 		},
-		Arguments: Arguments{
-			"amount": Argument{
+		Arguments: common.Arguments{
+			"amount": common.Argument{
 				Index: 0,
 				Type:  "UFix64",
-				Messages: Messages{
-					Title: &Title{
+				Messages: common.Messages{
+					Title: &common.Title{
 						I18N: map[string]string{
 							"en-US": "The amount of FLOW tokens to send",
 						},
@@ -130,11 +132,11 @@ var parsedTemplate = &FlowInteractionTemplate{
 				},
 				Balance: "",
 			},
-			"to": Argument{
+			"to": common.Argument{
 				Index: 1,
 				Type:  "Address",
-				Messages: Messages{
-					Title: &Title{
+				Messages: common.Messages{
+					Title: &common.Title{
 						I18N: map[string]string{
 							"en-US": "The Flow account the tokens will go to",
 						},
@@ -203,15 +205,15 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 func TestIsScript(t *testing.T) {
 	assert := assert.New(t)
 
-	scriptTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	scriptTemplate := &common.FlowInteractionTemplate{
+		Data: common.Data{
 			Type: "script",
 		},
 	}
 	assert.True(scriptTemplate.IsScript(), "IsScript() should return true")
 
-	transactionTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	transactionTemplate := &common.FlowInteractionTemplate{
+		Data: common.Data{
 			Type: "transaction",
 		},
 	}
@@ -221,15 +223,15 @@ func TestIsScript(t *testing.T) {
 func TestIsTransaction(t *testing.T) {
 	assert := assert.New(t)
 
-	scriptTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	scriptTemplate := &common.FlowInteractionTemplate{
+		Data: common.Data{
 			Type: "script",
 		},
 	}
 	assert.False(scriptTemplate.IsTransaction(), "IsTransaction() should return false")
 
-	transactionTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	transactionTemplate := &common.FlowInteractionTemplate{
+		Data: common.Data{
 			Type: "transaction",
 		},
 	}
@@ -312,4 +314,35 @@ func TestGetFlixByID(t *testing.T) {
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
+}
+
+func TestGenFlixWrongLang(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(template))
+	}))
+	defer server.Close()
+
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	ctx := context.Background()
+	contents, err := flixService.GenFlixBinding(ctx, "templateID", "cobal", "./template/transfers.json")
+	assert.Error(err, "language cobal not supported")
+	assert.NotNil(contents, "")
+	println(contents)
+}
+func TestGenFlixJS(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(template))
+	}))
+	defer server.Close()
+
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	ctx := context.Background()
+	contents, err := flixService.GenFlixBinding(ctx, "templateID", "javascript", "./template/transfers.json")
+	assert.NoError(err, "GenFlixBinding should not return an error")
+	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
+	println(contents)
 }

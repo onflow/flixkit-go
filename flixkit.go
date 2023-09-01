@@ -7,63 +7,21 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"regexp"
+	"net/url"
+	"os"
+	"strings"
+
+	"github.com/onflow/flixkit-go/bindings"
+	"github.com/onflow/flixkit-go/common"
 )
 
-type Network struct {
-	Address        string `json:"address"`
-	FqAddress      string `json:"fq_address"`
-	Contract       string `json:"contract"`
-	Pin            string `json:"pin"`
-	PinBlockHeight uint64 `json:"pin_block_height"`
-}
-
-type Argument struct {
-	Index    int      `json:"index"`
-	Type     string   `json:"type"`
-	Messages Messages `json:"messages"`
-	Balance  string   `json:"balance"`
-}
-
-type Title struct {
-	I18N map[string]string `json:"i18n"`
-}
-
-type Description struct {
-	I18N map[string]string `json:"i18n"`
-}
-
-type Messages struct {
-	Title       *Title       `json:"title,omitempty"`
-	Description *Description `json:"description,omitempty"`
-}
-
-type Dependencies map[string]Contracts
-type Contracts map[string]Networks
-type Networks map[string]Network
-type Arguments map[string]Argument
-
-type Data struct {
-	Type         string       `json:"type"`
-	Interface    string       `json:"interface"`
-	Messages     Messages     `json:"messages"`
-	Cadence      string       `json:"cadence"`
-	Dependencies Dependencies `json:"dependencies"`
-	Arguments    Arguments    `json:"arguments"`
-}
-
-type FlowInteractionTemplate struct {
-	FType    string `json:"f_type"`
-	FVersion string `json:"f_version"`
-	ID       string `json:"id"`
-	Data     Data   `json:"data"`
-}
 
 type FlixService interface {
 	GetFlixRaw(ctx context.Context, templateName string) (string, error)
-	GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)
+	GetFlix(ctx context.Context, templateName string) (*common.FlowInteractionTemplate, error)
 	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
-	GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error)
+	GetFlixByID(ctx context.Context, templateID string) (*common.FlowInteractionTemplate, error)
+	GenFlixBinding(ctx context.Context, templateID string, lang string, tmplReferencePath string) (string, error)
 }
 
 type flixServiceImpl struct {
@@ -86,10 +44,10 @@ func NewFlixService(config *Config) FlixService {
 
 func (s *flixServiceImpl) GetFlixRaw(ctx context.Context, templateName string) (string, error) {
 	url := fmt.Sprintf("%s?name=%s", s.config.FlixServerURL, templateName)
-	return FetchFlixWithContext(ctx, url)
+	return FetchFlix(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error) {
+func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*common.FlowInteractionTemplate, error) {
 	template, err := s.GetFlixRaw(ctx, templateName)
 	if err != nil {
 		return nil, err
@@ -105,10 +63,10 @@ func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*Fl
 
 func (s *flixServiceImpl) GetFlixByIDRaw(ctx context.Context, templateID string) (string, error) {
 	url := fmt.Sprintf("%s/%s", s.config.FlixServerURL, templateID)
-	return FetchFlixWithContext(ctx, url)
+	return FetchFlix(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error) {
+func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*common.FlowInteractionTemplate, error) {
 	template, err := s.GetFlixByIDRaw(ctx, templateID)
 	if err != nil {
 		return nil, err
@@ -122,40 +80,26 @@ func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*
 	return parsedTemplate, nil
 }
 
-func (t *FlowInteractionTemplate) IsScript() bool {
-	return t.Data.Type == "script"
-}
 
-func (t *FlowInteractionTemplate) IsTransaction() bool {
-	return t.Data.Type == "transaction"
-}
-
-func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
-	cadence := t.Data.Cadence
-
-	for dependencyAddress, contracts := range t.Data.Dependencies {
-		for contractName, networks := range contracts {
-			network, ok := networks[networkName]
-			if !ok {
-				return "", fmt.Errorf("network %s not found for contract %s", networkName, contractName)
-			}
-
-			pattern := fmt.Sprintf(`import\s*%s\s*from\s*%s`, contractName, dependencyAddress)
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				return "", fmt.Errorf("invalid regex pattern: %v", err)
-			}
-
-			replacement := fmt.Sprintf("import %s from %s", contractName, network.Address)
-			cadence = re.ReplaceAllString(cadence, replacement)
-		}
+func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string, tmplReferencePath string) (string, error) {
+	template, err := FetchFlix(ctx, templateLocation)
+	if err != nil {
+		return "", err
 	}
 
-	return cadence, nil
+	parsedTemplate, err := ParseFlix(template)
+	if err != nil {
+		return "", err
+	}
+
+	contents, bindingErr := bindings.Generate(lang, parsedTemplate, tmplReferencePath);
+
+	return contents, bindingErr
 }
 
-func ParseFlix(template string) (*FlowInteractionTemplate, error) {
-	var flowTemplate FlowInteractionTemplate
+
+func ParseFlix(template string) (*common.FlowInteractionTemplate, error) {
+	var flowTemplate common.FlowInteractionTemplate
 
 	err := json.Unmarshal([]byte(template), &flowTemplate)
 	if err != nil {
@@ -165,6 +109,23 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 	return &flowTemplate, nil
 }
 
+func FetchFlix(ctx context.Context, fileUrl string) (string, error) {
+	u, err := url.Parse(fileUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	switch u.Scheme {
+	case "file":
+		return FetchFlixWithContextFromFile(ctx, fileUrl)
+	case "http", "https":
+		return FetchFlixWithContext(ctx, fileUrl)
+	default:
+		return "", fmt.Errorf("Unsupported URL scheme", u.Scheme)
+	}
+
+}
 func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
@@ -186,5 +147,16 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 		return "", err
 	}
 
+	return string(body), nil
+}
+
+func FetchFlixWithContextFromFile(ctx context.Context, url string) (string, error) {
+	localFilePath := strings.TrimPrefix(url, "file://")
+
+	// Read the file
+	body, err := os.ReadFile(localFilePath)
+	if err != nil {
+		log.Fatalf("Failed to read file: %v", err)
+	}
 	return string(body), nil
 }

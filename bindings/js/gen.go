@@ -47,7 +47,6 @@ func GenerateJavaScript(flix *common.FlowInteractionTemplate, templateLocation s
 
     var buf bytes.Buffer
     err = tmpl.Execute(&buf, data)
-    fmt.Println("Error executing template 2:", err)
     return buf.String(), err    
 }
 

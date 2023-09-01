@@ -316,6 +316,16 @@ func TestGetFlixByID(t *testing.T) {
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
 }
 
+// MockFileReader is a mock implementation for tests.
+type MockFileReader struct {
+	content []byte
+	err     error
+}
+
+func (m MockFileReader) ReadFile(filename string) ([]byte, error) {
+	return m.content, m.err
+}
+
 func TestGenFlixWrongLang(t *testing.T) {
 	assert := assert.New(t)
 
@@ -324,12 +334,14 @@ func TestGenFlixWrongLang(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: MockFileReader{
+		content: []byte(template),
+		err:     nil,
+	},})
 	ctx := context.Background()
-	contents, err := flixService.GenFlixBinding(ctx, "templateID", "cobal", "./template/transfers.json")
+	contents, err := flixService.GenFlixBinding(ctx, "./templateID", "cobal")
 	assert.Error(err, "language cobal not supported")
 	assert.NotNil(contents, "")
-	println(contents)
 }
 func TestGenFlixJS(t *testing.T) {
 	assert := assert.New(t)
@@ -339,10 +351,13 @@ func TestGenFlixJS(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: MockFileReader{
+		content: []byte(template),
+		err:     nil,
+	},})
+	
 	ctx := context.Background()
-	contents, err := flixService.GenFlixBinding(ctx, "templateID", "javascript", "./template/transfers.json")
+	contents, err := flixService.GenFlixBinding(ctx, "./templateID", "javascript")
 	assert.NoError(err, "GenFlixBinding should not return an error")
 	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
-	println(contents)
 }

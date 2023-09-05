@@ -22,6 +22,7 @@ func main() {
 		templates := []string{
 			"./templates/flow-transfer-tokens.template.json",
 			"./templates/multiply.template.json",
+			"https://flix.flow.com/v1/templates?name=transfer-flow",
 		}
 
 		for _, value := range templates {

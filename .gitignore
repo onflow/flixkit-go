@@ -1,5 +1,5 @@
 # Ignore cmd directory
-/cmd/
+cmd/
 
 # Ignore all .DBStore files
-*.DS_Store
+.DS_Store

@@ -1,4 +1,5 @@
- *.DS_Store
- cmd/templates
- cmd/templates/*
- cmd/main
+# Ignore cmd directory
+/cmd/
+
+# Ignore all .DBStore files
+*.DS_Store

@@ -18,6 +18,7 @@ type SimpleParameter struct {
 }
 
 type TemplateData struct {
+    Version     string
     Parameters []SimpleParameter
     Title       string
     Location    string
@@ -38,6 +39,7 @@ func GenerateJavaScript(flix *common.FlowInteractionTemplate, templateLocation s
     templatePath, IsLocal, _ := GetTemplateReference(templateLocation)
     methodName := common.TitleToMethodName(flix.Data.Messages.Title.I18N["en-US"])
     data := TemplateData{
+        Version: flix.FVersion,
         Parameters: TransformArguments(flix.Data.Arguments),
         Title: methodName,
         Location: templatePath,
@@ -54,9 +56,23 @@ func GenerateJavaScript(flix *common.FlowInteractionTemplate, templateLocation s
 func TransformArguments(args common.Arguments) []SimpleParameter {
 	simpleArgs := []SimpleParameter{}
 	for name, arg := range args {
-		simpleArgs = append(simpleArgs, SimpleParameter{Name: name, Type: arg.Type})
+        isArray, arrayType := IsArrayParameter(arg)
+        if (isArray) {
+            simpleArgs = append(simpleArgs, SimpleParameter{Name: name, Type: "Array(t." + arrayType + ")"})
+        } else {
+            simpleArgs = append(simpleArgs, SimpleParameter{Name: name, Type: arg.Type})
+        }
 	}
 	return simpleArgs
+}
+
+
+func IsArrayParameter(arg common.Argument) (bool, string) {
+    isArray := arg.Type[0] == '[' && arg.Type[len(arg.Type)-1] == ']'
+    if (!isArray) {
+        return isArray, ""
+    }
+    return isArray, arg.Type[1 : len(arg.Type)-1]
 }
 
 func GetTemplateReference(templateLocation string) (string, bool, error) {

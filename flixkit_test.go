@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/onflow/flixkit-go/common"
@@ -357,7 +358,30 @@ func TestGenFlixJS(t *testing.T) {
 	},})
 	
 	ctx := context.Background()
-	contents, err := flixService.GenFlixBinding(ctx, "./templateID", "javascript")
+	templatePath := "./templateID"
+	contents, err := flixService.GenFlixBinding(ctx, templatePath, "javascript")
 	assert.NoError(err, "GenFlixBinding should not return an error")
 	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
+	assert.True(strings.Contains(contents, templatePath), "Expected '%s'", templatePath)
+}
+
+func TestGenRemoteFlixJS(t *testing.T) {
+	assert := assert.New(t)
+
+	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Write([]byte(template))
+	}))
+	defer server.Close()
+
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: MockFileReader{
+		content: []byte(template),
+		err:     nil,
+	},})
+	
+	ctx := context.Background()
+	endpoint := server.URL + "/tempateName"
+	contents, err := flixService.GenFlixBinding(ctx, endpoint, "javascript")
+	assert.NoError(err, "GenFlixBinding should not return an error")
+	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
+	assert.True(strings.Contains(contents, endpoint), "Expected '%s'", endpoint)
 }

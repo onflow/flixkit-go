@@ -98,9 +98,9 @@ func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*
 func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string) (string, error) {
 	var template string
 	var err error
-	IsLocal := common.IsLocalTemplate(templateLocation)
+	isLocal := common.IsLocalTemplate(templateLocation)
 
-	if (IsLocal) {
+	if isLocal {
 		template, err = FetchFlixWithContextFromFile(s.config.FileReader, ctx, templateLocation)
 	} else {
 		template, err = FetchFlixWithContext(ctx, templateLocation)
@@ -116,7 +116,7 @@ func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation s
 		return "", err
 	}
 
-	contents, bindingErr := bindings.Generate(lang, parsedTemplate, templateLocation);
+	contents, bindingErr := bindings.Generate(lang, parsedTemplate, templateLocation)
 
 	return contents, bindingErr
 }

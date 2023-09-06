@@ -57,7 +57,7 @@ func TransformArguments(args common.Arguments) []SimpleParameter {
 	simpleArgs := []SimpleParameter{}
 	for name, arg := range args {
         isArray, arrayType := IsArrayParameter(arg)
-        if (isArray) {
+        if isArray {
             simpleArgs = append(simpleArgs, SimpleParameter{Name: name, Type: "Array(t." + arrayType + ")"})
         } else {
             simpleArgs = append(simpleArgs, SimpleParameter{Name: name, Type: arg.Type})
@@ -78,13 +78,13 @@ func IsArrayParameter(arg common.Argument) (bool, string) {
 func GetTemplateReference(templateLocation string) (string, bool, error) {
     var err error
     templatePath := templateLocation
-    IsLocal := common.IsLocalTemplate(templateLocation)
-    if (IsLocal) {
+    isLocal := common.IsLocalTemplate(templateLocation)
+    if isLocal {
         parsedURL, err := url.Parse(templateLocation)
         if err != nil {
-            return templatePath, IsLocal, err
+            return templatePath, isLocal, err
         }
         templatePath = "./" + path.Base(parsedURL.Path)   
     }
-    return templatePath, IsLocal, err
+    return templatePath, isLocal, err
 }

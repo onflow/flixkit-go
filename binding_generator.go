@@ -1,19 +1,16 @@
-package bindings
+package flixkit
 
 import (
 	"fmt"
 	"log"
-
-	js "github.com/onflow/flixkit-go/bindings/js"
-	"github.com/onflow/flixkit-go/common"
 )
 
-func Generate(lang string, flix *common.FlowInteractionTemplate, templateLocation string) (string, error) {
+func Generate(lang string, flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
 	var contents string
 	var err error
 	switch lang {
 		case "javascript", "js":
-			contents, err = js.GenerateJavaScript(flix, templateLocation)
+			contents, err = GenerateJavaScript(flix, templateLocation, isLocal)
 		default:
 			return "", fmt.Errorf("language %s not supported", lang)
 	}

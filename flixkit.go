@@ -8,18 +8,15 @@ import (
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/onflow/flixkit-go/bindings"
-	"github.com/onflow/flixkit-go/common"
 )
 
 
 type FlixService interface {
 	GetFlixRaw(ctx context.Context, templateName string) (string, error)
-	GetFlix(ctx context.Context, templateName string) (*common.FlowInteractionTemplate, error)
+	GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)
 	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
-	GetFlixByID(ctx context.Context, templateID string) (*common.FlowInteractionTemplate, error)
-	GenFlixBinding(ctx context.Context, templateID string, lang string) (string, error)
+	GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error)
+	GenFlixBinding(ctx context.Context, templateID string, lang string, isLocal bool) (string, error)
 }
 
 // OsFileReader is a real implementation that calls os.ReadFile.
@@ -61,7 +58,7 @@ func (s *flixServiceImpl) GetFlixRaw(ctx context.Context, templateName string) (
 	return FetchFlixWithContext(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*common.FlowInteractionTemplate, error) {
+func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error) {
 	template, err := s.GetFlixRaw(ctx, templateName)
 	if err != nil {
 		return nil, err
@@ -80,7 +77,7 @@ func (s *flixServiceImpl) GetFlixByIDRaw(ctx context.Context, templateID string)
 	return FetchFlixWithContext(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*common.FlowInteractionTemplate, error) {
+func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error) {
 	template, err := s.GetFlixByIDRaw(ctx, templateID)
 	if err != nil {
 		return nil, err
@@ -95,11 +92,9 @@ func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*
 }
 
 
-func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string) (string, error) {
+func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string, isLocal bool) (string, error) {
 	var template string
 	var err error
-	isLocal := common.IsLocalTemplate(templateLocation)
-
 	if isLocal {
 		template, err = FetchFlixWithContextFromFile(s.config.FileReader, ctx, templateLocation)
 	} else {
@@ -116,14 +111,13 @@ func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation s
 		return "", err
 	}
 
-	contents, bindingErr := bindings.Generate(lang, parsedTemplate, templateLocation)
+	contents, bindingErr := Generate(lang, parsedTemplate, templateLocation, isLocal)
 
 	return contents, bindingErr
 }
 
-
-func ParseFlix(template string) (*common.FlowInteractionTemplate, error) {
-	var flowTemplate common.FlowInteractionTemplate
+func ParseFlix(template string) (*FlowInteractionTemplate, error) {
+	var flowTemplate FlowInteractionTemplate
 
 	err := json.Unmarshal([]byte(template), &flowTemplate)
 	if err != nil {

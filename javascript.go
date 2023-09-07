@@ -1,15 +1,14 @@
-package js
+package flixkit
 
 import (
 	"bytes"
 	"embed"
-	_ "embed"
 	"fmt"
 	"net/url"
 	"path"
+	"strings"
 	"text/template"
-
-	"github.com/onflow/flixkit-go/common"
+	"unicode"
 )
 
 type SimpleParameter struct {
@@ -29,22 +28,21 @@ type TemplateData struct {
 //go:embed templates/*.tmpl
 var templateFiles embed.FS
 
-func GenerateJavaScript(flix *common.FlowInteractionTemplate, templateLocation string) (string, error) {
+func GenerateJavaScript(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
     tmpl, err := template.ParseFS(templateFiles, "templates/*.tmpl")
     if err != nil {
         fmt.Println("Error executing template:", err)
         return "", err
     }
 
-    templatePath, IsLocal, _ := GetTemplateReference(templateLocation)
-    methodName := common.TitleToMethodName(flix.Data.Messages.Title.I18N["en-US"])
+    methodName := TitleToMethodName(flix.Data.Messages.Title.I18N["en-US"])
     data := TemplateData{
         Version: flix.FVersion,
         Parameters: TransformArguments(flix.Data.Arguments),
         Title: methodName,
-        Location: templatePath,
+        Location: templateLocation,
         IsScript: flix.IsScript(),
-        IsLocalTemplate: IsLocal,
+        IsLocalTemplate: isLocal,
     }
 
     var buf bytes.Buffer
@@ -53,7 +51,35 @@ func GenerateJavaScript(flix *common.FlowInteractionTemplate, templateLocation s
 }
 
 
-func TransformArguments(args common.Arguments) []SimpleParameter {
+func TitleToMethodName(s string) string {
+	s = strings.TrimSpace(s)
+	var result string
+	upperNext := false
+
+	for _, r := range s {
+		if r == ' ' || r == '_' || r == '-' {
+			upperNext = true
+		} else {
+			if upperNext {
+				result += string(unicode.ToUpper(r))
+			} else {
+				result += string(unicode.ToLower(r))
+			}
+			upperNext = false
+		}
+	}
+
+	return result
+}
+
+func IsLocalTemplate(templateLocation string) bool {
+	return strings.HasPrefix(templateLocation, "/") || 
+		strings.HasPrefix(templateLocation, "./") || 
+		strings.HasPrefix(templateLocation, "../")
+}
+
+
+func TransformArguments(args Arguments) []SimpleParameter {
 	simpleArgs := []SimpleParameter{}
 	for name, arg := range args {
         isArray, arrayType := IsArrayParameter(arg)
@@ -67,7 +93,7 @@ func TransformArguments(args common.Arguments) []SimpleParameter {
 }
 
 
-func IsArrayParameter(arg common.Argument) (bool, string) {
+func IsArrayParameter(arg Argument) (bool, string) {
     isArray := arg.Type[0] == '[' && arg.Type[len(arg.Type)-1] == ']'
     if (!isArray) {
         return isArray, ""
@@ -78,7 +104,7 @@ func IsArrayParameter(arg common.Argument) (bool, string) {
 func GetTemplateReference(templateLocation string) (string, bool, error) {
     var err error
     templatePath := templateLocation
-    isLocal := common.IsLocalTemplate(templateLocation)
+    isLocal := IsLocalTemplate(templateLocation)
     if isLocal {
         parsedURL, err := url.Parse(templateLocation)
         if err != nil {

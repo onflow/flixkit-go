@@ -17,9 +17,9 @@ const parameterNames = [
 ];
 
 {{if .IsScript}}
-{{- template "script.tmpl" .}}
+{{- template "js_script.tmpl" .}}
 {{else}}
-{{- template "tx.tmpl" .}}
+{{- template "js_tx.tmpl" .}}
 {{end}}
 
 

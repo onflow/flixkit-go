@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"net/url"
-	"path"
 	"strings"
 	"text/template"
 	"unicode"
@@ -72,13 +70,6 @@ func TitleToMethodName(s string) string {
 	return result
 }
 
-func IsLocalTemplate(templateLocation string) bool {
-	return strings.HasPrefix(templateLocation, "/") || 
-		strings.HasPrefix(templateLocation, "./") || 
-		strings.HasPrefix(templateLocation, "../")
-}
-
-
 func TransformArguments(args Arguments) []SimpleParameter {
 	simpleArgs := []SimpleParameter{}
 	for name, arg := range args {
@@ -101,16 +92,3 @@ func IsArrayParameter(arg Argument) (bool, string) {
     return isArray, arg.Type[1 : len(arg.Type)-1]
 }
 
-func GetTemplateReference(templateLocation string) (string, bool, error) {
-    var err error
-    templatePath := templateLocation
-    isLocal := IsLocalTemplate(templateLocation)
-    if isLocal {
-        parsedURL, err := url.Parse(templateLocation)
-        if err != nil {
-            return templatePath, isLocal, err
-        }
-        templatePath = "./" + path.Base(parsedURL.Path)   
-    }
-    return templatePath, isLocal, err
-}

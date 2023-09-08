@@ -30,9 +30,9 @@ const parameterNames = [
 {{"\n"}}*/
 
 {{if .IsScript}}
-{{- template "js_script.tmpl" .}}
+{{- template "js_fcl_script.tmpl" .}}
 {{else}}
-{{- template "js_tx.tmpl" .}}
+{{- template "js_fcl_tx.tmpl" .}}
 {{- end}}
 
 

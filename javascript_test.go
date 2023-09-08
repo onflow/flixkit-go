@@ -164,14 +164,31 @@ var ArrayTypeScript = &FlowInteractionTemplate{
 		},
 	},
 }
+
+var minimumTemplate = &FlowInteractionTemplate{
+	FType:    "InteractionTemplate",
+	FVersion: "1.0.0",
+	ID:       "290b6b6222b2a77b16db896a80ddf29ebd1fa3038c9e6625a933fa213fce51fa",
+	Data: Data{
+		Type:      "script",
+		Interface: "",
+		Cadence: "pub fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
+		Arguments: Arguments{
+			"numbers": Argument{
+				Index: 0,
+				Type:  "[Int]",
+			},
+		},
+	},
+}
 func TestJSGenTransaction(t *testing.T) {
 	assert := assert.New(t)
 
 	contents, err := GenerateJavaScript(parsedTemplateTX, "./transfer_token.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(contents, "Parsed template should not be nil")
+	assert.True(strings.Contains(contents, "transferTokens"), "Expected '%s'", "transferTokens")
 	assert.True(strings.Contains(contents, "await fcl.mutate("), "Expected '%s'", "await fcl.mutate(")
-
 
 }
 
@@ -182,6 +199,7 @@ func TestJSGenScript(t *testing.T) {
 	contents, err := GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(contents, "Parsed template should not be nil")
+	assert.True(strings.Contains(contents, "multipleTwoIntegers"), "Expected '%s'", "multipleTwoIntegers")
 	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
 
 
@@ -193,6 +211,19 @@ func TestJSGenArrayScript(t *testing.T) {
 	contents, err := GenerateJavaScript(ArrayTypeScript, "./multiply-numbers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(contents, "Parsed template should not be nil")
+	assert.True(strings.Contains(contents, "multiplyNumbers"), "Expected '%s'", "multiplyNumbers")
+	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
+	assert.True(strings.Contains(contents, `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`), "Expected '%s'", `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`)
+
+}
+
+func TestJSGenMinScript(t *testing.T) {
+	assert := assert.New(t)
+
+	contents, err := GenerateJavaScript(minimumTemplate, "./min.template.json", true)
+	assert.NoError(err, "ParseTemplate should not return an error")
+	assert.NotNil(contents, "Parsed template should not be nil")
+	assert.True(strings.Contains(contents, "request"), "Expected '%s'", "request")
 	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
 	assert.True(strings.Contains(contents, `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`), "Expected '%s'", `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`)
 

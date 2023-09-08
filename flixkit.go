@@ -102,7 +102,6 @@ func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation s
 	}
 
 	if err != nil {
-		fmt.Println("can not get flix:", err)
 		return "", err
 	}
 

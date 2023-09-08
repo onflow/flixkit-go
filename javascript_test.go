@@ -88,7 +88,7 @@ var parsedTemplateScript = &FlowInteractionTemplate{
 		Messages: Messages{
 			Title: &Title{
 				I18N: map[string]string{
-					"en-US": "Multiple Two Integers",
+					"en-US": "Multiply Two Integers",
 				},
 			},
 			Description: &Description{
@@ -196,12 +196,11 @@ func TestJSGenTransaction(t *testing.T) {
 func TestJSGenScript(t *testing.T) {
 	assert := assert.New(t)
 
-	contents, err := GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.json", true)
+	contents, err := GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(contents, "Parsed template should not be nil")
-	assert.True(strings.Contains(contents, "multipleTwoIntegers"), "Expected '%s'", "multipleTwoIntegers")
+	assert.True(strings.Contains(contents, "multiplyTwoIntegers"), "Expected '%s'", "multiplyTwoIntegers")
 	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
-
 
 }
 

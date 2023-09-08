@@ -127,19 +127,19 @@ func isArrayParameter(arg Argument) (bool, string, string) {
 func convertCadenceTypeToJS(cadenceType string) string {
     switch cadenceType {
     case "Int":
-        return "Number"
+        return "string"
     case "Int8":
-        return "Number"
+        return "string"
     case "Int16":
-        return "Number"
+        return "string"
     case "Int32":
-        return "Number"
+        return "string"
     case "Int64":
-        return "BigInt"
+        return "string"
     case "Int128":
-        return "BigInt"
+        return "string"
     case "Int256":
-        return "BigInt"
+        return "string"
     case "UInt":
         return "string"
     case "UInt8":
@@ -157,7 +157,7 @@ func convertCadenceTypeToJS(cadenceType string) string {
     case "UFix64":
         return "string"
     case "Fix64":
-        return "BigInt"
+        return "string"
     case "String":
         return "string"
     case "Character":

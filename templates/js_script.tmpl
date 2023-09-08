@@ -10,7 +10,7 @@ export async function {{.Title}}({
     {{ if len .Parameters -}}
     args: (arg, t) => [
       {{- range $index, $ele := .Parameters -}}
-        {{if $index}}, {{end}}arg({{.Name}}, t.{{.Type}})
+        {{if $index}}, {{end}}arg({{.Name}}, t.{{.FclType}})
       {{- end -}}
       ]
     {{- end }}

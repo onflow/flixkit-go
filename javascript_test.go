@@ -88,12 +88,12 @@ var parsedTemplateScript = &FlowInteractionTemplate{
 		Messages: Messages{
 			Title: &Title{
 				I18N: map[string]string{
-					"en-US": "Transfer Tokens",
+					"en-US": "Multiple Two Integers",
 				},
 			},
 			Description: &Description{
 				I18N: map[string]string{
-					"en-US": "Transfer tokens from one account to another",
+					"en-US": "Multiply two numbers to another",
 				},
 			},
 		},
@@ -171,16 +171,20 @@ func TestJSGenTransaction(t *testing.T) {
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(contents, "Parsed template should not be nil")
 	assert.True(strings.Contains(contents, "await fcl.mutate("), "Expected '%s'", "await fcl.mutate(")
+
+
 }
 
 
 func TestJSGenScript(t *testing.T) {
 	assert := assert.New(t)
 
-	contents, err := GenerateJavaScript(parsedTemplateScript, "./transfer_token.json", true)
+	contents, err := GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(contents, "Parsed template should not be nil")
 	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
+
+
 }
 
 func TestJSGenArrayScript(t *testing.T) {
@@ -191,4 +195,5 @@ func TestJSGenArrayScript(t *testing.T) {
 	assert.NotNil(contents, "Parsed template should not be nil")
 	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
 	assert.True(strings.Contains(contents, `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`), "Expected '%s'", `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`)
+
 }

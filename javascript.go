@@ -125,50 +125,11 @@ func isArrayParameter(arg Argument) (bool, string, string) {
 }
 
 func convertCadenceTypeToJS(cadenceType string) string {
+    // need to determine js type based on fcl supported types
     switch cadenceType {
-    case "Int":
-        return "string"
-    case "Int8":
-        return "string"
-    case "Int16":
-        return "string"
-    case "Int32":
-        return "string"
-    case "Int64":
-        return "string"
-    case "Int128":
-        return "string"
-    case "Int256":
-        return "string"
-    case "UInt":
-        return "string"
-    case "UInt8":
-        return "string"
-    case "UInt16":
-        return "string"
-    case "UInt32":
-        return "string"
-    case "UInt64":
-        return "string"
-    case "UInt128":
-        return "string"
-    case "UInt256":
-        return "string"
-    case "UFix64":
-        return "string"
-    case "Fix64":
-        return "string"
-    case "String":
-        return "string"
-    case "Character":
-        return "string"
     case "Bool":
         return "boolean"
-    case "Address":
-        return "string"
     default:
-        // For composite and resource types, you can customize further.
-        // For now, let's just return 'any' for unknown or complex types
-        return "any"
+        return "string"
     }
 }

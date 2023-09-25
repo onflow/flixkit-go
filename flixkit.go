@@ -70,6 +70,8 @@ type flixServiceImpl struct {
 	config *Config
 }
 
+var _ FlixService = (*flixServiceImpl)(nil)
+
 type Config struct {
 	FlixServerURL string
 }

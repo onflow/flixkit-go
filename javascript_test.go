@@ -1,9 +1,9 @@
 package flixkit
 
 import (
-	"strings"
 	"testing"
 
+	"github.com/hexops/autogold/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -182,48 +182,30 @@ var minimumTemplate = &FlowInteractionTemplate{
 	},
 }
 func TestJSGenTransaction(t *testing.T) {
-	assert := assert.New(t)
-
-	contents, err := GenerateJavaScript(parsedTemplateTX, "./transfer_token.json", true)
-	assert.NoError(err, "ParseTemplate should not return an error")
-	assert.NotNil(contents, "Parsed template should not be nil")
-	assert.True(strings.Contains(contents, "transferTokens"), "Expected '%s'", "transferTokens")
-	assert.True(strings.Contains(contents, "await fcl.mutate("), "Expected '%s'", "await fcl.mutate(")
-
+	got, _ := GenerateJavaScript(parsedTemplateTX, "./transfer_token.json", true)
+	autogold.ExpectFile(t, got)
 }
-
 
 func TestJSGenScript(t *testing.T) {
 	assert := assert.New(t)
 
-	contents, err := GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.template.json", true)
+	got, err:= GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
-	assert.NotNil(contents, "Parsed template should not be nil")
-	assert.True(strings.Contains(contents, "multiplyTwoIntegers"), "Expected '%s'", "multiplyTwoIntegers")
-	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
-
+	autogold.ExpectFile(t, got)
 }
 
 func TestJSGenArrayScript(t *testing.T) {
 	assert := assert.New(t)
 
-	contents, err := GenerateJavaScript(ArrayTypeScript, "./multiply-numbers.template.json", true)
+	out, err := GenerateJavaScript(ArrayTypeScript, "./multiply-numbers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
-	assert.NotNil(contents, "Parsed template should not be nil")
-	assert.True(strings.Contains(contents, "multiplyNumbers"), "Expected '%s'", "multiplyNumbers")
-	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
-	assert.True(strings.Contains(contents, `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`), "Expected '%s'", `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`)
-
+	autogold.ExpectFile(t, out)
 }
 
 func TestJSGenMinScript(t *testing.T) {
 	assert := assert.New(t)
 
-	contents, err := GenerateJavaScript(minimumTemplate, "./min.template.json", true)
+	out, err := GenerateJavaScript(minimumTemplate, "./min.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
-	assert.NotNil(contents, "Parsed template should not be nil")
-	assert.True(strings.Contains(contents, "request"), "Expected '%s'", "request")
-	assert.True(strings.Contains(contents, "await fcl.query("), "Expected '%s'", "await fcl.query(")
-	assert.True(strings.Contains(contents, `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`), "Expected '%s'", `args: (arg, t) => [arg(numbers, t.Array(t.Int))]`)
-
+	autogold.ExpectFile(t, out)
 }

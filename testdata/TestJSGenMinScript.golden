@@ -1,0 +1,31 @@
+`/**
+    This binding file was auto generated based on FLIX template v1.0.0.
+    Changes to this file might get overwritten
+**/
+
+import * as fcl from "@onflow/fcl"
+import flixTemplate from "./min.template.json"
+
+// TODO: add runtime check for parameters consistency
+const parameterNames = ["numbers"];
+
+/**
+*
+* @param {Object} Parameters - parameters for the cadence
+* @param { Array<string> } Parameters.numbers - : Int
+*/
+
+export async function request({numbers}) {
+  const info = await fcl.query({
+    template: flixTemplate,
+    args: (arg, t) => [arg(numbers, t.Array(t.Int))]
+  });
+
+  return info
+}
+
+
+
+
+
+`

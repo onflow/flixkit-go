@@ -3,9 +3,9 @@ package flixkit
 import (
 	"bytes"
 	"embed"
-	"strings"
 	"text/template"
-	"unicode"
+
+	"github.com/stoewer/go-strcase"
 )
 
 type SimpleParameter struct {
@@ -35,8 +35,8 @@ func GenerateJavaScript(flix *FlowInteractionTemplate, templateLocation string, 
         return "", err
     }
 
-    methodName := formatTitle(getMessageValue(flix.Data.Messages, "Request"))
-    description := getDescription(*flix)
+    methodName := strcase.LowerCamelCase(getMessageValue(flix.Data.Messages, "Request"))
+    description := flix.GetDescription()
     data := TemplateData{
         Version: flix.FVersion,
         Parameters: transformArguments(flix.Data.Arguments),
@@ -52,19 +52,6 @@ func GenerateJavaScript(flix *FlowInteractionTemplate, templateLocation string, 
     return buf.String(), err    
 }
 
-func getDescription(flix FlowInteractionTemplate) string {
-    s := ""
-    if flix.Data.Messages.Description != nil && 
-        flix.Data.Messages.Description.I18N != nil {
-
-        // TODO: relying on en-US for now, future we need to know what language to use
-        value, exists := flix.Data.Messages.Description.I18N["en-US"]
-        if exists {
-            s = value
-        }
-    } 
-    return s    
-}
 func getMessageValue(messages Messages, placeholder string) string {
     s := placeholder
     if messages.Title != nil && 
@@ -76,27 +63,6 @@ func getMessageValue(messages Messages, placeholder string) string {
         } 
     }
     return s
-}
-
-func formatTitle(title string) string {
-	s := strings.TrimSpace(title)
-	var result string
-	upperNext := false
-
-	for _, r := range s {
-		if r == ' ' || r == '_' || r == '-' {
-			upperNext = true
-		} else {
-			if upperNext {
-				result += string(unicode.ToUpper(r))
-			} else {
-				result += string(unicode.ToLower(r))
-			}
-			upperNext = false
-		}
-	}
-
-	return result
 }
 
 func transformArguments(args Arguments) []SimpleParameter {
@@ -126,9 +92,19 @@ func isArrayParameter(arg Argument) (bool, string, string) {
 
 func convertCadenceTypeToJS(cadenceType string) string {
     // need to determine js type based on fcl supported types
+    // looking at fcl types and how arguments work as parameters
+    // https://github.com/onflow/fcl-js/blob/master/packages/types/src/types.js
     switch cadenceType {
     case "Bool":
         return "boolean"
+    case "Void":
+        return "void" // return type only
+    case "Dictionary":
+        return "object" // TODO: support Collection type, test to see what fcl 
+    case "Struct":
+        return "object" // TODO: support Composite type, test to see what fcl 
+    case "Enum":
+        return "object" // TODO: support Composite type, test to see what fcl 
     default:
         return "string"
     }

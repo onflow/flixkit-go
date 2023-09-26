@@ -96,7 +96,7 @@ func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation s
 	var template string
 	var err error
 	if isLocal {
-		template, err = FetchFlixWithContextFromFile(s.config.FileReader, ctx, templateLocation)
+		template, err = FetchFlixWithContextFromFile(ctx, s.config.FileReader, templateLocation)
 	} else {
 		template, err = FetchFlixWithContext(ctx, templateLocation)
 	}
@@ -150,7 +150,7 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 	return string(body), nil
 }
 
-func FetchFlixWithContextFromFile(reader FileReader, ctx context.Context, url string) (string, error) {
+func FetchFlixWithContextFromFile(ctx context.Context, reader FileReader, url string) (string, error) {
 	body, err := reader.ReadFile(url)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v", err)

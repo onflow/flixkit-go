@@ -88,3 +88,16 @@ func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string
 	return cadence, nil
 }
 
+func (t *FlowInteractionTemplate) GetDescription() string {
+    s := ""
+    if t.Data.Messages.Description != nil && 
+        t.Data.Messages.Description.I18N != nil {
+
+        // TODO: relying on en-US for now, future we need to know what language to use
+        value, exists := t.Data.Messages.Description.I18N["en-US"]
+        if exists {
+            s = value
+        }
+    } 
+    return s    
+}

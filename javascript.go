@@ -29,7 +29,9 @@ type TemplateData struct {
 //go:embed templates/*.tmpl
 var templateFiles embed.FS
 
-func GenerateJavaScript(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
+type JavaScriptGenerator struct{}
+
+func (g JavaScriptGenerator) Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
     tmpl, err := template.ParseFS(templateFiles, "templates/*.tmpl")
     if err != nil {
         return "", err

@@ -182,30 +182,33 @@ var minimumTemplate = &FlowInteractionTemplate{
 	},
 }
 func TestJSGenTransaction(t *testing.T) {
-	got, _ := GenerateJavaScript(parsedTemplateTX, "./transfer_token.json", true)
+	generator := JavaScriptGenerator{}
+	got, _ := generator.Generate(parsedTemplateTX, "./transfer_token.json", true)
 	autogold.ExpectFile(t, got)
 }
 
 func TestJSGenScript(t *testing.T) {
+	generator := JavaScriptGenerator{}
 	assert := assert.New(t)
-
-	got, err:= GenerateJavaScript(parsedTemplateScript, "./multiply_two_integers.template.json", true)
+	got, err:= generator.Generate(parsedTemplateScript, "./multiply_two_integers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, got)
 }
 
 func TestJSGenArrayScript(t *testing.T) {
+	generator := JavaScriptGenerator{}
 	assert := assert.New(t)
 
-	out, err := GenerateJavaScript(ArrayTypeScript, "./multiply-numbers.template.json", true)
+	out, err := generator.Generate(ArrayTypeScript, "./multiply-numbers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
 
 func TestJSGenMinScript(t *testing.T) {
+	generator := JavaScriptGenerator{}
 	assert := assert.New(t)
 
-	out, err := GenerateJavaScript(minimumTemplate, "./min.template.json", true)
+	out, err := generator.Generate(minimumTemplate, "./min.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }

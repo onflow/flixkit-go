@@ -326,23 +326,6 @@ func (m MockFileReader) ReadFile(filename string) ([]byte, error) {
 	return m.content, m.err
 }
 
-func TestGenFlixWrongLang(t *testing.T) {
-	assert := assert.New(t)
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(flix_template))
-	}))
-	defer server.Close()
-
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: MockFileReader{
-		content: []byte(flix_template),
-		err:     nil,
-	},})
-	ctx := context.Background()
-	contents, err := flixService.GenFlixBinding(ctx, "./templateID", "cobal", true)
-	assert.Error(err, "language cobal not supported")
-	assert.NotNil(contents, "")
-}
 func TestGenFlixJS(t *testing.T) {
 	assert := assert.New(t)
 
@@ -358,7 +341,7 @@ func TestGenFlixJS(t *testing.T) {
 	
 	ctx := context.Background()
 	templatePath := "./templateID"
-	contents, err := flixService.GenFlixBinding(ctx, templatePath, "javascript", true)
+	contents, err := flixService.GenFlixBinding(ctx, templatePath, true, JavaScriptGenerator{})
 	assert.NoError(err, "GenFlixBinding should not return an error")
 	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
 	assert.True(strings.Contains(contents, templatePath), "Expected '%s'", templatePath)
@@ -379,7 +362,7 @@ func TestGenRemoteFlixJS(t *testing.T) {
 	
 	ctx := context.Background()
 	endpoint := server.URL + "/tempateName"
-	contents, err := flixService.GenFlixBinding(ctx, endpoint, "javascript", false)
+	contents, err := flixService.GenFlixBinding(ctx, endpoint, false, JavaScriptGenerator{})
 	assert.NoError(err, "GenFlixBinding should not return an error")
 	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
 	assert.True(strings.Contains(contents, endpoint), "Expected '%s'", endpoint)

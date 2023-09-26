@@ -9,14 +9,16 @@ import (
 	"net/http"
 	"os"
 )
-
+type Generator interface {
+	Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error)
+}
 
 type FlixService interface {
 	GetFlixRaw(ctx context.Context, templateName string) (string, error)
 	GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)
 	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
 	GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error)
-	GenFlixBinding(ctx context.Context, templateID string, lang string, isLocal bool) (string, error)
+	GenFlixBinding(ctx context.Context, templateID string, isLocal bool, generator Generator) (string, error)
 }
 
 // OsFileReader is a real implementation that calls os.ReadFile.
@@ -92,7 +94,7 @@ func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*
 }
 
 
-func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, lang string, isLocal bool) (string, error) {
+func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation string, isLocal bool, generator Generator) (string, error) {
 	var template string
 	var err error
 	if isLocal {
@@ -110,7 +112,7 @@ func (s *flixServiceImpl) GenFlixBinding(ctx context.Context, templateLocation s
 		return "", err
 	}
 
-	contents, bindingErr := Generate(lang, parsedTemplate, templateLocation, isLocal)
+	contents, bindingErr := generator.Generate(parsedTemplate, templateLocation, isLocal)
 
 	return contents, bindingErr
 }

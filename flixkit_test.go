@@ -2,11 +2,14 @@ package flixkit
 
 import (
 	"context"
+	"io/fs"
+	"net"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
+	"testing/fstest"
 
+	"github.com/hexops/autogold/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -316,14 +319,8 @@ func TestGetFlixByID(t *testing.T) {
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
 }
 
-// MockFileReader is a mock implementation for tests.
-type MockFileReader struct {
-	content []byte
-	err     error
-}
-
-func (m MockFileReader) ReadFile(filename string) ([]byte, error) {
-	return m.content, m.err
+type MapFsReader struct {
+    FS fs.FS
 }
 
 func TestGenFlixJS(t *testing.T) {
@@ -333,37 +330,49 @@ func TestGenFlixJS(t *testing.T) {
 		rw.Write([]byte(flix_template))
 	}))
 	defer server.Close()
+	templatePath := "templateID"
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: MockFileReader{
-		content: []byte(flix_template),
-		err:     nil,
-	},})
+	fsys := fstest.MapFS{
+		"templateID": &fstest.MapFile{Data: []byte(flix_template)},
+	}
+
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: fsys})
 	
 	ctx := context.Background()
-	templatePath := "./templateID"
-	contents, err := flixService.GenFlixBinding(ctx, templatePath, true, JavaScriptGenerator{})
+
+	out, err := flixService.GenFlixBinding(ctx, templatePath, true, JavaScriptGenerator{})
+	autogold.ExpectFile(t, out)
 	assert.NoError(err, "GenFlixBinding should not return an error")
-	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
-	assert.True(strings.Contains(contents, templatePath), "Expected '%s'", templatePath)
 }
 
 func TestGenRemoteFlixJS(t *testing.T) {
 	assert := assert.New(t)
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	//l, _ := net.Listen("tcp", "127.0.0.1:52718")
+	handler := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte(flix_template))
-	}))
+	})
+
+	server := httptest.NewUnstartedServer(handler)
+
+	// Close the default listener and set a new one with the desired port
+	l, err := net.Listen("tcp", ":52718")
+	if err != nil {
+		t.Fatalf("Failed to listen on port 52718: %v", err)
+	}
+	server.Listener = l
+
+	server.Start()
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: MockFileReader{
-		content: []byte(flix_template),
-		err:     nil,
-	},})
+	fsys := fstest.MapFS{
+		"templatePath": {},
+	}
+
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: fsys})
 	
 	ctx := context.Background()
 	endpoint := server.URL + "/tempateName"
-	contents, err := flixService.GenFlixBinding(ctx, endpoint, false, JavaScriptGenerator{})
+	out, err := flixService.GenFlixBinding(ctx, endpoint, false, JavaScriptGenerator{})
 	assert.NoError(err, "GenFlixBinding should not return an error")
-	assert.NotNil(contents, "GenFlixBinding should not return a nil Flix")
-	assert.True(strings.Contains(contents, endpoint), "Expected '%s'", endpoint)
+	autogold.ExpectFile(t, out)
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -28,8 +29,8 @@ func (o OsFileReader) ReadFile(filename string) ([]byte, error) {
 	return os.ReadFile(filename)
 }
 
-type FileReader interface {
-	ReadFile(filename string) ([]byte, error)
+func (o OsFileReader) Open(filename string) (fs.File, error) {
+	return os.Open(filename)
 }
 
 type flixServiceImpl struct {
@@ -38,7 +39,7 @@ type flixServiceImpl struct {
 
 type Config struct {
 	FlixServerURL string
-	FileReader   FileReader
+	FileReader  fs.ReadFileFS 
 }
 
 func NewFlixService(config *Config) FlixService {
@@ -152,7 +153,7 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 	return string(body), nil
 }
 
-func FetchFlixWithContextFromFile(ctx context.Context, reader FileReader, url string) (string, error) {
+func FetchFlixWithContextFromFile(ctx context.Context, reader fs.ReadFileFS, url string) (string, error) {
 	body, err := reader.ReadFile(url)
 	if err != nil {
 		log.Fatalf("Failed to read file: %v", err)

@@ -30,9 +30,9 @@ type TemplateData struct {
 //go:embed templates/*.tmpl
 var templateFiles embed.FS
 
-type JavaScriptGenerator struct{}
+type JavascriptGenerator struct{}
 
-func (g JavaScriptGenerator) Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
+func (g JavascriptGenerator) Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
     tmpl, err := template.ParseFS(templateFiles, "templates/*.tmpl")
     if err != nil {
         return "", err

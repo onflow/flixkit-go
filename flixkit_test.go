@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"testing/fstest"
 
 	"github.com/hexops/autogold/v2"
 	"github.com/stretchr/testify/assert"
@@ -332,22 +331,14 @@ func TestGenFlixJS(t *testing.T) {
 	defer server.Close()
 	templatePath := "templateID"
 
-	fsys := fstest.MapFS{
-		"templateID": &fstest.MapFile{Data: []byte(flix_template)},
-	}
-
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: fsys})
-	
-	ctx := context.Background()
-
-	out, err := flixService.GenFlixBinding(ctx, templatePath, true, JavaScriptGenerator{})
+	out, err := JavascriptGenerator.Generate(JavascriptGenerator{}, parsedTemplate, templatePath, true)
 	autogold.ExpectFile(t, out)
 	assert.NoError(err, "GenFlixBinding should not return an error")
 }
 
 func TestGenRemoteFlixJS(t *testing.T) {
 	assert := assert.New(t)
-	//l, _ := net.Listen("tcp", "127.0.0.1:52718")
+
 	handler := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Write([]byte(flix_template))
 	})
@@ -364,15 +355,8 @@ func TestGenRemoteFlixJS(t *testing.T) {
 	server.Start()
 	defer server.Close()
 
-	fsys := fstest.MapFS{
-		"templatePath": {},
-	}
-
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: fsys})
-	
-	ctx := context.Background()
 	endpoint := server.URL + "/tempateName"
-	out, err := flixService.GenFlixBinding(ctx, endpoint, false, JavaScriptGenerator{})
+	out, err := JavascriptGenerator.Generate(JavascriptGenerator{}, parsedTemplate, endpoint, false)
 	assert.NoError(err, "GenFlixBinding should not return an error")
 	autogold.ExpectFile(t, out)
 }

@@ -8,7 +8,6 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 )
 type Generator interface {
 	Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error)
@@ -19,17 +18,6 @@ type FlixService interface {
 	GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)
 	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
 	GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error)
-}
-
-// OsFileReader is a real implementation that calls os.ReadFile.
-type OsFileReader struct{}
-
-func (o OsFileReader) ReadFile(filename string) ([]byte, error) {
-	return os.ReadFile(filename)
-}
-
-func (o OsFileReader) Open(filename string) (fs.File, error) {
-	return os.Open(filename)
 }
 
 type flixServiceImpl struct {
@@ -44,10 +32,6 @@ type Config struct {
 func NewFlixService(config *Config) FlixService {
 	if config.FlixServerURL == "" {
 		config.FlixServerURL = "https://flix.flow.com/v1/templates"
-	}
-
-	if config.FileReader == nil {
-		config.FileReader = OsFileReader{}
 	}
 
 	return &flixServiceImpl{
@@ -125,13 +109,5 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 		return "", err
 	}
 
-	return string(body), nil
-}
-
-func FetchFlixWithContextFromFile(ctx context.Context, reader fs.ReadFileFS, url string) (string, error) {
-	body, err := reader.ReadFile(url)
-	if err != nil {
-		log.Fatalf("Failed to read file: %v", err)
-	}
 	return string(body), nil
 }

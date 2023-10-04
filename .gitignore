@@ -1,5 +1,2 @@
-# Ignore cmd directory
-cmd/
-
 # ignore all .DS_Store files
 .DS_Store

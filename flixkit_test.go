@@ -3,12 +3,10 @@ package flixkit
 import (
 	"context"
 	"io/fs"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/hexops/autogold/v2"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -320,43 +318,4 @@ func TestGetFlixByID(t *testing.T) {
 
 type MapFsReader struct {
     FS fs.FS
-}
-
-func TestGenFlixJS(t *testing.T) {
-	assert := assert.New(t)
-
-	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(flix_template))
-	}))
-	defer server.Close()
-	templatePath := "templateID"
-
-	out, err := JavascriptGenerator.Generate(JavascriptGenerator{}, parsedTemplate, templatePath, true)
-	autogold.ExpectFile(t, out)
-	assert.NoError(err, "GenFlixBinding should not return an error")
-}
-
-func TestGenRemoteFlixJS(t *testing.T) {
-	assert := assert.New(t)
-
-	handler := http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(flix_template))
-	})
-
-	server := httptest.NewUnstartedServer(handler)
-
-	// Close the default listener and set a new one with the desired port
-	l, err := net.Listen("tcp", ":52718")
-	if err != nil {
-		t.Fatalf("Failed to listen on port 52718: %v", err)
-	}
-	server.Listener = l
-
-	server.Start()
-	defer server.Close()
-
-	endpoint := server.URL + "/tempateName"
-	out, err := JavascriptGenerator.Generate(JavascriptGenerator{}, parsedTemplate, endpoint, false)
-	assert.NoError(err, "GenFlixBinding should not return an error")
-	autogold.ExpectFile(t, out)
 }

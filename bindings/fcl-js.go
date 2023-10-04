@@ -1,4 +1,4 @@
-package flixkit
+package bindings
 
 import (
 	"bytes"
@@ -6,6 +6,7 @@ import (
 	"sort"
 	"text/template"
 
+	"github.com/onflow/flixkit-go"
 	"github.com/stoewer/go-strcase"
 )
 
@@ -30,15 +31,15 @@ type TemplateData struct {
 //go:embed templates/*.tmpl
 var templateFiles embed.FS
 
-type JavascriptGenerator struct{}
+type FclJSGenerator struct{}
 
-func (g JavascriptGenerator) Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
+func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
     tmpl, err := template.ParseFS(templateFiles, "templates/*.tmpl")
     if err != nil {
         return "", err
     }
 
-    methodName := strcase.LowerCamelCase(flix.Data.Messages.getTitleValue("Request"))
+    methodName := strcase.LowerCamelCase(flix.Data.Messages.GetTitleValue("Request"))
     description := flix.GetDescription()
     data := TemplateData{
         Version: flix.FVersion,
@@ -55,7 +56,7 @@ func (g JavascriptGenerator) Generate(flix *FlowInteractionTemplate, templateLoc
     return buf.String(), err    
 }
 
-func transformArguments(args Arguments) []SimpleParameter {
+func transformArguments(args flixkit.Arguments) []SimpleParameter {
 	simpleArgs := []SimpleParameter{}
 	var keys []string
     // get keys for sorting
@@ -69,7 +70,7 @@ func transformArguments(args Arguments) []SimpleParameter {
 	for _, key := range keys {
         arg := args[key]
         isArray, cType, jsType := isArrayParameter(arg)
-        desciption := arg.Messages.getTitleValue("")
+        desciption := arg.Messages.GetTitleValue("")
         if isArray {
             simpleArgs = append(simpleArgs, SimpleParameter{Name: key, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
         } else {
@@ -81,7 +82,7 @@ func transformArguments(args Arguments) []SimpleParameter {
 }
 
 
-func isArrayParameter(arg Argument) (bool, string, string) {
+func isArrayParameter(arg flixkit.Argument) (bool, string, string) {
     if arg.Type == "" || arg.Type[0] != '[' {
         return false, "", ""
     }

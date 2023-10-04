@@ -103,7 +103,7 @@ func (t *FlowInteractionTemplate) GetDescription() string {
 }
 
 
-func  (msgs *Messages)getTitleValue(placeholder string) string {
+func  (msgs *Messages) GetTitleValue(placeholder string) string {
  	s := placeholder
     if msgs.Title != nil && 
         msgs.Title.I18N != nil {

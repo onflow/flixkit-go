@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 var parsedTemplateTX = &flixkit.FlowInteractionTemplate{
 	FType:    "InteractionTemplate",
 	FVersion: "1.0.0",
@@ -78,7 +77,6 @@ var parsedTemplateTX = &flixkit.FlowInteractionTemplate{
 	},
 }
 
-
 var parsedTemplateScript = &flixkit.FlowInteractionTemplate{
 	FType:    "InteractionTemplate",
 	FVersion: "1.0.0",
@@ -128,7 +126,6 @@ var parsedTemplateScript = &flixkit.FlowInteractionTemplate{
 	},
 }
 
-
 var ArrayTypeScript = &flixkit.FlowInteractionTemplate{
 	FType:    "InteractionTemplate",
 	FVersion: "1.0.0",
@@ -173,7 +170,7 @@ var minimumTemplate = &flixkit.FlowInteractionTemplate{
 	Data: flixkit.Data{
 		Type:      "script",
 		Interface: "",
-		Cadence: "pub fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
+		Cadence:   "pub fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
 		Arguments: flixkit.Arguments{
 			"numbers": flixkit.Argument{
 				Index: 0,
@@ -182,6 +179,7 @@ var minimumTemplate = &flixkit.FlowInteractionTemplate{
 		},
 	},
 }
+
 func TestJSGenTransaction(t *testing.T) {
 	generator := FclJSGenerator{}
 	got, _ := generator.Generate(parsedTemplateTX, "./transfer_token.json", true)
@@ -191,7 +189,7 @@ func TestJSGenTransaction(t *testing.T) {
 func TestJSGenScript(t *testing.T) {
 	generator := FclJSGenerator{}
 	assert := assert.New(t)
-	got, err:= generator.Generate(parsedTemplateScript, "./multiply_two_integers.template.json", true)
+	got, err := generator.Generate(parsedTemplateScript, "./multiply_two_integers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, got)
 }

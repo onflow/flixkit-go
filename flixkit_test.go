@@ -317,5 +317,5 @@ func TestGetFlixByID(t *testing.T) {
 }
 
 type MapFsReader struct {
-    FS fs.FS
+	FS fs.FS
 }

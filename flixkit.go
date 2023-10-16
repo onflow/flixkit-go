@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 )
+
 type Generator interface {
 	Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error)
 }
@@ -26,7 +27,7 @@ type flixServiceImpl struct {
 
 type Config struct {
 	FlixServerURL string
-	FileReader  fs.ReadFileFS 
+	FileReader    fs.ReadFileFS
 }
 
 func NewFlixService(config *Config) FlixService {

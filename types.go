@@ -5,7 +5,6 @@ import (
 	"regexp"
 )
 
-
 type Network struct {
 	Address        string `json:"address"`
 	FqAddress      string `json:"fq_address"`
@@ -48,7 +47,6 @@ type Data struct {
 	Arguments    Arguments    `json:"arguments"`
 }
 
-
 type FlowInteractionTemplate struct {
 	FType    string `json:"f_type"`
 	FVersion string `json:"f_version"`
@@ -89,29 +87,28 @@ func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string
 }
 
 func (t *FlowInteractionTemplate) GetDescription() string {
-    s := ""
-    if t.Data.Messages.Description != nil && 
-        t.Data.Messages.Description.I18N != nil {
+	s := ""
+	if t.Data.Messages.Description != nil &&
+		t.Data.Messages.Description.I18N != nil {
 
-        // TODO: relying on en-US for now, future we need to know what language to use
-        value, exists := t.Data.Messages.Description.I18N["en-US"]
-        if exists {
-            s = value
-        }
-    } 
-    return s    
+		// TODO: relying on en-US for now, future we need to know what language to use
+		value, exists := t.Data.Messages.Description.I18N["en-US"]
+		if exists {
+			s = value
+		}
+	}
+	return s
 }
 
-
-func  (msgs *Messages) GetTitleValue(placeholder string) string {
- 	s := placeholder
-    if msgs.Title != nil && 
-        msgs.Title.I18N != nil {
-        // TODO: relying on en-US for now, future we need to know what language to use
-        value, exists := msgs.Title.I18N["en-US"]
-        if exists {
-            s = value
-        } 
-    }
-    return s
+func (msgs *Messages) GetTitleValue(placeholder string) string {
+	s := placeholder
+	if msgs.Title != nil &&
+		msgs.Title.I18N != nil {
+		// TODO: relying on en-US for now, future we need to know what language to use
+		value, exists := msgs.Title.I18N["en-US"]
+		if exists {
+			s = value
+		}
+	}
+	return s
 }

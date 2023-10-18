@@ -2,7 +2,7 @@ package bindings
 
 import (
 	"bytes"
-	"embed"
+	"os"
 	"sort"
 	"text/template"
 
@@ -28,13 +28,22 @@ type TemplateData struct {
 	IsLocalTemplate bool
 }
 
-//go:embed templates/*.tmpl
-var templateFiles embed.FS
-
-type FclJSGenerator struct{}
+type FclJSGenerator struct {
+	TemplateDir string
+}
 
 func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
-	tmpl, err := template.ParseFS(templateFiles, "templates/*.tmpl")
+	files, err := os.ReadDir(g.TemplateDir)
+	if err != nil {
+		return "", err
+	}
+	templateFiles := make([]string, 0)
+	for _, file := range files {
+		if !file.IsDir() {
+			templateFiles = append(templateFiles, g.TemplateDir+"/"+file.Name())
+		}
+	}
+	tmpl, err := template.ParseFiles(templateFiles...)
 	if err != nil {
 		return "", err
 	}

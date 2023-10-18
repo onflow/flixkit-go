@@ -6,8 +6,6 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./multiply_two_integers.template.json"
 
-// TODO: add runtime check for parameters consistency
-const parameterNames = ["x", "y"];
 
 /**
 * Multiply two numbers to another
@@ -15,7 +13,6 @@ const parameterNames = ["x", "y"];
 * @param { string } Parameters.x - number to be multiplied: Int
 * @param { string } Parameters.y - second number to be multiplied: Int
 */
-
 export async function multiplyTwoIntegers({x, y}) {
   const info = await fcl.query({
     template: flixTemplate,

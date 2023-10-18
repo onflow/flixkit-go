@@ -181,13 +181,17 @@ var minimumTemplate = &flixkit.FlowInteractionTemplate{
 }
 
 func TestJSGenTransaction(t *testing.T) {
-	generator := FclJSGenerator{}
+	generator := FclJSGenerator{
+		TemplateDir: "./templates",
+	}
 	got, _ := generator.Generate(parsedTemplateTX, "./transfer_token.json", true)
 	autogold.ExpectFile(t, got)
 }
 
 func TestJSGenScript(t *testing.T) {
-	generator := FclJSGenerator{}
+	generator := FclJSGenerator{
+		TemplateDir: "./templates",
+	}
 	assert := assert.New(t)
 	got, err := generator.Generate(parsedTemplateScript, "./multiply_two_integers.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
@@ -195,7 +199,9 @@ func TestJSGenScript(t *testing.T) {
 }
 
 func TestJSGenArrayScript(t *testing.T) {
-	generator := FclJSGenerator{}
+	generator := FclJSGenerator{
+		TemplateDir: "./templates",
+	}
 	assert := assert.New(t)
 
 	out, err := generator.Generate(ArrayTypeScript, "./multiply-numbers.template.json", true)
@@ -204,7 +210,9 @@ func TestJSGenArrayScript(t *testing.T) {
 }
 
 func TestJSGenMinScript(t *testing.T) {
-	generator := FclJSGenerator{}
+	generator := FclJSGenerator{
+		TemplateDir: "./templates",
+	}
 	assert := assert.New(t)
 
 	out, err := generator.Generate(minimumTemplate, "./min.template.json", true)

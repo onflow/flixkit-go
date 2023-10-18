@@ -10,13 +10,7 @@ import flixTemplate from "{{.Location}}"
 const flixTemplate = "{{.Location}}"
 {{- end}}
 
-// TODO: add runtime check for parameters consistency
-const parameterNames = [
-  {{- range $index, $ele := .Parameters -}}
-     {{if $index}}, {{end}}"{{$ele.Name}}"
-  {{- end -}}
-];
- {{"\n"}}/**
+{{"\n"}}/**
 * {{.Description}}{{"\n"}}
    {{- if gt (len .Parameters) 0 -}}
 * @param {Object} Parameters - parameters for the cadence
@@ -28,7 +22,6 @@ const parameterNames = [
 {{"\n"}}* @returns {Promise<string>} - returns a promise which resolves to the transaction id
  {{- end -}}
 {{"\n"}}*/
-
 {{if .IsScript}}
 {{- template "js_fcl_script.tmpl" .}}
 {{else}}

@@ -6,8 +6,6 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./transfer_token.json"
 
-// TODO: add runtime check for parameters consistency
-const parameterNames = ["amount", "to"];
 
 /**
 * Transfer tokens from one account to another
@@ -16,7 +14,6 @@ const parameterNames = ["amount", "to"];
 * @param { string } Parameters.to - The Flow account the tokens will go to: Address
 * @returns {Promise<string>} - returns a promise which resolves to the transaction id
 */
-
 export async function transferTokens({amount, to}) {
   const transactionId = await fcl.mutate({
     template: flixTemplate,

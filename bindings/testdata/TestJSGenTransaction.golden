@@ -1,6 +1,7 @@
 `/**
     This binding file was auto generated based on FLIX template v1.0.0.
-    Changes to this file might get overwritten
+    Changes to this file might get overwritten.
+    Note fcl version 1.3.0 or higher is required to use templates.
 **/
 
 import * as fcl from "@onflow/fcl"

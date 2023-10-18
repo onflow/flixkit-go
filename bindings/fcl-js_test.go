@@ -210,9 +210,7 @@ func TestJSGenArrayScript(t *testing.T) {
 }
 
 func TestJSGenMinScript(t *testing.T) {
-	generator := FclJSGenerator{
-		TemplateDir: "./templates",
-	}
+	generator := NewFclJSGenerator()
 	assert := assert.New(t)
 
 	out, err := generator.Generate(minimumTemplate, "./min.template.json", true)

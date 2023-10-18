@@ -3,6 +3,8 @@ package bindings
 import (
 	"bytes"
 	"os"
+	"path/filepath"
+	"runtime"
 	"sort"
 	"text/template"
 
@@ -10,7 +12,7 @@ import (
 	"github.com/stoewer/go-strcase"
 )
 
-type SimpleParameter struct {
+type simpleParameter struct {
 	Name        string
 	JsType      string
 	Description string
@@ -18,9 +20,9 @@ type SimpleParameter struct {
 	CadType     string
 }
 
-type TemplateData struct {
+type templateData struct {
 	Version         string
-	Parameters      []SimpleParameter
+	Parameters      []simpleParameter
 	Title           string
 	Description     string
 	Location        string
@@ -30,6 +32,17 @@ type TemplateData struct {
 
 type FclJSGenerator struct {
 	TemplateDir string
+}
+
+func NewFclJSGenerator() *FclJSGenerator {
+	_, currentFilePath, _, _ := runtime.Caller(0)
+	baseDir := filepath.Dir(currentFilePath)
+	templateDir := filepath.Join(baseDir, "templates")
+
+	return &FclJSGenerator{
+		TemplateDir: templateDir,
+		// initialize other fields if needed
+	}
 }
 
 func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
@@ -50,7 +63,7 @@ func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, template
 
 	methodName := strcase.LowerCamelCase(flix.Data.Messages.GetTitleValue("Request"))
 	description := flix.GetDescription()
-	data := TemplateData{
+	data := templateData{
 		Version:         flix.FVersion,
 		Parameters:      transformArguments(flix.Data.Arguments),
 		Title:           methodName,
@@ -65,8 +78,8 @@ func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, template
 	return buf.String(), err
 }
 
-func transformArguments(args flixkit.Arguments) []SimpleParameter {
-	simpleArgs := []SimpleParameter{}
+func transformArguments(args flixkit.Arguments) []simpleParameter {
+	simpleArgs := []simpleParameter{}
 	var keys []string
 	// get keys for sorting
 	for k := range args {
@@ -81,10 +94,10 @@ func transformArguments(args flixkit.Arguments) []SimpleParameter {
 		isArray, cType, jsType := isArrayParameter(arg)
 		desciption := arg.Messages.GetTitleValue("")
 		if isArray {
-			simpleArgs = append(simpleArgs, SimpleParameter{Name: key, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
+			simpleArgs = append(simpleArgs, simpleParameter{Name: key, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
 		} else {
 			jsType := convertCadenceTypeToJS(arg.Type)
-			simpleArgs = append(simpleArgs, SimpleParameter{Name: key, CadType: arg.Type, JsType: jsType, FclType: arg.Type, Description: desciption})
+			simpleArgs = append(simpleArgs, simpleParameter{Name: key, CadType: arg.Type, JsType: jsType, FclType: arg.Type, Description: desciption})
 		}
 	}
 	return simpleArgs

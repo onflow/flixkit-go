@@ -17,9 +17,9 @@ func TestGenerateCommentBlock(t *testing.T) {
 	import "FlowToken"
 	
 	/**
-	@f_version 1.1.0
+	@f_version 1.0.0
 	@lang en-US
-	
+
 	@message title: Transfer Tokens
 	@message description: Transfer tokens from one account to another
 	

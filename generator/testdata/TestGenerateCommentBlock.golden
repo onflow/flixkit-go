@@ -17,7 +17,7 @@
                 }
             }
         },
-        "cadence": "",
+        "cadence": "/**\n\t@f_version 1.0.0\n\t@lang en-US\n\n\t@message title: Transfer Tokens\n\t@message description: Transfer tokens from one account to another\n\t\n\t@parameter title amount: Amount\n\t@parameter title to: To\n\t@parameter description amount: The amount of FLOW tokens to send\n\t@parameter description to: The Flow account the tokens will go to\n\t\n\t@balance amount: FlowToken\n\t*/",
         "dependencies": null,
         "arguments": {
             "amount": {

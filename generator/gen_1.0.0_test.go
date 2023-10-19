@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
+	"github.com/onflow/flow-cli/flowkit"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,7 +48,7 @@ func TestGenerateCommentBlock(t *testing.T) {
 	  }
 	}
 `
-	template, err := generator.GenerateFromComments(code)
+	template, err := generator.Generate(code, flowkit.State{})
 	assert.NoError(err, "GenerateFromComments should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")

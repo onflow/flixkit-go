@@ -1,15 +1,68 @@
 package generator
 
 import (
+	"errors"
 	"regexp"
 
+	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go"
+	"github.com/onflow/flow-cli/flowkit"
 )
 
 type Generator1_0_0 struct{}
 
-func (g Generator1_0_0) GenerateFromComments(code string) (*flixkit.FlowInteractionTemplate, error) {
+func (g Generator1_0_0) Generate(code string, flowJson flowkit.State) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
+
+	err := processCadenceCommentBlock(code, template)
+	if err != nil {
+		return nil, err
+	}
+	err = processParameters(code, template)
+	if err != nil {
+		return nil, err
+	}
+	/*
+		err = processDependencies(code, template, flowJson)
+		if err != nil {
+			return nil, err
+		}
+	*/
+	return template, nil
+}
+
+func processDependencies(code string, template *flixkit.FlowInteractionTemplate, flowJson flowkit.State) error {
+	// todo: process imports, need flowkit to fill in address and determine if address is placeholder
+	contractImports := ExtractImports(code)
+	if len(contractImports) > 0 {
+		return nil
+	}
+
+	return nil
+}
+
+func processParameters(code string, template *flixkit.FlowInteractionTemplate) error {
+	codeBytes := []byte(code)
+	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
+	if err != nil {
+		return errors.New("failed to parse cadence code")
+	}
+
+	if program.SoleTransactionDeclaration() != nil {
+		if program.SoleTransactionDeclaration().ParameterList != nil {
+			for i, param := range program.SoleTransactionDeclaration().ParameterList.Parameters {
+				template.Data.Arguments[param.Identifier.String()] = flixkit.Argument{
+					Type:  param.TypeAnnotation.String(),
+					Index: i,
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func processCadenceCommentBlock(code string, template *flixkit.FlowInteractionTemplate) error {
 	template.Data.Arguments = make(flixkit.Arguments)
 
 	commentBlockPattern := regexp.MustCompile(`/\*\*[\s\S]*?@f_version[\s\S]*?\*/`)
@@ -68,10 +121,5 @@ func (g Generator1_0_0) GenerateFromComments(code string) (*flixkit.FlowInteract
 		}
 	}
 
-	return template, nil
-}
-
-func (g Generator1_0_0) GenerateFromConfigs(fileData string, flowJson string) (*flixkit.FlowInteractionTemplate, error) {
-
-	return nil, nil
+	return nil
 }

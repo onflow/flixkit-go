@@ -53,7 +53,7 @@ func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, template
 	templateFiles := make([]string, 0)
 	for _, file := range files {
 		if !file.IsDir() {
-			templateFiles = append(templateFiles, g.TemplateDir+"/"+file.Name())
+			templateFiles = append(templateFiles, filepath.Join(g.TemplateDir, "/", file.Name()))
 		}
 	}
 	tmpl, err := template.ParseFiles(templateFiles...)
@@ -103,13 +103,13 @@ func transformArguments(args flixkit.Arguments) []simpleParameter {
 	return simpleArgs
 }
 
-func isArrayParameter(arg flixkit.Argument) (bool, string, string) {
+func isArrayParameter(arg flixkit.Argument) (isArray bool, cType string, jsType string) {
 	if arg.Type == "" || arg.Type[0] != '[' {
 		return false, "", ""
 	}
 	cadenceType := arg.Type[1 : len(arg.Type)-1]
-	jsType := "Array<" + convertCadenceTypeToJS(cadenceType) + ">"
-	return true, cadenceType, jsType
+	javascriptType := "Array<" + convertCadenceTypeToJS(cadenceType) + ">"
+	return true, cadenceType, javascriptType
 }
 
 func convertCadenceTypeToJS(cadenceType string) string {
@@ -122,11 +122,11 @@ func convertCadenceTypeToJS(cadenceType string) string {
 	case "Void":
 		return "void" // return type only
 	case "Dictionary":
-		return "object" // TODO: support Collection type, test to see what fcl
+		return "object"
 	case "Struct":
-		return "object" // TODO: support Composite type, test to see what fcl
+		return "object"
 	case "Enum":
-		return "object" // TODO: support Composite type, test to see what fcl
+		return "object"
 	default:
 		return "string"
 	}

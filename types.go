@@ -91,7 +91,7 @@ func (t *FlowInteractionTemplate) GetDescription() string {
 	if t.Data.Messages.Description != nil &&
 		t.Data.Messages.Description.I18N != nil {
 
-		// TODO: relying on en-US for now, future we need to know what language to use
+		// relying on en-US for now, future we need to know what language to use
 		value, exists := t.Data.Messages.Description.I18N["en-US"]
 		if exists {
 			s = value
@@ -104,7 +104,7 @@ func (msgs *Messages) GetTitleValue(placeholder string) string {
 	s := placeholder
 	if msgs.Title != nil &&
 		msgs.Title.I18N != nil {
-		// TODO: relying on en-US for now, future we need to know what language to use
+		// relying on en-US for now, future we need to know what language to use
 		value, exists := msgs.Title.I18N["en-US"]
 		if exists {
 			s = value

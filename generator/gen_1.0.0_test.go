@@ -2,6 +2,7 @@ package generator
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
@@ -53,4 +54,6 @@ func TestGenerateCommentBlock(t *testing.T) {
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
+
+	fmt.Println(string(prettyJSON))
 }

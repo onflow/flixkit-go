@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -32,7 +31,6 @@ func TestExtractImports(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := ExtractImports(tt.input)
-			fmt.Println(got, tt.output)
 			if !reflect.DeepEqual(got, tt.output) {
 				t.Errorf("ExtractImports() got = %v, want %v", got, tt.output)
 			}

@@ -1,8 +1,11 @@
 package flixkit
 
 import (
+	"encoding/hex"
 	"fmt"
 	"regexp"
+
+	"golang.org/x/crypto/sha3"
 )
 
 type Network struct {
@@ -111,4 +114,12 @@ func (msgs *Messages) GetTitleValue(placeholder string) string {
 		}
 	}
 	return s
+}
+
+func GenHash(utf8String string) string {
+	hasher := sha3.New256()          // Create a new SHA3 256 hasher
+	hasher.Write([]byte(utf8String)) // Write the utf8 string to the hasher
+	hash := hasher.Sum(nil)          // Get the hash result
+
+	return hex.EncodeToString(hash) // Convert the hash result to hex
 }

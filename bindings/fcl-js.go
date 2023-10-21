@@ -41,20 +41,13 @@ func NewFclJSGenerator() *FclJSGenerator {
 
 	return &FclJSGenerator{
 		TemplateDir: templateDir,
-		// initialize other fields if needed
 	}
 }
 
 func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
-	files, err := os.ReadDir(g.TemplateDir)
+	templateFiles, err := getAllFiles(g.TemplateDir)
 	if err != nil {
 		return "", err
-	}
-	templateFiles := make([]string, 0)
-	for _, file := range files {
-		if !file.IsDir() {
-			templateFiles = append(templateFiles, filepath.Join(g.TemplateDir, "/", file.Name()))
-		}
 	}
 	tmpl, err := template.ParseFiles(templateFiles...)
 	if err != nil {
@@ -120,7 +113,7 @@ func convertCadenceTypeToJS(cadenceType string) string {
 	case "Bool":
 		return "boolean"
 	case "Void":
-		return "void" // return type only
+		return "void"
 	case "Dictionary":
 		return "object"
 	case "Struct":
@@ -130,4 +123,23 @@ func convertCadenceTypeToJS(cadenceType string) string {
 	default:
 		return "string"
 	}
+}
+
+func getAllFiles(dir string) ([]string, error) {
+	var files []string
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// If it's a directory, skip it
+		if info.IsDir() {
+			return nil
+		}
+		files = append(files, path)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return files, nil
 }

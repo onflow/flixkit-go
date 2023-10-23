@@ -54,3 +54,33 @@ fmt.Println(template)
 Note: Remember to replace "transfer-flow" with the actual name of the template you wish to fetch.
 
 To read more about Flow Interaction Templates, [see the docs](https://developers.flow.com/tooling/fcl-js/interaction-templates).
+
+
+## Bindings
+
+> Binding files are code files that bind consuming code with FLIX. The `bindings` module in Flixkit generates code that calls the FLIX cadence code. FLIX cadence is primarily transactions and scripts. 
+
+### Usage
+
+The `bindings` module has two public methods `Generate` and `NewFclJSGenerator`. `FclJSGenerator` takes a template directory. `bindings` has fcl-js templates.
+
+
+ - `NewFclJSGenerator() *FclJSGenerator` // uses default fcl-js vanilla javascript
+ - `Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error)` // flix is the hydrated template struct, templateLocation is the file location of the flix json file, isLocal is a flag that indicates if the template is local or on remote server
+
+### Example
+
+```go
+
+// uses default fcl-js templates
+fclJsGen := bindings.NewFclJSGenerator() 
+
+output, err := fclJsGen.Generate(template, flixQuery, isLocal)
+if err != nil {
+    log.Fatal(err)
+}
+
+// output is the javascript binding code
+fmt.Println(output])
+
+```

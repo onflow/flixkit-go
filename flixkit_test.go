@@ -2,13 +2,15 @@ package flixkit
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
+	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-var template = `{
+var flix_template = `{
 	  "f_type": "InteractionTemplate",
 	  "f_version": "1.0.0",
 	  "id": "290b6b6222b2a77b16db896a80ddf29ebd1fa3038c9e6625a933fa213fce51fa",
@@ -149,7 +151,7 @@ var parsedTemplate = &FlowInteractionTemplate{
 func TestParseFlix(t *testing.T) {
 	assert := assert.New(t)
 
-	parsedTemplate, err := ParseFlix(template)
+	parsedTemplate, err := ParseFlix(flix_template)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(parsedTemplate, "Parsed template should not be nil")
 
@@ -270,7 +272,7 @@ func TestGetFlix(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(template))
+		rw.Write([]byte(flix_template))
 	}))
 	defer server.Close()
 
@@ -302,7 +304,7 @@ func TestGetFlixByID(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Write([]byte(template))
+		rw.Write([]byte(flix_template))
 	}))
 	defer server.Close()
 
@@ -312,4 +314,8 @@ func TestGetFlixByID(t *testing.T) {
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
 	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
+}
+
+type MapFsReader struct {
+	FS fs.FS
 }

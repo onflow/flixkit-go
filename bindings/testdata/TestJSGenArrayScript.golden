@@ -1,0 +1,29 @@
+`/**
+    This binding file was auto generated based on FLIX template v1.0.0.
+    Changes to this file might get overwritten.
+    Note fcl version 1.3.0 or higher is required to use templates.
+**/
+
+import * as fcl from "@onflow/fcl"
+import flixTemplate from "./multiply-numbers.template.json"
+
+
+/**
+* Multiply numbers in an array
+* @param {Object} Parameters - parameters for the cadence
+* @param { Array<string> } Parameters.numbers - Array of numbers to be multiplied: Int
+*/
+export async function multiplyNumbers({numbers}) {
+  const info = await fcl.query({
+    template: flixTemplate,
+    args: (arg, t) => [arg(numbers, t.Array(t.Int))]
+  });
+
+  return info
+}
+
+
+
+
+
+`

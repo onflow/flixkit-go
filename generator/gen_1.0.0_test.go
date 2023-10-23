@@ -49,6 +49,7 @@ func TestGenerateCommentBlock(t *testing.T) {
 	  }
 	}
 `
+
 	template, err := generator.Generate(code, flowkit.State{})
 	assert.NoError(err, "GenerateFromComments should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")

@@ -1,9 +1,9 @@
 `{
-    "f_type": "transaction",
+    "f_type": "InteractionTemplate",
     "f_version": "1.0.0",
     "id": "",
     "data": {
-        "type": "",
+        "type": "transaction",
         "interface": "",
         "messages": {
             "title": {

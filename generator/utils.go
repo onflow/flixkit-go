@@ -3,37 +3,24 @@ package generator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
-	"strings"
 
 	"github.com/onflow/flixkit-go"
-	"github.com/onflow/flow-cli/flowkit"
 )
 
-// todo: remove this and update tests
-func ExtractImports(cadenceCode string) []string {
-	// Regex pattern to match Cadence import lines
-	pattern := `import [\w\s\"\.]+(?:from 0x[\w]+)?`
-	r := regexp.MustCompile(pattern)
-
-	// Find all matches in the given code
-	matches := r.FindAllString(cadenceCode, -1)
-
-	return matches
-}
-
-func getDependencyContractCode(contractName string, flowkit flowkit.State, flow flowkit.Services) (string, error) {
+func getDependencyContractCode(contractName string) (string, error) {
 	// use flow client to get contract code
 	return "", nil
 }
 
-func findImportDetails(contractName string, flowkit flowkit.State) (string, string, error) {
+func findImportDetails(contractName string) (string, string, error) {
 	// look up core contracts if not found in flow.json state
 
 	return "", "", nil
 }
 
-func ParseImport(ctx context.Context, line string, flowkit flowkit.State) (flixkit.Contracts, error) {
+func ParseImport(ctx context.Context, line string) (flixkit.Contracts, error) {
 	// Define regex patterns
 	importSyntax := `import "(?P<contract>[^"]+)"`
 	oldImportSyntax := `import (?P<contract>\w+) from (?P<address>0x[\w]+)`
@@ -82,14 +69,20 @@ func regexpMatch(pattern, text string) (map[string]string, error) {
 }
 
 func determineCadenceType(code string) (string, error) {
-	// TODO: determine if code is an interface, flix can be interfaces
-	interfacePattern := regexp.MustCompile(`pub\s+interface`)
-	if strings.Contains(code, "transaction(") {
+	// Use regex to match only occurrences not in comments or strings.
+	transactionRegex := regexp.MustCompile(`(?s)\btransaction\s*(?:\([^)]*\))?\s*{.*`)
+	scriptRegex := regexp.MustCompile(`(?m)^\s*pub\s+fun\s+main\(`)
+	interfaceRegex := regexp.MustCompile(`(?m)^\s*(pub|priv)\s+(resource|struct|contract)\s+interface`)
+
+	if transactionRegex.MatchString(code) {
 		return "transaction", nil
-	} else if strings.Contains(code, "pub fun main()") {
+	} else if scriptRegex.MatchString(code) {
 		return "script", nil
-	} else if interfacePattern.MatchString(code) {
+	} else if interfaceRegex.MatchString(code) {
 		return "interface", nil
 	}
+
+	fmt.Println(code, transactionRegex.MatchString(code), scriptRegex.MatchString(code), interfaceRegex.MatchString(code))
+
 	return "", errors.New("could not determine if code is transaction or script")
 }

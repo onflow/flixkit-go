@@ -2,11 +2,9 @@ package generator
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/flow-cli/flowkit"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,11 +48,10 @@ func TestGenerateCommentBlock(t *testing.T) {
 	}
 `
 
-	template, err := generator.Generate(code, flowkit.State{})
-	assert.NoError(err, "GenerateFromComments should not return an error")
+	template, err := generator.Generate(code)
+	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
 
-	fmt.Println(string(prettyJSON))
 }

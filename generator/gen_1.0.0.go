@@ -3,17 +3,17 @@ package generator
 import (
 	"context"
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/onflow/cadence/runtime/ast"
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go"
-	"github.com/onflow/flow-cli/flowkit"
 )
 
 type Generator1_0_0 struct{}
 
-func (g Generator1_0_0) Generate(code string, flowJson flowkit.State) (*flixkit.FlowInteractionTemplate, error) {
+func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
 
 	codeBytes := []byte(code)
@@ -32,7 +32,7 @@ func (g Generator1_0_0) Generate(code string, flowJson flowkit.State) (*flixkit.
 		return nil, err
 	}
 
-	err = processDependencies(program, code, template, flowJson)
+	err = processDependencies(program, code, template)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +53,7 @@ func processTemplateHashes(program *ast.Program, code string, template *flixkit.
 	return nil
 }
 
-func processDependencies(program *ast.Program, code string, template *flixkit.FlowInteractionTemplate, flowJson flowkit.State) error {
+func processDependencies(program *ast.Program, code string, template *flixkit.FlowInteractionTemplate) error {
 	ctx := context.Background()
 	imports := program.ImportDeclarations()
 	if len(imports) == 0 {
@@ -62,7 +62,7 @@ func processDependencies(program *ast.Program, code string, template *flixkit.Fl
 	// fill in dependence information
 	deps := make(flixkit.Dependencies, len(imports))
 	for _, imp := range imports {
-		dep, err := ParseImport(ctx, imp.String(), flowJson)
+		dep, err := ParseImport(ctx, imp.String())
 		if err != nil {
 			return err
 		}
@@ -113,6 +113,9 @@ func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowIntera
 
 	template.Data.Cadence = cadenceCode
 	fType, err := determineCadenceType(cadenceCode)
+
+	fmt.Println(fType)
+
 	if err != nil {
 		return err
 	}

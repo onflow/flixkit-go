@@ -1,9 +1,5 @@
 `{
-<<<<<<< HEAD
     "f_type": "transaction",
-=======
-    "f_type": "",
->>>>>>> b5c0c987ad21e31935c2774aece45f21d1274a34
     "f_version": "1.0.0",
     "id": "",
     "data": {
@@ -21,20 +17,12 @@
                 }
             }
         },
-<<<<<<< HEAD
         "cadence": "\n\timport \"FungibleToken\"\n\timport \"FlowToken\"\n\t\n\t/**\n\t@f_version 1.0.0\n\t@lang en-US\n\n\t@message title: Transfer Tokens\n\t@message description: Transfer tokens from one account to another\n\t\n\t@parameter title amount: Amount\n\t@parameter title to: To\n\t@parameter description amount: The amount of FLOW tokens to send\n\t@parameter description to: The Flow account the tokens will go to\n\t\n\t@balance amount: FlowToken\n\t*/\n\ttransaction(amount: UFix64, to: Address) {\n\t  let vault: @FungibleToken.Vault\n\t\n\t  prepare(signer: AuthAccount) {\n\t\tself.vault \u003c- signer\n\t\t  .borrow\u003c\u0026{FungibleToken.Provider}\u003e(from: /storage/flowTokenVault)!\n\t\t  .withdraw(amount: amount)\n\t  }\n\t\n\t  execute {\n\t\tgetAccount(to)\n\t\t  .getCapability(/public/flowTokenReceiver)!\n\t\t  .borrow\u003c\u0026{FungibleToken.Receiver}\u003e()!\n\t\t  .deposit(from: \u003c-self.vault)\n\t  }\n\t}\n",
-=======
-        "cadence": "",
->>>>>>> b5c0c987ad21e31935c2774aece45f21d1274a34
         "dependencies": null,
         "arguments": {
             "amount": {
                 "index": 0,
-<<<<<<< HEAD
                 "type": "UFix64",
-=======
-                "type": "",
->>>>>>> b5c0c987ad21e31935c2774aece45f21d1274a34
                 "messages": {
                     "title": {
                         "i18n": {
@@ -51,11 +39,7 @@
             },
             "to": {
                 "index": 1,
-<<<<<<< HEAD
                 "type": "Address",
-=======
-                "type": "",
->>>>>>> b5c0c987ad21e31935c2774aece45f21d1274a34
                 "messages": {
                     "title": {
                         "i18n": {

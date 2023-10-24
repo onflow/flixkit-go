@@ -13,8 +13,8 @@ func TestGenerateCommentBlock(t *testing.T) {
 	assert := assert.New(t)
 
 	code := `
-	import "FungibleToken"
-	import "FlowToken"
+	import FungibleToken from FungibleTokenAddress
+	import FlowToken from FlowTokenAddress
 	
 	/**
 	@f_version 1.0.0
@@ -53,5 +53,4 @@ func TestGenerateCommentBlock(t *testing.T) {
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
-
 }

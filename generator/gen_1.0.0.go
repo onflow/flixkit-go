@@ -19,7 +19,7 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 	codeBytes := []byte(code)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
 	if err != nil {
-		return nil, errors.New("failed to parse cadence code")
+		return nil, err
 	}
 
 	err = processParameters(program, code, template)
@@ -62,15 +62,16 @@ func processDependencies(program *ast.Program, code string, template *flixkit.Fl
 	// fill in dependence information
 	deps := make(flixkit.Dependencies, len(imports))
 	for _, imp := range imports {
-		dep, err := ParseImport(ctx, imp.String())
+		dep, err := parseImport(ctx, imp.String())
 		if err != nil {
 			return err
 		}
-		for contractName := range dep {
+		for contractName, contract := range dep {
 			// todo: check if contract is already in template.Data.Dependencies
 			// need Placeholder instead of contract name
-			deps[contractName] = dep
+			deps[contractName] = contract
 		}
+		template.Data.Dependencies = deps
 	}
 
 	// get dep contract

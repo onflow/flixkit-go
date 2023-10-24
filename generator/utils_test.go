@@ -1,9 +1,72 @@
 package generator
 
 import (
+	"context"
+	"encoding/json"
 	"testing"
+
+	"github.com/hexops/autogold/v2"
+	"github.com/onflow/flixkit-go"
 )
 
+func TestParseImport(t *testing.T) {
+	fungi := flixkit.Contracts{
+		"FungibleToken": {
+			"mainnet": {
+				Address:        "0xf233dcee88fe0abe",
+				FqAddress:      "A.0xf233dcee88fe0abe.FungibleToken",
+				Contract:       "FungibleToken",
+				Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
+				PinBlockHeight: 34166296,
+			},
+			"testnet": {
+				Address:        "0x9a0766d93b6608b7",
+				FqAddress:      "A.0x9a0766d93b6608b7.FungibleToken",
+				Contract:       "FungibleToken",
+				Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
+				PinBlockHeight: 74776482,
+			},
+		},
+	}
+	tests := []struct {
+		cadence string
+		want    flixkit.Contracts
+	}{
+		{
+			cadence: `import FungibleToken from 0xFungibleTokenAddress`,
+			want:    fungi,
+		},
+		{
+			cadence: `import "FungibleToken"`,
+			want:    fungi,
+		},
+		{
+			cadence: `import FungibleToken from 0x9a0766d93b6608b7`,
+			want:    fungi,
+		},
+		{
+			cadence: `import "FungibleToken"`,
+			want:    fungi,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.cadence, func(t *testing.T) {
+			got, err := parseImport(context.Background(), tt.cadence)
+			if err != nil {
+				t.Errorf("parseImport() err %v", err)
+			}
+			if got == nil {
+				t.Errorf("parseImport() got = %v, want %v", got, tt.want)
+			}
+			prettyJSON, err := json.MarshalIndent(got, "", "    ")
+			if err != nil {
+				t.Errorf("parseImport() err %v", err)
+			}
+			autogold.ExpectFile(t, string(prettyJSON))
+		})
+	}
+}
 func TestDepCheck(t *testing.T) {
 	tests := []struct {
 		cadence     string
@@ -44,6 +107,18 @@ func TestDepCheck(t *testing.T) {
 					recipientVault.deposit(from: <-self.tokenVault.withdraw(amount: amount))
 				}
 			}
+			`,
+			cadenceType: "transaction",
+		}, {
+			cadence: `
+/*
+Here are some comments and transaction is on start of a line
+*/
+transaction(amount: UFix64, recipient: Address) {
+// More comments
+// Reference to the sender's Vault
+prepare(signer: AuthAccount) {}
+execute {}
 			`,
 			cadenceType: "transaction",
 		},

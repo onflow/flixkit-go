@@ -42,10 +42,13 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 		return nil, err
 	}
 
-	/*
-		// generate template hash
+	// TODO: coordinate with flix team to synch up on how to generate template hash id
+	id, err := generateTemplateId(template)
+	if err != nil {
+		return nil, err
+	}
+	template.ID = id
 
-	*/
 	return template, nil
 }
 

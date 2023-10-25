@@ -5,6 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
+	github.com/ethereum/go-ethereum v1.13.4
 	github.com/hexops/autogold/v2 v2.2.1
 	github.com/onflow/cadence v0.42.0
 	github.com/stoewer/go-strcase v1.3.0
@@ -15,7 +16,6 @@ require (
 require (
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/ethereum/go-ethereum v1.13.4 // indirect
 	github.com/fatih/color v1.15.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.5.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect

@@ -13,6 +13,11 @@ import (
 
 type Generator1_0_0 struct{}
 
+// stubb if parameters are needed to be passed in
+func NewGenerator() *Generator1_0_0 {
+	return &Generator1_0_0{}
+}
+
 func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
 

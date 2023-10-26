@@ -3,6 +3,7 @@ package generator
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
@@ -164,4 +165,79 @@ execute {}
 		})
 	}
 
+}
+
+func TestStripComments(t *testing.T) {
+	removedComment := "Here is a comment"
+	tests := []struct {
+		cadence string
+	}{
+		{
+			cadence: `import FungibleToken from 0xFungibleTokenAddress
+			/* Here is a comment */
+			pub fun main(accountAddress: Address): UFix64 {
+				return balanceRef.balance
+			}
+			`,
+		},
+		{
+			cadence: `import FungibleToken from 0xFungibleTokenAddress
+
+			transaction(amount: UFix64, recipient: Address) {
+				/* 
+				Here is a comment
+				*/
+				execute {
+
+				}
+			}
+			`,
+		}, {
+			cadence: `
+/*
+Here are some comments and transaction is on start of a line
+*/
+transaction(amount: UFix64, recipient: Address) {
+// Here is a comment
+// Here is a comment
+prepare(signer: AuthAccount) {}
+execute {}
+			`,
+		},
+		{
+			cadence: `import NonFungibleToken from 0xNonFungibleTokenAddress
+			/*
+			Here is a comment
+			Her is a comment
+			*/
+			pub fun main(accountAddress: Address, tokenId: UInt64): Bool {
+				return collectionRef.borrowNFT(id: tokenId) != nil
+			}
+			`,
+		},
+		{
+			cadence: `pub contract interface TokenContract {
+				/* Here is a comment */
+				// Here is a comment
+				pub fun totalSupply(): UFix64
+			
+				// Returns the balance of the specified address
+				pub fun balanceOf(address: Address): UFix64
+			
+				// Transfers tokens from one address to another
+				pub fun transfer(from: Address, to: Address, amount: UFix64): Bool
+			}
+			`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.cadence, func(t *testing.T) {
+			got := stripComments(tt.cadence)
+
+			if strings.Contains(got, removedComment) {
+				t.Errorf("stripComments got = %v, want no comments", got)
+			}
+		})
+	}
 }

@@ -13,8 +13,8 @@ func TestGenerateCommentBlock(t *testing.T) {
 	assert := assert.New(t)
 
 	code := `
-	import FungibleToken from FungibleTokenAddress
-	import FlowToken from FlowTokenAddress
+	import FungibleToken from 0xFungibleTokenAddress
+	import FlowToken from 0xFlowTokenAddress
 	
 	/**
 	@f_version 1.0.0

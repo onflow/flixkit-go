@@ -148,3 +148,21 @@ func sortedKeys(m map[string]interface{}) []string {
 	sort.Strings(keys)
 	return keys
 }
+
+func stripComments(cadenceCode string) string {
+	// Strip block comments
+	blockCommentRe := regexp.MustCompile(`(?s)/\*.*?\*/`)
+	cadenceCode = blockCommentRe.ReplaceAllString(cadenceCode, "")
+
+	// Strip single line comments
+	singleCommentRe := regexp.MustCompile(`//.*\n?`)
+	cadenceCode = singleCommentRe.ReplaceAllString(cadenceCode, "")
+
+	return cadenceCode
+}
+
+func stripImports(cadenceCode string) string {
+	// Match lines starting with optional leading whitespaces followed by the word "import"
+	re := regexp.MustCompile(`(?m)^\s*import.*$\n?`)
+	return re.ReplaceAllString(cadenceCode, "")
+}

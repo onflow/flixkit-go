@@ -21,7 +21,8 @@ func NewGenerator() *Generator1_0_0 {
 func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
 
-	codeBytes := []byte(code)
+	withoutImports := stripImports(code)
+	codeBytes := []byte(withoutImports)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
 	if err != nil {
 		return nil, err
@@ -37,7 +38,9 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 		return nil, err
 	}
 
-	err = processDependencies(program, code, template)
+	// need to address this
+	// parsing cadence using cadence parser does not like import statements "from 0xPLACEHOLDER"
+	err = processDependencies(code, template)
 	if err != nil {
 		return nil, err
 	}
@@ -61,16 +64,20 @@ func processTemplateHashes(program *ast.Program, code string, template *flixkit.
 	return nil
 }
 
-func processDependencies(program *ast.Program, code string, template *flixkit.FlowInteractionTemplate) error {
+func processDependencies(code string, template *flixkit.FlowInteractionTemplate) error {
 	ctx := context.Background()
-	imports := program.ImportDeclarations()
+	noCommentsCode := stripComments(code)
+	re := regexp.MustCompile(`(?m)^\s*import.*$`)
+	imports := re.FindAllString(noCommentsCode, -1)
+
+	fmt.Println("imports", imports)
 	if len(imports) == 0 {
 		return nil
 	}
 	// fill in dependence information
 	deps := make(flixkit.Dependencies, len(imports))
 	for _, imp := range imports {
-		dep, err := parseImport(ctx, imp.String())
+		dep, err := parseImport(ctx, imp)
 		if err != nil {
 			return err
 		}
@@ -122,8 +129,6 @@ func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowIntera
 
 	template.Data.Cadence = cadenceCode
 	fType, err := determineCadenceType(cadenceCode)
-
-	fmt.Println(fType)
 
 	if err != nil {
 		return err

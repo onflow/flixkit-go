@@ -30,6 +30,7 @@ func TestGenerateCommentBlock(t *testing.T) {
 	
 	@balance amount: FlowToken
 	*/
+
 	transaction(amount: UFix64, to: Address) {
 	  let vault: @FungibleToken.Vault
 	

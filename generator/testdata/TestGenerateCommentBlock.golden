@@ -1,7 +1,7 @@
 `{
     "f_type": "InteractionTemplate",
     "f_version": "1.0.0",
-    "id": "4a836d09c40602cdc48c11eeded273c82b1e39a108c1facb52472cd2fbd44252",
+    "id": "dd54480579982720e2a8051ce5583ccb1c89a7b4741c59d458054ba2e52195e8",
     "data": {
         "type": "transaction",
         "interface": "",
@@ -17,7 +17,7 @@
                 }
             }
         },
-        "cadence": "\n\timport FungibleToken from 0xFungibleTokenAddress\n\timport FlowToken from 0xFlowTokenAddress\n\t\n\t/**\n\t@f_version 1.0.0\n\t@lang en-US\n\n\t@message title: Transfer Tokens\n\t@message description: Transfer tokens from one account to another\n\t\n\t@parameter title amount: Amount\n\t@parameter title to: To\n\t@parameter description amount: The amount of FLOW tokens to send\n\t@parameter description to: The Flow account the tokens will go to\n\t\n\t@balance amount: FlowToken\n\t*/\n\ttransaction(amount: UFix64, to: Address) {\n\t  let vault: @FungibleToken.Vault\n\t\n\t  prepare(signer: AuthAccount) {\n\t\tself.vault \u003c- signer\n\t\t  .borrow\u003c\u0026{FungibleToken.Provider}\u003e(from: /storage/flowTokenVault)!\n\t\t  .withdraw(amount: amount)\n\t  }\n\t\n\t  execute {\n\t\tgetAccount(to)\n\t\t  .getCapability(/public/flowTokenReceiver)!\n\t\t  .borrow\u003c\u0026{FungibleToken.Receiver}\u003e()!\n\t\t  .deposit(from: \u003c-self.vault)\n\t  }\n\t}\n",
+        "cadence": "\n\timport FungibleToken from 0xFungibleTokenAddress\n\timport FlowToken from 0xFlowTokenAddress\n\t\n\t/**\n\t@f_version 1.0.0\n\t@lang en-US\n\n\t@message title: Transfer Tokens\n\t@message description: Transfer tokens from one account to another\n\t\n\t@parameter title amount: Amount\n\t@parameter title to: To\n\t@parameter description amount: The amount of FLOW tokens to send\n\t@parameter description to: The Flow account the tokens will go to\n\t\n\t@balance amount: FlowToken\n\t*/\n\n\ttransaction(amount: UFix64, to: Address) {\n\t  let vault: @FungibleToken.Vault\n\t\n\t  prepare(signer: AuthAccount) {\n\t\tself.vault \u003c- signer\n\t\t  .borrow\u003c\u0026{FungibleToken.Provider}\u003e(from: /storage/flowTokenVault)!\n\t\t  .withdraw(amount: amount)\n\t  }\n\t\n\t  execute {\n\t\tgetAccount(to)\n\t\t  .getCapability(/public/flowTokenReceiver)!\n\t\t  .borrow\u003c\u0026{FungibleToken.Receiver}\u003e()!\n\t\t  .deposit(from: \u003c-self.vault)\n\t  }\n\t}\n",
         "dependencies": {
             "0xFlowTokenAddress": {
                 "FlowToken": {

@@ -112,22 +112,35 @@ func generateTemplateId(template *flixkit.FlowInteractionTemplate) (string, erro
 
 	var buffer bytes.Buffer
 	// Mimicking the hashing order in the JS code
-	buffer.WriteString(genHash(template.FType))
-	buffer.WriteString(genHash(template.FVersion))
-	buffer.WriteString(genHash(template.Data.Type))
-	buffer.WriteString(genHash(template.Data.Interface))
-
-	for _, i18nKey := range template.Data.Messages.Title.I18N {
-		buffer.WriteString(genHash(i18nKey))
-		buffer.WriteString(genHash(template.Data.Messages.Title.I18N[i18nKey]))
+	if template.FType != "" {
+		buffer.WriteString(genHash(template.FType))
+	}
+	if template.FVersion != "" {
+		buffer.WriteString(genHash(template.FVersion))
+	}
+	if template.Data.Type != "" {
+		buffer.WriteString(genHash(template.Data.Type))
+	}
+	if template.Data.Interface != "" {
+		buffer.WriteString(genHash(template.Data.Interface))
 	}
 
-	for _, i18nKey := range template.Data.Messages.Description.I18N {
-		buffer.WriteString(genHash(i18nKey))
-		buffer.WriteString(genHash(template.Data.Messages.Description.I18N[i18nKey]))
+	if template.Data.Messages.Title != nil {
+		for _, i18nKey := range template.Data.Messages.Title.I18N {
+			buffer.WriteString(genHash(i18nKey))
+			buffer.WriteString(genHash(template.Data.Messages.Title.I18N[i18nKey]))
+		}
 	}
 
-	buffer.WriteString(genHash(template.Data.Cadence))
+	if template.Data.Messages.Description != nil {
+		for _, i18nKey := range template.Data.Messages.Description.I18N {
+			buffer.WriteString(genHash(i18nKey))
+			buffer.WriteString(genHash(template.Data.Messages.Description.I18N[i18nKey]))
+		}
+	}
+	if template.Data.Cadence != "" {
+		buffer.WriteString(genHash(template.Data.Cadence))
+	}
 
 	// Continue for dependencies and arguments in a similar fashion...
 

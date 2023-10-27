@@ -3,7 +3,6 @@ package generator
 import (
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/onflow/cadence/runtime/ast"
@@ -70,7 +69,6 @@ func processDependencies(code string, template *flixkit.FlowInteractionTemplate)
 	re := regexp.MustCompile(`(?m)^\s*import.*$`)
 	imports := re.FindAllString(noCommentsCode, -1)
 
-	fmt.Println("imports", imports)
 	if len(imports) == 0 {
 		return nil
 	}
@@ -115,18 +113,8 @@ func processParameters(program *ast.Program, code string, template *flixkit.Flow
 }
 
 func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowInteractionTemplate) error {
-	commentBlockPattern := regexp.MustCompile(`/\*\*[\s\S]*?@f_version[\s\S]*?\*/`)
+	commentBlockPattern := regexp.MustCompile(`/\*[\s\S]*?@f_version[\s\S]*?\*/`)
 	codeCommentBlock := commentBlockPattern.FindString(cadenceCode)
-
-	versionRE := regexp.MustCompile(`@f_version (.+)`)
-	template.FVersion = versionRE.FindStringSubmatch(codeCommentBlock)[1]
-	// TODO: determine if there are other values for f_type
-	template.FType = "InteractionTemplate"
-	// branch logic for version 1.0.0 and future 1.1.0, currently 1.1.0 not supported
-	if template.FVersion == "1.1.0" {
-		return errors.New("version 1.1.0 not supported")
-	}
-
 	template.Data.Cadence = cadenceCode
 	fType, err := determineCadenceType(cadenceCode)
 
@@ -138,19 +126,64 @@ func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowIntera
 		template.FType = "InteractionTemplateInterface"
 	}
 
-	// Regular expressions for various properties
-	messageTitleRE := regexp.MustCompile(`@message title: (.+)`)
-	messageDescRE := regexp.MustCompile(`@message description: (.+)`)
+	// no comment block found
+	if codeCommentBlock == "" {
+		return nil
+	}
 
-	langRE := regexp.MustCompile(`@lang (.+)`)
-	paramTitleRE := regexp.MustCompile(`@parameter title (\w+): (.+)`)
-	paramDescRE := regexp.MustCompile(`@parameter description (\w+): (.+)`)
-	balanceRE := regexp.MustCompile(`@balance (\w+): (.+)`)
+	versionRE := regexp.MustCompile(`\s*@f_version (.+)`)
+	template.FVersion = versionRE.FindStringSubmatch(codeCommentBlock)[1]
+	// TODO: determine if there are other values for f_type
+	template.FType = "InteractionTemplate"
+	// branch logic for version 1.0.0 and future 1.1.0, currently 1.1.0 not supported
+	if template.FVersion == "1.1.0" {
+		return errors.New("version 1.1.0 not supported")
+	}
+
+	// Regular expressions for various properties
+	messageTitleRE := regexp.MustCompile(`\s*@message title: (.+)`)
+	messageDescRE := regexp.MustCompile(`\s*@message description: (.+)`)
+
+	langRE := regexp.MustCompile(`\s*@lang (.+)`)
+	paramTitleRE := regexp.MustCompile(`\s*@parameter title (\w+): (.+)`)
+	paramDescRE := regexp.MustCompile(`\s*@parameter description (\w+): (.+)`)
+	balanceRE := regexp.MustCompile(`\s*@balance (\w+): (.+)`)
 
 	// Populate the template with extracted data
+	if template.Data.Messages.Title == nil {
+		template.Data.Messages.Title = &flixkit.Title{}
+	}
+	if template.Data.Messages.Title.I18N == nil {
+		template.Data.Messages.Title.I18N = make(map[string]string)
+	}
+	if template.Data.Messages.Description == nil {
+		template.Data.Messages.Description = &flixkit.Description{}
+	}
+	if template.Data.Messages.Title.I18N == nil {
+		template.Data.Messages.Title.I18N = make(map[string]string)
+	}
 
-	template.Data.Messages.Title = &flixkit.Title{I18N: map[string]string{langRE.FindStringSubmatch(codeCommentBlock)[1]: messageTitleRE.FindStringSubmatch(codeCommentBlock)[1]}}
-	template.Data.Messages.Description = &flixkit.Description{I18N: map[string]string{langRE.FindStringSubmatch(codeCommentBlock)[1]: messageDescRE.FindStringSubmatch(codeCommentBlock)[1]}}
+	langMatch := langRE.FindStringSubmatch(codeCommentBlock)
+	if langMatch == nil {
+		langMatch = []string{"", "en-US"}
+	}
+	messageTitleMatch := messageTitleRE.FindStringSubmatch(codeCommentBlock)
+	if len(messageTitleMatch) > 0 {
+		template.Data.Messages.Title = &flixkit.Title{
+			I18N: map[string]string{
+				langMatch[1]: messageTitleMatch[1],
+			},
+		}
+	}
+
+	messageDescMatch := messageDescRE.FindStringSubmatch(codeCommentBlock)
+	if len(messageDescMatch) > 0 {
+		template.Data.Messages.Description = &flixkit.Description{
+			I18N: map[string]string{
+				langMatch[1]: messageDescMatch[1],
+			},
+		}
+	}
 
 	paramTitleMatches := paramTitleRE.FindAllStringSubmatch(codeCommentBlock, -1)
 	paramDescMatches := paramDescRE.FindAllStringSubmatch(codeCommentBlock, -1)

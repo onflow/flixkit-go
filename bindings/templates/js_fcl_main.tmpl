@@ -10,13 +10,12 @@ import flixTemplate from "{{.Location}}"
 {{- else}}
 const flixTemplate = "{{.Location}}"
 {{- end}}
-
 {{"\n"}}/**
 * {{.Description}}{{"\n"}}
    {{- if gt (len .Parameters) 0 -}}
 * @param {Object} Parameters - parameters for the cadence
     {{- range $index, $ele := .Parameters -}}
-{{"\n"}}* @param {{"{"}} {{$ele.JsType}} {{"}"}} Parameters.{{$ele.Name}} - {{$ele.Description}}: {{$ele.CadType}}
+{{"\n"}}* @param {{"{"}}{{$ele.JsType}}{{"}"}} Parameters.{{$ele.Name}} - {{$ele.Description}}: {{$ele.CadType}}
     {{- end -}}
  {{ end -}}
  {{- if not .IsScript -}}

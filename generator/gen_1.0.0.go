@@ -2,7 +2,9 @@ package generator
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 
 	"github.com/onflow/cadence/runtime/ast"
@@ -10,15 +12,26 @@ import (
 	"github.com/onflow/flixkit-go"
 )
 
-type Generator1_0_0 struct{}
+type Generator1_0_0 struct {
+	deployedContracts []flixkit.Contracts
+}
 
-// stubb if parameters are needed to be passed in
-func NewGenerator() *Generator1_0_0 {
-	return &Generator1_0_0{}
+// stubb to pass in parameters
+func NewGenerator(deployedContracts []flixkit.Contracts) *Generator1_0_0 {
+	return &Generator1_0_0{
+		deployedContracts: deployedContracts,
+	}
 }
 
 func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
+
+	// Convert the slice to JSON
+	jsonBytes, err := json.MarshalIndent(g.deployedContracts, "", "  ")
+	if err != nil {
+		fmt.Println("Error:", err)
+	}
+	fmt.Println("deployment", string(jsonBytes))
 
 	withoutImports := stripImports(code)
 	codeBytes := []byte(withoutImports)
@@ -39,7 +52,7 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 
 	// need to address this
 	// parsing cadence using cadence parser does not like import statements "from 0xPLACEHOLDER"
-	err = processDependencies(code, template)
+	err = processDependencies(code, template, g.deployedContracts)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +76,7 @@ func processTemplateHashes(program *ast.Program, code string, template *flixkit.
 	return nil
 }
 
-func processDependencies(code string, template *flixkit.FlowInteractionTemplate) error {
+func processDependencies(code string, template *flixkit.FlowInteractionTemplate, deployedContracts []flixkit.Contracts) error {
 	ctx := context.Background()
 	noCommentsCode := stripComments(code)
 	re := regexp.MustCompile(`(?m)^\s*import.*$`)

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
+	"github.com/onflow/flixkit-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -54,4 +55,43 @@ func TestGenerateCommentBlock(t *testing.T) {
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
+}
+
+func TestGenerateCommentBlockscript(t *testing.T) {
+	contracts := []flixkit.Contracts{
+		{
+			"HelloWorld": flixkit.Networks{
+				"emulator": flixkit.Network{
+					Address:   "0x01cf0e2f2f715450",
+					FqAddress: "A.01cf0e2f2f715450.HelloWorld",
+					Contract:  "HelloWorld",
+				},
+			},
+		},
+	}
+	generator := NewGenerator(contracts)
+	assert := assert.New(t)
+
+	code := `
+	/*
+		@f_version 1.0.0
+		@lang en-US
+
+		@message title: read greeting
+		@message description: read greeting of the HelloWorld smart contract
+
+		@return title greeting: Greeting
+	*/
+	import "HelloWorld"
+
+	pub fun main(): String {
+	return HelloWorld.greeting
+	}
+`
+	template, err := generator.Generate(code)
+	assert.NoError(err, "Generate should not return an error")
+	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+	assert.NoError(err, "marshal template to json should not return an error")
+	autogold.ExpectFile(t, string(prettyJSON))
+
 }

@@ -2,9 +2,7 @@ package generator
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"regexp"
 
 	"github.com/onflow/cadence/runtime/ast"
@@ -26,13 +24,6 @@ func NewGenerator(deployedContracts []flixkit.Contracts) *Generator1_0_0 {
 func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
 
-	// Convert the slice to JSON
-	jsonBytes, err := json.MarshalIndent(g.deployedContracts, "", "  ")
-	if err != nil {
-		fmt.Println("Error:", err)
-	}
-	fmt.Println("deployment", string(jsonBytes))
-
 	withoutImports := stripImports(code)
 	codeBytes := []byte(withoutImports)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
@@ -52,7 +43,7 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 
 	// need to address this
 	// parsing cadence using cadence parser does not like import statements "from 0xPLACEHOLDER"
-	err = processDependencies(code, template, g.deployedContracts)
+	err = processDependencies(template, g.deployedContracts)
 	if err != nil {
 		return nil, err
 	}
@@ -76,9 +67,13 @@ func processTemplateHashes(program *ast.Program, code string, template *flixkit.
 	return nil
 }
 
-func processDependencies(code string, template *flixkit.FlowInteractionTemplate, deployedContracts []flixkit.Contracts) error {
+func processDependencies(template *flixkit.FlowInteractionTemplate, deployedContracts []flixkit.Contracts) error {
 	ctx := context.Background()
-	noCommentsCode := stripComments(code)
+	normalizedCode := normalizeImports(template.Data.Cadence)
+	// update cadence code in template so that dependencies match
+	template.Data.Cadence = normalizedCode
+
+	noCommentsCode := stripComments(normalizedCode)
 	re := regexp.MustCompile(`(?m)^\s*import.*$`)
 	imports := re.FindAllString(noCommentsCode, -1)
 
@@ -88,7 +83,7 @@ func processDependencies(code string, template *flixkit.FlowInteractionTemplate,
 	// fill in dependence information
 	deps := make(flixkit.Dependencies, len(imports))
 	for _, imp := range imports {
-		dep, err := parseImport(ctx, imp)
+		dep, err := parseImport(ctx, imp, deployedContracts)
 		if err != nil {
 			return err
 		}

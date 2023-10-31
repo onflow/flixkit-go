@@ -7,7 +7,7 @@ import (
 // GetContractInformation returns the contract information for a given contract name
 // todo: this information should be generated so it can be updated easily
 // todo: this should be moved to a separate package or maybe this inforation already exists somewhere else
-func getContractInformation(contractName string) flixkit.Networks {
+func getContractInformation(contractName string, deployedContracts []flixkit.Contracts) flixkit.Networks {
 	var contracts = map[string]flixkit.Networks{
 		"FungibleToken": {
 			"mainnet": {
@@ -73,6 +73,12 @@ func getContractInformation(contractName string) flixkit.Networks {
 				PinBlockHeight: 95808240,
 			},
 		},
+	}
+	// add deployed contracts to contracts map
+	for _, contract := range deployedContracts {
+		for contractName, network := range contract {
+			contracts[contractName] = network
+		}
 	}
 
 	// To lookup a specific entry:

@@ -1,0 +1,36 @@
+`{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.0.0",
+    "id": "0cef252eed48a8b2c9caa94668d0fd643615b8761be5ba690ff6147d3b1ed1d9",
+    "data": {
+        "type": "script",
+        "interface": "",
+        "messages": {
+            "title": {
+                "i18n": {
+                    "en-US": "read greeting"
+                }
+            },
+            "description": {
+                "i18n": {
+                    "en-US": "read greeting of the HelloWorld smart contract"
+                }
+            }
+        },
+        "cadence": "\n\t/*\n\t\t@f_version 1.0.0\n\t\t@lang en-US\n\n\t\t@message title: read greeting\n\t\t@message description: read greeting of the HelloWorld smart contract\n\n\t\t@return title greeting: Greeting\n\t*/\n\timport HelloWorld from 0xHelloWorld\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
+        "dependencies": {
+            "0xHelloWorld": {
+                "HelloWorld": {
+                    "emulator": {
+                        "address": "0x01cf0e2f2f715450",
+                        "fq_address": "A.01cf0e2f2f715450.HelloWorld",
+                        "contract": "HelloWorld",
+                        "pin": "",
+                        "pin_block_height": 0
+                    }
+                }
+            }
+        },
+        "arguments": {}
+    }
+}`

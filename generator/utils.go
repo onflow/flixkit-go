@@ -19,47 +19,43 @@ func getDependencyContractCode(contractName string) (string, error) {
 	return "", nil
 }
 
-func findImportDetails(contractName string) (string, string, error) {
-	// look up core contracts if not found in flow.json state
-
-	return "", "", nil
-}
-
-func parseImport(ctx context.Context, line string) (map[string]flixkit.Contracts, error) {
+func parseImport(ctx context.Context, line string, deployedContracts []flixkit.Contracts) (map[string]flixkit.Contracts, error) {
 	// Define regex patterns
 	importSyntax := `import "(?P<contract>[^"]+)"`
 	oldImportSyntax := `import (?P<contract>\w+) from (?P<address>[\w]+)`
 
-	contractInfo := flixkit.Contracts{}
 	placeholder := ""
 	// Use regex to extract relevant information
 	// structure for flix is dependency -> import placeholder -> contract -> network
 	// if old import syntax and uses address then use the address as the placeholder
-	// if new import syntax then generate a placeholder by 0xContractNameAddress
+	// if new import syntax then placeholder is ""
+	var contractName string
+	var info flixkit.Networks
 	if matches, _ := regexpMatch(importSyntax, line); matches != nil {
 		// new import syntax need to find the contract deployment to get address
 		contractName := matches["contract"]
 		placeholder = "0x" + contractName
-		info := getContractInformation(contractName)
-		contractInfo = flixkit.Contracts{
-			contractName: info,
-		}
-		// if contract info is nil then need to look up in flow.json
-	} else if matches, _ := regexpMatch(oldImportSyntax, line); matches != nil {
-		contraceName := matches["contract"]
-		placeholder = matches["address"]
-		info := getContractInformation(contraceName)
-		contractInfo = flixkit.Contracts{
-			contraceName: info,
-		}
-		// if contract info is nil then no core contract then
-		// determine if contract has been deployed in flow.json
-		//
+		info = getContractInformation(contractName, deployedContracts)
+		// if contract info is nil then need to look up in deployed contracts
+		// need to change the import statement to use the placeholder
 
+	} else if matches, _ := regexpMatch(oldImportSyntax, line); matches != nil {
+		contractName = matches["contract"]
+		placeholder = matches["address"]
+		info = getContractInformation(contractName, deployedContracts)
+		// if contract info is nil then no core contract then
+		// determine if contract has been deployed in deployed contracts
+		//
+	}
+
+	if info == nil {
+		return nil, fmt.Errorf("contract %s not found", contractName)
 	}
 
 	return map[string]flixkit.Contracts{
-		placeholder: contractInfo,
+		placeholder: {
+			contractName: info,
+		},
 	}, nil
 }
 
@@ -178,4 +174,23 @@ func stripImports(cadenceCode string) string {
 	// Match lines starting with optional leading whitespaces followed by the word "import"
 	re := regexp.MustCompile(`(?m)^\s*import.*$\n?`)
 	return re.ReplaceAllString(cadenceCode, "")
+}
+
+func normalizeImports(cadenceCode string) string {
+	// replace new import syntax with old import syntax to be used in templates
+	// import "0xNonFungibleTokenAddress" -> import NonFungibleToken from 0xNonFungibleTokenAddress
+	// Use a regex pattern to match the new import syntax
+	pattern := regexp.MustCompile(`import "(.+?)"`)
+
+	// Replace the matched pattern with the old syntax
+	replaced := pattern.ReplaceAllStringFunc(cadenceCode, func(match string) string {
+		submatch := pattern.FindStringSubmatch(match)
+		if len(submatch) > 1 {
+			return fmt.Sprintf(`import %s from 0x%s`, submatch[1], submatch[1])
+		}
+		return match
+	})
+
+	return replaced
+
 }

@@ -53,7 +53,7 @@ func TestParseImport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.cadence, func(t *testing.T) {
-			got, err := parseImport(context.Background(), tt.cadence)
+			got, err := parseImport(context.Background(), tt.cadence, nil)
 			if err != nil {
 				t.Errorf("parseImport() err %v", err)
 			}

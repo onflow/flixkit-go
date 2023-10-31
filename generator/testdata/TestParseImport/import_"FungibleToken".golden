@@ -1,6 +1,6 @@
 `{
     "0xFungibleToken": {
-        "FungibleToken": {
+        "": {
             "mainnet": {
                 "address": "0xf233dcee88fe0abe",
                 "fq_address": "A.0xf233dcee88fe0abe.FungibleToken",

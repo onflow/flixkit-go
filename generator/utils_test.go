@@ -241,3 +241,69 @@ execute {}
 		})
 	}
 }
+
+func TestGenerateTemplateId(t *testing.T) {
+	templateId := "bd10ab0bf472e6b58ecc0398e9b3d1bd58a4205f14a7099c52c0640d9589295f"
+	code := `
+	{
+		"f_type": "InteractionTemplate",
+		"f_version": "1.0.0",
+		"id": "",
+		"data": {
+		  "type": "script",
+		  "interface": "",
+		  "messages": {
+			"title": {
+			  "i18n": {
+				"en-US": "Multiply Two Integers"
+			  }
+			},
+			"description": {
+			  "i18n": {
+				"en-US": "Multiplies two integer arguments together and returns the result."
+			  }
+			}
+		  },
+		  "cadence": "pub fun main(x: Int, y: Int): Int { return x * y }",
+		  "dependencies": {},
+		  "arguments": {
+			"x": {
+			  "index": 0,
+			  "type": "Int",
+			  "messages": {
+				"title": {
+				  "i18n": {
+					"en-US": "Int 1"
+				  }
+				}
+			  }
+			},
+			"y": {
+			  "index": 1,
+			  "type": "Int",
+			  "messages": {
+				"title": {
+				  "i18n": {
+					"en-US": "Int 2"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  }`
+
+	template, err := flixkit.ParseFlix(code)
+	if err != nil {
+		t.Errorf("ParseFlix() err %v", err)
+	}
+	id, err := flixkit.GenerateFlixID(template)
+	if err != nil {
+		t.Errorf("GenerateFlixID() err %v", err)
+	}
+
+	if id != templateId {
+		t.Errorf("GenerateFlixID() got = %v, want %v", id, templateId)
+	}
+
+}

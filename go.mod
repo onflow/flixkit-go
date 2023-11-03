@@ -25,8 +25,11 @@ require (
 	github.com/nightlyone/lockfile v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
+	github.com/samber/lo v1.38.1 // indirect
+	github.com/sanity-io/litter v1.5.5 // indirect
 	github.com/turbolent/prettier v0.0.0-20220320183459-661cc755135d // indirect
 	go.opentelemetry.io/otel v1.16.0 // indirect
+	golang.org/x/exp v0.0.0-20220303212507-bbda1eaf7a17 // indirect
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/tools v0.14.0 // indirect

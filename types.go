@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"regexp"
 	"slices"
+	"sort"
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
@@ -123,7 +123,7 @@ func (msgs *Messages) GetTitleValue(placeholder string) string {
 }
 
 func messagesToRlp(messages Messages) []interface{} {
-	var values []interface{}
+	values := make([]interface{}, 0)
 
 	if messages.Title != nil {
 		var titleValue []interface{}
@@ -161,10 +161,12 @@ func messagesToRlp(messages Messages) []interface{} {
 }
 
 func argumentsToRlp(arguments Arguments) []interface{} {
-	var values []interface{}
-	for key, argument := range arguments {
+	values := make([]interface{}, 0)
+	sortedArguments := arguments.SortArguments()
+	for _, argument := range sortedArguments {
+
 		var args []interface{}
-		args = append(args, shaHex(key, "key"))
+		args = append(args, shaHex(argument.Key, "key"))
 
 		var arg []interface{}
 		arg = append(arg, shaHex(fmt.Sprint(argument.Index), "index"))
@@ -178,37 +180,55 @@ func argumentsToRlp(arguments Arguments) []interface{} {
 }
 
 func dependenciesToRlp(Dependencies Dependencies) []interface{} {
-	return ProcessMap(Dependencies, func(key string, value Contracts) interface{} {
-		return []interface{}{
-			key,
-			contractsToRlp(value),
-		}
-	})
+	values := make([]interface{}, 0)
+	keys := SortMapKeys(Dependencies)
+	for _, key := range keys {
+		var deps []interface{}
+		value := Dependencies[key]
+		deps = append(deps, shaHex(key, "key"))
+		deps = append(deps, contractsToRlp(value))
+		values = append(values, deps)
+	}
+	return values
 }
 
 func contractsToRlp(Contracts Contracts) []interface{} {
-	return ProcessMap(Contracts, func(key string, value Networks) interface{} {
-		return []interface{}{
-			key,
-			networksToRlp(value),
-		}
-	})
+	values := make([]interface{}, 0)
+	keys := SortMapKeys(Contracts)
+	for _, key := range keys {
+		value := Contracts[key]
+		var contracts []interface{}
+		contracts = append(contracts, shaHex(key, "key"))
+		contracts = append(contracts, networksToRlp(value))
+		values = append(values, contracts)
+	}
+	return values
 }
 
 func networksToRlp(Networks Networks) []interface{} {
-	return ProcessMap(Networks, func(key string, value Network) interface{} {
-		return []interface{}{
-			key,
-			value.Address,
-			value.FqAddress,
-			value.Contract,
-			value.Pin,
-			value.PinBlockHeight,
-		}
-	})
+	values := make([]interface{}, 0)
+	keys := SortMapKeys(Networks)
+	for _, key := range keys {
+		value := Networks[key]
+		var networks []interface{}
+		networks = append(networks, shaHex(key, "key"))
+		networks = append(networks, networkToRlp(value))
+		values = append(values, networks)
+	}
+	return values
 }
 
-func (flix FlowInteractionTemplate) EncodeRLP(w io.Writer) (err error) {
+func networkToRlp(network Network) []interface{} {
+	values := make([]interface{}, 0)
+	values = append(values, shaHex(network.Address, "address"))
+	values = append(values, shaHex(network.Contract, "contract"))
+	values = append(values, shaHex(network.FqAddress, "fq_address"))
+	values = append(values, shaHex(network.Pin, "pin"))
+	values = append(values, shaHex(fmt.Sprint(network.PinBlockHeight), "pin_block_height"))
+	return values
+}
+
+func (flix FlowInteractionTemplate) EncodeRLP() (result string, err error) {
 	var buffer bytes.Buffer // Create a new buffer
 
 	input := []interface{}{
@@ -224,11 +244,11 @@ func (flix FlowInteractionTemplate) EncodeRLP(w io.Writer) (err error) {
 
 	//	msg := dependenciesToRlp(flix.Data.Dependencies)
 	//prettyJSON, _ := json.MarshalIndent(input, "", "    ")
-	//fmt.Println("input", string(prettyJSON), "\n\n")
+	//fmt.Println(string(prettyJSON))
 
 	err = rlp.Encode(&buffer, input)
 	if err != nil {
-		return err
+		return "", err
 	}
 	hexString := hex.EncodeToString(buffer.Bytes())
 
@@ -236,14 +256,12 @@ func (flix FlowInteractionTemplate) EncodeRLP(w io.Writer) (err error) {
 	fullyHashed := shaHex(hexString, "input")
 
 	//fmt.Println("hexString", fullyHashed)
-	//litter.Dump(fullyHashed)
+	return fullyHashed, nil
 
-	_, err = w.Write([]byte(fullyHashed))
-	return err
 }
 
 func GenerateFlixID(flix *FlowInteractionTemplate) (string, error) {
-	rlpOutput, err := rlp.EncodeToBytes(flix)
+	rlpOutput, err := flix.EncodeRLP()
 	if err != nil {
 		return "", err
 	}
@@ -279,7 +297,7 @@ func shaHex(value interface{}, debugKey string) string {
 	// Convert the hash to a hexadecimal string
 	hashHex := hex.EncodeToString(hash[:])
 
-	//	fmt.Println(value, hashHex)
+	//fmt.Println(value, hashHex)
 	return hashHex
 }
 
@@ -300,4 +318,35 @@ func convertToBytes(value interface{}) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("unsupported type %T", v)
 	}
+}
+
+type ArgumentKey struct {
+	Key string
+	Argument
+}
+
+type ArgumentKeys []ArgumentKey
+
+func (a ArgumentKeys) Len() int           { return len(a) }
+func (a ArgumentKeys) Less(i, j int) bool { return a[i].Index < a[j].Index }
+func (a ArgumentKeys) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+
+func (args Arguments) SortArguments() ArgumentKeys {
+	keys := make(ArgumentKeys, 0, len(args))
+	for key, argument := range args {
+		keys = append(keys, ArgumentKey{Key: key, Argument: argument})
+	}
+	sort.Sort(keys)
+	return keys
+}
+
+type MapKeySorter[T any] func(map[string]T) []string
+
+func SortMapKeys[T any](m map[string]T) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }

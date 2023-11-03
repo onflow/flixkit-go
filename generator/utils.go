@@ -1,23 +1,14 @@
 package generator
 
 import (
-	"bytes"
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"regexp"
 	"sort"
 
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/onflow/flixkit-go"
-	"golang.org/x/crypto/sha3"
 )
-
-func getDependencyContractCode(contractName string) (string, error) {
-	// use flow client to get contract code
-	return "", nil
-}
 
 func parseImport(ctx context.Context, line string, deployedContracts []flixkit.Contracts) (map[string]flixkit.Contracts, error) {
 	// Define regex patterns
@@ -92,60 +83,6 @@ func determineCadenceType(code string) (string, error) {
 	fmt.Println(code, transactionRegex.MatchString(code), scriptRegex.MatchString(code), interfaceRegex.MatchString(code))
 
 	return "", errors.New("could not determine if code is transaction or script")
-}
-
-func genHash(utf8String string) string {
-	hasher := sha3.New256()          // Create a new SHA3 256 hasher
-	hasher.Write([]byte(utf8String)) // Write the utf8 string to the hasher
-	hash := hasher.Sum(nil)          // Get the hash result
-
-	return hex.EncodeToString(hash) // Convert the hash result to hex
-}
-
-func generateTemplateId(template *flixkit.FlowInteractionTemplate) (string, error) {
-	// Your normalization function
-	// template = normalizeInteractionTemplate(template)
-
-	var buffer bytes.Buffer
-	// Mimicking the hashing order in the JS code
-	if template.FType != "" {
-		buffer.WriteString(genHash(template.FType))
-	}
-	if template.FVersion != "" {
-		buffer.WriteString(genHash(template.FVersion))
-	}
-	if template.Data.Type != "" {
-		buffer.WriteString(genHash(template.Data.Type))
-	}
-	if template.Data.Interface != "" {
-		buffer.WriteString(genHash(template.Data.Interface))
-	}
-
-	if template.Data.Messages.Title != nil {
-		for _, i18nKey := range template.Data.Messages.Title.I18N {
-			buffer.WriteString(genHash(i18nKey))
-			buffer.WriteString(genHash(template.Data.Messages.Title.I18N[i18nKey]))
-		}
-	}
-
-	if template.Data.Messages.Description != nil {
-		for _, i18nKey := range template.Data.Messages.Description.I18N {
-			buffer.WriteString(genHash(i18nKey))
-			buffer.WriteString(genHash(template.Data.Messages.Description.I18N[i18nKey]))
-		}
-	}
-	if template.Data.Cadence != "" {
-		buffer.WriteString(genHash(template.Data.Cadence))
-	}
-
-	// Continue for dependencies and arguments in a similar fashion...
-
-	encoded, err := rlp.EncodeToBytes(buffer.String())
-	if err != nil {
-		return "", err
-	}
-	encodedHex := hex.EncodeToString(encoded)
-	return genHash(encodedHex), nil
 }
 
 // TODO: make sure message types are sorted when there is user created types

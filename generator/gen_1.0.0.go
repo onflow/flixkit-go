@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"sort"
 
 	"github.com/onflow/cadence/runtime/ast"
 	"github.com/onflow/cadence/runtime/parser"
@@ -53,7 +54,6 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 		return nil, err
 	}
 
-	// TODO: coordinate with flix team to synch up on how to generate template hash id
 	id, err := flixkit.GenerateFlixID(template)
 	if err != nil {
 		return nil, err
@@ -76,6 +76,8 @@ func processDependencies(template *flixkit.FlowInteractionTemplate, deployedCont
 	noCommentsCode := stripComments(normalizedCode)
 	re := regexp.MustCompile(`(?m)^\s*import.*$`)
 	imports := re.FindAllString(noCommentsCode, -1)
+	// sort imports so they are processed consistently
+	sort.Strings(imports)
 
 	if len(imports) == 0 {
 		return nil

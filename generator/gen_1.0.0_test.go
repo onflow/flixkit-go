@@ -10,7 +10,6 @@ import (
 )
 
 func TestGenerateCommentBlock(t *testing.T) {
-	generator := Generator1_0_0{}
 	assert := assert.New(t)
 
 	code := `
@@ -49,15 +48,16 @@ func TestGenerateCommentBlock(t *testing.T) {
 	  }
 	}
 `
+	gen := NewGenerator([]flixkit.Contracts{})
+	template, err := gen.Generate(code)
 
-	template, err := generator.Generate(code)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
 }
 
-func TestGenerateCommentBlockscript(t *testing.T) {
+func TestScriptGenCommentBlock(t *testing.T) {
 	contracts := []flixkit.Contracts{
 		{
 			"HelloWorld": flixkit.Networks{

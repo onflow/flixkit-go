@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 
@@ -48,7 +49,7 @@ func TestGenerateCommentBlock(t *testing.T) {
 	  }
 	}
 `
-	gen := NewGenerator([]flixkit.Contracts{})
+	gen := NewGenerator([]flixkit.Contracts{}, nil, nil)
 	template, err := gen.Generate(code)
 
 	assert.NoError(err, "Generate should not return an error")
@@ -69,7 +70,7 @@ func TestScriptGenCommentBlock(t *testing.T) {
 			},
 		},
 	}
-	generator := NewGenerator(contracts)
+	generator := NewGenerator(contracts, nil, nil)
 	assert := assert.New(t)
 
 	code := `
@@ -94,4 +95,64 @@ func TestScriptGenCommentBlock(t *testing.T) {
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
 
+}
+
+func TestParseImport(t *testing.T) {
+	generator := NewGenerator([]flixkit.Contracts{}, nil, nil)
+	fungi := flixkit.Contracts{
+		"FungibleToken": {
+			"mainnet": {
+				Address:        "0xf233dcee88fe0abe",
+				FqAddress:      "A.0xf233dcee88fe0abe.FungibleToken",
+				Contract:       "FungibleToken",
+				Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
+				PinBlockHeight: 34166296,
+			},
+			"testnet": {
+				Address:        "0x9a0766d93b6608b7",
+				FqAddress:      "A.0x9a0766d93b6608b7.FungibleToken",
+				Contract:       "FungibleToken",
+				Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
+				PinBlockHeight: 74776482,
+			},
+		},
+	}
+	tests := []struct {
+		cadence string
+		want    flixkit.Contracts
+	}{
+		{
+			cadence: `import FungibleToken from 0xFungibleTokenAddress`,
+			want:    fungi,
+		},
+		{
+			cadence: `import "FungibleToken"`,
+			want:    fungi,
+		},
+		{
+			cadence: `import FungibleToken from 0x9a0766d93b6608b7`,
+			want:    fungi,
+		},
+		{
+			cadence: `import "FungibleToken"`,
+			want:    fungi,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.cadence, func(t *testing.T) {
+			got, err := generator.parseImport(context.Background(), tt.cadence, nil)
+			if err != nil {
+				t.Errorf("parseImport() err %v", err)
+			}
+			if got == nil {
+				t.Errorf("parseImport() got = %v, want %v", got, tt.want)
+			}
+			prettyJSON, err := json.MarshalIndent(got, "", "    ")
+			if err != nil {
+				t.Errorf("parseImport() err %v", err)
+			}
+			autogold.ExpectFile(t, string(prettyJSON))
+		})
+	}
 }

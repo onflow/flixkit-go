@@ -7,12 +7,11 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./transfer_token.json"
 
-
 /**
 * Transfer tokens from one account to another
 * @param {Object} Parameters - parameters for the cadence
-* @param { string } Parameters.amount - The amount of FLOW tokens to send: UFix64
-* @param { string } Parameters.to - The Flow account the tokens will go to: Address
+* @param {string} Parameters.amount - The amount of FLOW tokens to send: UFix64
+* @param {string} Parameters.to - The Flow account the tokens will go to: Address
 * @returns {Promise<string>} - returns a promise which resolves to the transaction id
 */
 export async function transferTokens({amount, to}) {

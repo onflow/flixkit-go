@@ -127,13 +127,13 @@ func messagesToRlp(messages Messages) []interface{} {
 
 	if messages.Title != nil {
 		var titleValue []interface{}
-		titleValue = append(titleValue, shaHex("title", "title"))
+		titleValue = append(titleValue, ShaHex("title", "title"))
 		if messages.Title.I18N != nil {
 			var langTitle []interface{}
 			for k, v := range messages.Title.I18N {
 				var anotherNesting []interface{}
-				anotherNesting = append(anotherNesting, shaHex(k, "I18N"))
-				anotherNesting = append(anotherNesting, shaHex(v, "I18N"))
+				anotherNesting = append(anotherNesting, ShaHex(k, "I18N"))
+				anotherNesting = append(anotherNesting, ShaHex(v, "I18N"))
 				langTitle = append(langTitle, anotherNesting)
 			}
 			titleValue = append(titleValue, langTitle)
@@ -143,13 +143,13 @@ func messagesToRlp(messages Messages) []interface{} {
 
 	if messages.Description != nil {
 		var descValue []interface{}
-		descValue = append(descValue, shaHex("description", "description"))
+		descValue = append(descValue, ShaHex("description", "description"))
 		if messages.Description.I18N != nil {
 			var langDesc []interface{}
 			for k, v := range messages.Description.I18N {
 				var anotherNesting []interface{}
-				anotherNesting = append(anotherNesting, shaHex(k, "I18N"))
-				anotherNesting = append(anotherNesting, shaHex(v, "I18N"))
+				anotherNesting = append(anotherNesting, ShaHex(k, "I18N"))
+				anotherNesting = append(anotherNesting, ShaHex(v, "I18N"))
 				langDesc = append(langDesc, anotherNesting)
 			}
 			descValue = append(descValue, langDesc)
@@ -166,12 +166,12 @@ func argumentsToRlp(arguments Arguments) []interface{} {
 	for _, argument := range sortedArguments {
 
 		var args []interface{}
-		args = append(args, shaHex(argument.Key, "key"))
+		args = append(args, ShaHex(argument.Key, "key"))
 
 		var arg []interface{}
-		arg = append(arg, shaHex(fmt.Sprint(argument.Index), "index"))
-		arg = append(arg, shaHex(argument.Type, "type"))
-		arg = append(arg, shaHex(argument.Balance, "balance"))
+		arg = append(arg, ShaHex(fmt.Sprint(argument.Index), "index"))
+		arg = append(arg, ShaHex(argument.Type, "type"))
+		arg = append(arg, ShaHex(argument.Balance, "balance"))
 		arg = append(arg, messagesToRlp(argument.Messages))
 		args = append(args, arg)
 		values = append(values, args)
@@ -185,7 +185,7 @@ func dependenciesToRlp(Dependencies Dependencies) []interface{} {
 	for _, key := range keys {
 		var deps []interface{}
 		value := Dependencies[key]
-		deps = append(deps, shaHex(key, "key"))
+		deps = append(deps, ShaHex(key, "key"))
 		deps = append(deps, contractsToRlp(value))
 		values = append(values, deps)
 	}
@@ -198,7 +198,7 @@ func contractsToRlp(Contracts Contracts) []interface{} {
 	for _, key := range keys {
 		value := Contracts[key]
 		var contracts []interface{}
-		contracts = append(contracts, shaHex(key, "key"))
+		contracts = append(contracts, ShaHex(key, "key"))
 		contracts = append(contracts, networksToRlp(value))
 		values = append(values, contracts)
 	}
@@ -211,7 +211,7 @@ func networksToRlp(Networks Networks) []interface{} {
 	for _, key := range keys {
 		value := Networks[key]
 		var networks []interface{}
-		networks = append(networks, shaHex(key, "key"))
+		networks = append(networks, ShaHex(key, "key"))
 		networks = append(networks, networkToRlp(value))
 		values = append(values, networks)
 	}
@@ -220,11 +220,11 @@ func networksToRlp(Networks Networks) []interface{} {
 
 func networkToRlp(network Network) []interface{} {
 	values := make([]interface{}, 0)
-	values = append(values, shaHex(network.Address, "address"))
-	values = append(values, shaHex(network.Contract, "contract"))
-	values = append(values, shaHex(network.FqAddress, "fq_address"))
-	values = append(values, shaHex(network.Pin, "pin"))
-	values = append(values, shaHex(fmt.Sprint(network.PinBlockHeight), "pin_block_height"))
+	values = append(values, ShaHex(network.Address, "address"))
+	values = append(values, ShaHex(network.Contract, "contract"))
+	values = append(values, ShaHex(network.FqAddress, "fq_address"))
+	values = append(values, ShaHex(network.Pin, "pin"))
+	values = append(values, ShaHex(fmt.Sprint(network.PinBlockHeight), "pin_block_height"))
 	return values
 }
 
@@ -232,12 +232,12 @@ func (flix FlowInteractionTemplate) EncodeRLP() (result string, err error) {
 	var buffer bytes.Buffer // Create a new buffer
 
 	input := []interface{}{
-		shaHex(flix.FType, "f-type"),
-		shaHex(flix.FVersion, "f-version"),
-		shaHex(flix.Data.Type, "type"),
-		shaHex(flix.Data.Interface, "interface"),
+		ShaHex(flix.FType, "f-type"),
+		ShaHex(flix.FVersion, "f-version"),
+		ShaHex(flix.Data.Type, "type"),
+		ShaHex(flix.Data.Interface, "interface"),
 		messagesToRlp(flix.Data.Messages),
-		shaHex(flix.Data.Cadence, "cadence"),
+		ShaHex(flix.Data.Cadence, "cadence"),
 		dependenciesToRlp(flix.Data.Dependencies),
 		argumentsToRlp(flix.Data.Arguments),
 	}
@@ -253,7 +253,7 @@ func (flix FlowInteractionTemplate) EncodeRLP() (result string, err error) {
 	hexString := hex.EncodeToString(buffer.Bytes())
 
 	//fmt.Println("call to hash hex string")
-	fullyHashed := shaHex(hexString, "input")
+	fullyHashed := ShaHex(hexString, "input")
 
 	//fmt.Println("hexString", fullyHashed)
 	return fullyHashed, nil
@@ -280,7 +280,7 @@ func ProcessMap[M ~map[K]V, K string, V any](m M, fn func(key K, value V) interf
 	return list
 }
 
-func shaHex(value interface{}, debugKey string) string {
+func ShaHex(value interface{}, debugKey string) string {
 
 	// Convert the value to a byte array
 	data, err := convertToBytes(value)

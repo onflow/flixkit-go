@@ -7,11 +7,10 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./min.template.json"
 
-
 /**
 *
 * @param {Object} Parameters - parameters for the cadence
-* @param { Array<string> } Parameters.numbers - : Int
+* @param {Array<string>} Parameters.numbers - : Int
 */
 export async function request({numbers}) {
   const info = await fcl.query({

@@ -57,8 +57,8 @@ func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowIntera
 	template.FVersion = versionRE.FindStringSubmatch(codeCommentBlock)[1]
 	template.FType = "InteractionTemplate"
 	// branch logic for version 1.0.0 and future 1.1.0, currently 1.1.0 not supported
-	if template.FVersion == "1.1.0" {
-		return errors.New("version 1.1.0 not supported")
+	if template.FVersion != "1.0.0" {
+		return errors.New("only version 1.0.0 is supported at this time")
 	}
 
 	// Regular expressions for various properties

@@ -4,11 +4,8 @@ import (
 	"github.com/onflow/flixkit-go"
 )
 
-// GetContractInformation returns the contract information for a given contract name
-// todo: this information should be generated so it can be updated easily
-// todo: this should be moved to a separate package or maybe this inforation already exists somewhere else
-func getContractInformation(contractName string, deployedContracts []flixkit.Contracts) flixkit.Networks {
-	var contracts = map[string]flixkit.Networks{
+func getDefaultCoreContracts() flixkit.Contracts {
+	return flixkit.Contracts{
 		"FungibleToken": {
 			"mainnet": {
 				Address:        "0xf233dcee88fe0abe",
@@ -74,6 +71,18 @@ func getContractInformation(contractName string, deployedContracts []flixkit.Con
 			},
 		},
 	}
+}
+
+// GetContractInformation returns the contract information for a given contract name
+// todo: this information should be generated so it can be updated easily
+// todo: this should be moved to a separate package or maybe this inforation already exists somewhere else
+func getContractInformation(contractName string, deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts) flixkit.Networks {
+	contracts := make(flixkit.Contracts)
+
+	for contractName, network := range coreContracts {
+		contracts[contractName] = network
+	}
+
 	// add deployed contracts to contracts map
 	for _, contract := range deployedContracts {
 		for contractName, network := range contract {

@@ -51,6 +51,7 @@ func TestGenerateCommentBlock(t *testing.T) {
 `
 	gen := Generator1_0_0{
 		deployedContracts: []flixkit.Contracts{},
+		coreContracts:     getDefaultCoreContracts(),
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}
@@ -106,6 +107,7 @@ func TestScriptGenCommentBlock(t *testing.T) {
 func TestParseImport(t *testing.T) {
 	generator := Generator1_0_0{
 		deployedContracts: []flixkit.Contracts{},
+		coreContracts:     getDefaultCoreContracts(),
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}
@@ -151,7 +153,7 @@ func TestParseImport(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.cadence, func(t *testing.T) {
-			got, err := generator.parseImport(context.Background(), tt.cadence, nil)
+			got, err := generator.parseImport(context.Background(), tt.cadence)
 			if err != nil {
 				t.Errorf("parseImport() err %v", err)
 			}

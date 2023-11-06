@@ -18,12 +18,13 @@ import (
 
 type Generator1_0_0 struct {
 	deployedContracts []flixkit.Contracts
+	coreContracts     flixkit.Contracts
 	testnetClient     *flowkit.Flowkit
 	mainnetClient     *flowkit.Flowkit
 }
 
 // stubb to pass in parameters
-func NewGenerator(deployedContracts []flixkit.Contracts, logger output.Logger) (*Generator1_0_0, error) {
+func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts, logger output.Logger) (*Generator1_0_0, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
@@ -43,8 +44,13 @@ func NewGenerator(deployedContracts []flixkit.Contracts, logger output.Logger) (
 	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 
+	if coreContracts == nil {
+		coreContracts = getDefaultCoreContracts()
+	}
+
 	return &Generator1_0_0{
 		deployedContracts: deployedContracts,
+		coreContracts:     coreContracts,
 		testnetClient:     testnetClient,
 		mainnetClient:     mainnetClient,
 	}, nil
@@ -53,6 +59,7 @@ func NewGenerator(deployedContracts []flixkit.Contracts, logger output.Logger) (
 func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
 
+	// strip out imports in case invalid cadenece code is provided with imports that have placeholders like 0xFUNGIBLETOKENADDRESS
 	withoutImports := stripImports(code)
 	codeBytes := []byte(withoutImports)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
@@ -103,7 +110,7 @@ func (g Generator1_0_0) processDependencies(template *flixkit.FlowInteractionTem
 	// fill in dependence information
 	deps := make(flixkit.Dependencies, len(imports))
 	for _, imp := range imports {
-		dep, err := g.parseImport(ctx, imp, g.deployedContracts)
+		dep, err := g.parseImport(ctx, imp)
 		if err != nil {
 			return err
 		}
@@ -116,7 +123,7 @@ func (g Generator1_0_0) processDependencies(template *flixkit.FlowInteractionTem
 	return nil
 }
 
-func (g *Generator1_0_0) parseImport(ctx context.Context, line string, deployedContracts []flixkit.Contracts) (map[string]flixkit.Contracts, error) {
+func (g *Generator1_0_0) parseImport(ctx context.Context, line string) (map[string]flixkit.Contracts, error) {
 	// Define regex patterns
 	importSyntax := `import "(?P<contract>[^"]+)"`
 	oldImportSyntax := `import (?P<contract>\w+) from (?P<address>[\w]+)`
@@ -128,12 +135,12 @@ func (g *Generator1_0_0) parseImport(ctx context.Context, line string, deployedC
 		// new import syntax detected, convert to old import syntax, limitation of 1.0.0
 		contractName := matches["contract"]
 		placeholder = "0x" + contractName
-		info = getContractInformation(contractName, deployedContracts)
+		info = getContractInformation(contractName, g.deployedContracts, g.coreContracts)
 
 	} else if matches, _ := regexpMatch(oldImportSyntax, line); matches != nil {
 		contractName = matches["contract"]
 		placeholder = matches["address"]
-		info = getContractInformation(contractName, deployedContracts)
+		info = getContractInformation(contractName, g.deployedContracts, g.coreContracts)
 	}
 
 	for name, network := range info {

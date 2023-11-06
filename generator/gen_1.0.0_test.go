@@ -104,6 +104,44 @@ func TestScriptGenCommentBlock(t *testing.T) {
 
 }
 
+func TestMinimumCommentBlock(t *testing.T) {
+	contracts := []flixkit.Contracts{
+		{
+			"HelloWorld": flixkit.Networks{
+				"emulator": flixkit.Network{
+					Address:        "0x01cf0e2f2f715450",
+					FqAddress:      "A.01cf0e2f2f715450.HelloWorld",
+					Contract:       "HelloWorld",
+					Pin:            "xxxxxmake-up-data",
+					PinBlockHeight: 10,
+				},
+			},
+		},
+	}
+	generator := Generator1_0_0{
+		deployedContracts: contracts,
+		testnetClient:     nil,
+		mainnetClient:     nil,
+	}
+	assert := assert.New(t)
+	code := `
+	/*
+		@f_version 1.0.0
+	*/
+	import "HelloWorld"
+
+	pub fun main(): String {
+	return HelloWorld.greeting
+	}
+`
+	template, err := generator.Generate(code)
+	assert.NoError(err, "Generate should not return an error")
+	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+	assert.NoError(err, "marshal template to json should not return an error")
+	autogold.ExpectFile(t, string(prettyJSON))
+
+}
+
 func TestParseImport(t *testing.T) {
 	generator := Generator1_0_0{
 		deployedContracts: []flixkit.Contracts{},

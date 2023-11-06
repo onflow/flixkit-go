@@ -70,26 +70,20 @@ func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowIntera
 	paramDescRE := regexp.MustCompile(`\s*@parameter description (\w+): (.+)`)
 	balanceRE := regexp.MustCompile(`\s*@balance (\w+): (.+)`)
 
-	// Populate the template with extracted data
-	if template.Data.Messages.Title == nil {
-		template.Data.Messages.Title = &flixkit.Title{}
-	}
-	if template.Data.Messages.Title.I18N == nil {
-		template.Data.Messages.Title.I18N = make(map[string]string)
-	}
-	if template.Data.Messages.Description == nil {
-		template.Data.Messages.Description = &flixkit.Description{}
-	}
-	if template.Data.Messages.Title.I18N == nil {
-		template.Data.Messages.Title.I18N = make(map[string]string)
-	}
-
 	langMatch := langRE.FindStringSubmatch(codeCommentBlock)
 	if langMatch == nil {
 		langMatch = []string{"", "en-US"}
 	}
 	messageTitleMatch := messageTitleRE.FindStringSubmatch(codeCommentBlock)
 	if len(messageTitleMatch) > 0 {
+		// Populate the template with extracted data
+		if template.Data.Messages.Title == nil {
+			template.Data.Messages.Title = &flixkit.Title{
+				I18N: map[string]string{
+					"en-US": "",
+				},
+			}
+		}
 		template.Data.Messages.Title = &flixkit.Title{
 			I18N: map[string]string{
 				langMatch[1]: messageTitleMatch[1],
@@ -99,6 +93,13 @@ func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowIntera
 
 	messageDescMatch := messageDescRE.FindStringSubmatch(codeCommentBlock)
 	if len(messageDescMatch) > 0 {
+		if template.Data.Messages.Description == nil {
+			template.Data.Messages.Description = &flixkit.Description{
+				I18N: map[string]string{
+					"en-US": "",
+				},
+			}
+		}
 		template.Data.Messages.Description = &flixkit.Description{
 			I18N: map[string]string{
 				langMatch[1]: messageDescMatch[1],

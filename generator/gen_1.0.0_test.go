@@ -49,9 +49,12 @@ func TestGenerateCommentBlock(t *testing.T) {
 	  }
 	}
 `
-	gen := NewGenerator([]flixkit.Contracts{}, nil, nil)
+	gen := Generator1_0_0{
+		deployedContracts: []flixkit.Contracts{},
+		testnetClient:     nil,
+		mainnetClient:     nil,
+	}
 	template, err := gen.Generate(code)
-
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
@@ -70,9 +73,12 @@ func TestScriptGenCommentBlock(t *testing.T) {
 			},
 		},
 	}
-	generator := NewGenerator(contracts, nil, nil)
+	generator := Generator1_0_0{
+		deployedContracts: contracts,
+		testnetClient:     nil,
+		mainnetClient:     nil,
+	}
 	assert := assert.New(t)
-
 	code := `
 	/*
 		@f_version 1.0.0
@@ -98,7 +104,11 @@ func TestScriptGenCommentBlock(t *testing.T) {
 }
 
 func TestParseImport(t *testing.T) {
-	generator := NewGenerator([]flixkit.Contracts{}, nil, nil)
+	generator := Generator1_0_0{
+		deployedContracts: []flixkit.Contracts{},
+		testnetClient:     nil,
+		mainnetClient:     nil,
+	}
 	fungi := flixkit.Contracts{
 		"FungibleToken": {
 			"mainnet": {

@@ -9,6 +9,11 @@ import (
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go"
 	"github.com/onflow/flow-cli/flowkit"
+	"github.com/onflow/flow-cli/flowkit/config"
+	"github.com/onflow/flow-cli/flowkit/gateway"
+	"github.com/onflow/flow-cli/flowkit/output"
+	"github.com/onflow/flow-go-sdk/crypto"
+	"github.com/spf13/afero"
 )
 
 type Generator1_0_0 struct {
@@ -18,12 +23,31 @@ type Generator1_0_0 struct {
 }
 
 // stubb to pass in parameters
-func NewGenerator(deployedContracts []flixkit.Contracts, testnet *flowkit.Flowkit, mainnet *flowkit.Flowkit) *Generator1_0_0 {
+func NewGenerator(deployedContracts []flixkit.Contracts, logger output.Logger) (*Generator1_0_0, error) {
+	loader := afero.Afero{Fs: afero.NewOsFs()}
+
+	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
+	if err != nil {
+		return nil, fmt.Errorf("could not create grpc gateway for testnet %w", err)
+	}
+
+	gwm, err := gateway.NewGrpcGateway(config.MainnetNetwork)
+	if err != nil {
+		return nil, fmt.Errorf("could not create grpc gateway for mainnet %w", err)
+	}
+
+	state, err := flowkit.Init(loader, crypto.ECDSA_P256, crypto.SHA3_256)
+	if err != nil {
+		return nil, fmt.Errorf("could not initialize flowkit state %w", err)
+	}
+	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
+	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
+
 	return &Generator1_0_0{
 		deployedContracts: deployedContracts,
-		testnetClient:     testnet,
-		mainnetClient:     mainnet,
-	}
+		testnetClient:     testnetClient,
+		mainnetClient:     mainnetClient,
+	}, nil
 }
 
 func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
@@ -113,20 +137,18 @@ func (g *Generator1_0_0) parseImport(ctx context.Context, line string, deployedC
 	}
 
 	for name, network := range info {
-		if name == "mainnet" || name == "testnet" {
-			if g.mainnetClient != nil && g.testnetClient != nil {
-				flowkit := *g.mainnetClient
-				if name == "testnet" {
-					flowkit = *g.testnetClient
-				}
-				if network.Pin == "" {
-					hash, height, _ := generatePinDebthFirst(ctx, flowkit, network.Address, network.Contract)
-					network.Pin = hash
-					network.PinBlockHeight = height
-				}
-			}
-			info[name] = network
+		var flowkit *flowkit.Flowkit
+		if name == config.MainnetNetwork.Name && g.mainnetClient != nil {
+			flowkit = g.mainnetClient
+		} else if name == config.TestnetNetwork.Name && g.testnetClient != nil {
+			flowkit = g.testnetClient
 		}
+		if network.Pin == "" && flowkit != nil {
+			hash, height, _ := generatePinDebthFirst(ctx, *flowkit, network.Address, network.Contract)
+			network.Pin = hash
+			network.PinBlockHeight = height
+		}
+		info[name] = network
 	}
 
 	if info == nil {

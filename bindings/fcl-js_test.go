@@ -1,6 +1,7 @@
 package bindings
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
@@ -180,6 +181,17 @@ var minimumTemplate = &flixkit.FlowInteractionTemplate{
 	},
 }
 
+var minimumNoParamTemplate = &flixkit.FlowInteractionTemplate{
+	FType:    "InteractionTemplate",
+	FVersion: "1.0.0",
+	ID:       "290b6b6222b2a77b16db896a80ddf29ebd1fa3038c9e6625a933fa213fce51fa",
+	Data: flixkit.Data{
+		Type:      "script",
+		Interface: "",
+		Cadence:   "pub fun main(): Int { return 1 }",
+	},
+}
+
 func TestJSGenTransaction(t *testing.T) {
 	generator := FclJSGenerator{
 		TemplateDir: "./templates",
@@ -215,5 +227,14 @@ func TestJSGenMinScript(t *testing.T) {
 
 	out, err := generator.Generate(minimumTemplate, "./min.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
+	autogold.ExpectFile(t, out)
+}
+func TestJSGenNoParamsScript(t *testing.T) {
+	generator := NewFclJSGenerator()
+	assert := assert.New(t)
+
+	out, err := generator.Generate(minimumNoParamTemplate, "./min.template.json", true)
+	assert.NoError(err, "ParseTemplate should not return an error")
+	fmt.Println(out)
 	autogold.ExpectFile(t, out)
 }

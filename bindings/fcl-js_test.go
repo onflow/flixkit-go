@@ -1,7 +1,6 @@
 package bindings
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
@@ -235,6 +234,5 @@ func TestJSGenNoParamsScript(t *testing.T) {
 
 	out, err := generator.Generate(minimumNoParamTemplate, "./min.template.json", true)
 	assert.NoError(err, "ParseTemplate should not return an error")
-	fmt.Println(out)
 	autogold.ExpectFile(t, out)
 }

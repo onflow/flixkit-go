@@ -7,10 +7,14 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./min.template.json"
 
+/**
+*
+* No parameters needed.
+*/
 export async function request() {
   const info = await fcl.query({
     template: flixTemplate,
-    
+
   });
 
   return info

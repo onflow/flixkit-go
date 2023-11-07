@@ -34,15 +34,12 @@ func processParameters(program *ast.Program, code string, template *flixkit.Flow
 // Support FLIP - Interaction Template Cadence Doc
 // # Interaction Template Cadence Doc (v1.0.0)
 // https://github.com/onflow/flips/pull/80
-func processCadenceCommentBlock(cadenceCode string, template *flixkit.FlowInteractionTemplate) error {
+func processCadenceCommentBlock(program *ast.Program, cadenceCode string, template *flixkit.FlowInteractionTemplate) error {
 	commentBlockPattern := regexp.MustCompile(`/\*[\s\S]*?@f_version[\s\S]*?\*/`)
 	codeCommentBlock := commentBlockPattern.FindString(cadenceCode)
 	template.Data.Cadence = cadenceCode
-	fType, err := determineCadenceType(cadenceCode)
+	fType := determineCadenceType(program)
 
-	if err != nil {
-		return err
-	}
 	template.Data.Type = fType
 	if fType == "interface" {
 		template.FType = "InteractionTemplateInterface"
@@ -160,22 +157,16 @@ func regexpMatch(pattern, text string) (map[string]string, error) {
 	return m, nil
 }
 
-func determineCadenceType(code string) (string, error) {
-	// Use regex to match only occurrences not in comments or strings.
-	transactionRegex := regexp.MustCompile(`(?s)\btransaction\s*(?:\([^)]*\))?\s*{.*`)
-	scriptRegex := regexp.MustCompile(`(?m)^\s*pub\s+fun\s+main\(`)
-	interfaceRegex := regexp.MustCompile(`(?m)^\s*(pub|priv)\s+(resource|struct|contract)\s+interface`)
+func determineCadenceType(program *ast.Program) string {
+	funcs := program.FunctionDeclarations()
+	trans := program.TransactionDeclarations()
 
-	if transactionRegex.MatchString(code) {
-		return "transaction", nil
-	} else if scriptRegex.MatchString(code) {
-		return "script", nil
-	} else if interfaceRegex.MatchString(code) {
-		// future support for interface, continue to process code
-		return "interface", nil
+	if len(funcs) > 0 {
+		return "script"
+	} else if len(trans) > 0 {
+		return "transaction"
 	}
-
-	return "", errors.New("could not determine if code is transaction or script")
+	return "interface"
 }
 
 func stripComments(cadenceCode string) string {

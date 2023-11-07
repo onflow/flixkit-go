@@ -4,6 +4,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go"
 )
 
@@ -13,7 +14,7 @@ func TestDepCheck(t *testing.T) {
 		cadenceType string
 	}{
 		{
-			cadence: `import FungibleToken from 0xFungibleTokenAddress
+			cadence: `import "FungibleToken"
 
 			pub fun main(accountAddress: Address): UFix64 {
 				let account = getAccount(accountAddress)
@@ -26,7 +27,7 @@ func TestDepCheck(t *testing.T) {
 			cadenceType: "script",
 		},
 		{
-			cadence: `import FungibleToken from 0xFungibleTokenAddress
+			cadence: `import "FungibleToken"
 
 			transaction(amount: UFix64, recipient: Address) {
 				
@@ -58,12 +59,12 @@ transaction(amount: UFix64, recipient: Address) {
 // More comments
 // Reference to the sender's Vault
 prepare(signer: AuthAccount) {}
-execute {}
+execute {}}
 			`,
 			cadenceType: "transaction",
 		},
 		{
-			cadence: `import NonFungibleToken from 0xNonFungibleTokenAddress
+			cadence: `import "NonFungibleToken"
 
 			pub fun main(accountAddress: Address, tokenId: UInt64): Bool {
 				let account = getAccount(accountAddress)
@@ -94,10 +95,9 @@ execute {}
 
 	for _, tt := range tests {
 		t.Run(tt.cadence, func(t *testing.T) {
-			got, err := determineCadenceType(tt.cadence)
-			if err != nil {
-				t.Errorf("determineCadenceType() err %v", err)
-			}
+			codeBytes := []byte(tt.cadence)
+			program, _ := parser.ParseProgram(nil, codeBytes, parser.Config{})
+			got := determineCadenceType(program)
 			if got != tt.cadenceType {
 				t.Errorf("determineCadenceType() got = %v, want %v", got, tt.cadenceType)
 			}

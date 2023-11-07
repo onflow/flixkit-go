@@ -6,12 +6,10 @@ import (
 	"encoding/hex"
 	"fmt"
 	"regexp"
-	"slices"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
-	"golang.org/x/exp/maps"
 )
 
 type Network struct {
@@ -268,18 +266,6 @@ func GenerateFlixID(flix *FlowInteractionTemplate) (string, error) {
 	return string(rlpOutput), nil
 }
 
-func ProcessMap[M ~map[K]V, K string, V any](m M, fn func(key K, value V) interface{}) []interface{} {
-	keys := maps.Keys(m)
-	slices.Sort(keys)
-
-	list := []interface{}{}
-	for _, key := range keys {
-		value := m[key]
-		list = append(list, fn(key, value))
-	}
-	return list
-}
-
 func ShaHex(value interface{}, debugKey string) string {
 
 	// Convert the value to a byte array
@@ -327,16 +313,17 @@ type ArgumentKey struct {
 
 type ArgumentKeys []ArgumentKey
 
-func (a ArgumentKeys) Len() int           { return len(a) }
-func (a ArgumentKeys) Less(i, j int) bool { return a[i].Index < a[j].Index }
-func (a ArgumentKeys) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-
 func (args Arguments) SortArguments() ArgumentKeys {
 	keys := make(ArgumentKeys, 0, len(args))
 	for key, argument := range args {
 		keys = append(keys, ArgumentKey{Key: key, Argument: argument})
 	}
-	sort.Sort(keys)
+
+	// Use sort.Slice instead of sort.Sort
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i].Index < keys[j].Index
+	})
+
 	return keys
 }
 

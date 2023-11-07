@@ -56,9 +56,8 @@ func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.C
 	}, nil
 }
 
-func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate, error) {
+func (g Generator1_0_0) Generate(ctx context.Context, code string) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
-
 	// strip out imports in case invalid cadenece code is provided with imports that have placeholders like 0xFUNGIBLETOKENADDRESS
 	withoutImports := stripImports(code)
 	codeBytes := []byte(withoutImports)
@@ -72,13 +71,13 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 		return nil, err
 	}
 
-	err = processCadenceCommentBlock(code, template)
+	err = processCadenceCommentBlock(program, code, template)
 	if err != nil {
 		return nil, err
 	}
 
 	// parsing cadence manually cuz cadence parser does not like old import syntax statements "from 0xPLACEHOLDER"
-	err = g.processDependencies(template)
+	err = g.processDependencies(ctx, template)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +91,7 @@ func (g Generator1_0_0) Generate(code string) (*flixkit.FlowInteractionTemplate,
 	return template, nil
 }
 
-func (g Generator1_0_0) processDependencies(template *flixkit.FlowInteractionTemplate) error {
-	ctx := context.Background()
+func (g Generator1_0_0) processDependencies(ctx context.Context, template *flixkit.FlowInteractionTemplate) error {
 	normalizedCode := normalizeImports(template.Data.Cadence)
 	// update cadence code in template so that dependencies match
 	template.Data.Cadence = normalizedCode

@@ -55,7 +55,8 @@ func TestGenerateCommentBlock(t *testing.T) {
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}
-	template, err := gen.Generate(code)
+	ctx := context.Background()
+	template, err := gen.Generate(ctx, code)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
@@ -96,7 +97,8 @@ func TestScriptGenCommentBlock(t *testing.T) {
 	return HelloWorld.greeting
 	}
 `
-	template, err := generator.Generate(code)
+	ctx := context.Background()
+	template, err := generator.Generate(ctx, code)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
@@ -134,7 +136,8 @@ func TestMinimumCommentBlock(t *testing.T) {
 	return HelloWorld.greeting
 	}
 `
-	template, err := generator.Generate(code)
+	ctx := context.Background()
+	template, err := generator.Generate(ctx, code)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")

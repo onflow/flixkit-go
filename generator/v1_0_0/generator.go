@@ -25,7 +25,7 @@ type GeneratorV1_0_0 struct {
 }
 
 // stubb to pass in parameters
-func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts, logger output.Logger) (*GeneratorV1_0_0, error) {
+func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts, logger output.Logger) (flixkit.Generator, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)

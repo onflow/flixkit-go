@@ -4,7 +4,7 @@ import (
 	"github.com/onflow/flixkit-go"
 )
 
-func getDefaultCoreContracts() flixkit.Contracts {
+func GetDefaultCoreContracts() flixkit.Contracts {
 	return flixkit.Contracts{
 		"FungibleToken": {
 			"mainnet": {
@@ -76,7 +76,7 @@ func getDefaultCoreContracts() flixkit.Contracts {
 // GetContractInformation returns the contract information for a given contract name
 // todo: this information should be generated so it can be updated easily
 // todo: this should be moved to a separate package or maybe this inforation already exists somewhere else
-func getContractInformation(contractName string, deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts) flixkit.Networks {
+func GetContractInformation(contractName string, deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts) flixkit.Networks {
 	contracts := make(flixkit.Contracts)
 
 	for contractName, network := range coreContracts {

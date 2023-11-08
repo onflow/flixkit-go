@@ -15,7 +15,7 @@ import (
 	"github.com/onflow/flow-go-sdk"
 )
 
-func processParameters(program *ast.Program, code string, template *flixkit.FlowInteractionTemplate) error {
+func ProcessParameters(program *ast.Program, code string, template *flixkit.FlowInteractionTemplate) error {
 	template.Data.Arguments = make(flixkit.Arguments)
 	if program.SoleTransactionDeclaration() != nil {
 		if program.SoleTransactionDeclaration().ParameterList != nil {
@@ -34,7 +34,7 @@ func processParameters(program *ast.Program, code string, template *flixkit.Flow
 // Support FLIP - Interaction Template Cadence Doc
 // # Interaction Template Cadence Doc (v1.0.0)
 // https://github.com/onflow/flips/pull/80
-func processCadenceCommentBlock(program *ast.Program, cadenceCode string, template *flixkit.FlowInteractionTemplate) error {
+func ProcessCadenceCommentBlock(program *ast.Program, cadenceCode string, template *flixkit.FlowInteractionTemplate) error {
 	commentBlockPattern := regexp.MustCompile(`/\*[\s\S]*?@f_version[\s\S]*?\*/`)
 	codeCommentBlock := commentBlockPattern.FindString(cadenceCode)
 	template.Data.Cadence = cadenceCode
@@ -141,7 +141,7 @@ func processCadenceCommentBlock(program *ast.Program, cadenceCode string, templa
 	return nil
 }
 
-func regexpMatch(pattern, text string) (map[string]string, error) {
+func RegexpMatch(pattern, text string) (map[string]string, error) {
 	r := regexp.MustCompile(pattern)
 	names := r.SubexpNames()
 	match := r.FindStringSubmatch(text)
@@ -181,13 +181,13 @@ func stripComments(cadenceCode string) string {
 	return cadenceCode
 }
 
-func stripImports(cadenceCode string) string {
+func StripImports(cadenceCode string) string {
 	// Match lines starting with optional leading whitespaces followed by the word "import"
 	re := regexp.MustCompile(`(?m)^\s*import.*$\n?`)
 	return re.ReplaceAllString(cadenceCode, "")
 }
 
-func normalizeImports(cadenceCode string) string {
+func NormalizeImports(cadenceCode string) string {
 	// replace new import syntax with old import syntax to be used in templates
 	// import "0xNonFungibleTokenAddress" -> import NonFungibleToken from 0xNonFungibleTokenAddress
 	// Use a regex pattern to match the new import syntax
@@ -256,7 +256,7 @@ func getAddressImports(code []byte, name string) []string {
 }
 
 // future: use service to get deployed contracts hashes
-func generatePinDebthFirst(ctx context.Context, flowkit flowkit.Flowkit, address string, name string) (string, uint64, error) {
+func GeneratePinDebthFirst(ctx context.Context, flowkit flowkit.Flowkit, address string, name string) (string, uint64, error) {
 
 	memoize := map[string][]string{}
 	pin, err := generateDependentPin(ctx, flowkit, address, name, memoize)

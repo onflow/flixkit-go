@@ -11,7 +11,7 @@ import (
 )
 
 type Generator interface {
-	Generate(flix *FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error)
+	Generate(ctx context.Context, code string, preFill *FlowInteractionTemplate) (*FlowInteractionTemplate, error)
 }
 
 type FlixService interface {

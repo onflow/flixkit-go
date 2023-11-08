@@ -1,4 +1,4 @@
-package generator
+package v1_0_0
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 
 	"github.com/hexops/autogold/v2"
 	"github.com/onflow/flixkit-go"
+	"github.com/onflow/flixkit-go/generator"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,9 +50,9 @@ func TestGenerateCommentBlock(t *testing.T) {
 	  }
 	}
 `
-	gen := Generator1_0_0{
+	gen := GeneratorV1_0_0{
 		deployedContracts: []flixkit.Contracts{},
-		coreContracts:     getDefaultCoreContracts(),
+		coreContracts:     generator.GetDefaultCoreContracts(),
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}
@@ -75,7 +76,7 @@ func TestScriptGenCommentBlock(t *testing.T) {
 			},
 		},
 	}
-	generator := Generator1_0_0{
+	generator := GeneratorV1_0_0{
 		deployedContracts: contracts,
 		testnetClient:     nil,
 		mainnetClient:     nil,
@@ -120,7 +121,7 @@ func TestMinimumCommentBlock(t *testing.T) {
 			},
 		},
 	}
-	generator := Generator1_0_0{
+	generator := GeneratorV1_0_0{
 		deployedContracts: contracts,
 		testnetClient:     nil,
 		mainnetClient:     nil,
@@ -146,9 +147,9 @@ func TestMinimumCommentBlock(t *testing.T) {
 }
 
 func TestParseImport(t *testing.T) {
-	generator := Generator1_0_0{
+	generator := GeneratorV1_0_0{
 		deployedContracts: []flixkit.Contracts{},
-		coreContracts:     getDefaultCoreContracts(),
+		coreContracts:     generator.GetDefaultCoreContracts(),
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}

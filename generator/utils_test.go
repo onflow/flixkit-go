@@ -1,8 +1,10 @@
 package generator
 
 import (
+	"encoding/json"
 	"testing"
 
+	"github.com/hexops/autogold/v2"
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go"
 )
@@ -256,6 +258,91 @@ func TestGenerateTemplateIdWithDeps(t *testing.T) {
 		t.Errorf("GenerateFlixID got = %v, want %v", id, templateId)
 	}
 
+}
+
+func TestGenerateParameters(t *testing.T) {
+	templateString := `
+	{
+		"f_type": "InteractionTemplate",
+		"f_version": "1.0.0",
+		"id": "",
+		"data":
+		{
+			"type": "transaction",
+			"interface": "",
+			"messages":
+			{
+				"title":
+				{
+					"i18n":
+					{
+						"en-US": "Transfer Tokens"
+					}
+				},
+				"description":
+				{
+					"i18n":
+					{
+						"en-US": "Transfer tokens from one account to another"
+					}
+				}
+			},
+			"cadence": "import FungibleToken from 0xFungibleToken\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
+			"dependencies":
+			{
+				"0xFungibleToken":
+				{
+					"FungibleToken":
+					{
+						"mainnet":
+						{
+							"address": "0xf233dcee88fe0abe",
+							"fq_address": "A.0xf233dcee88fe0abe.FungibleToken",
+							"contract": "FungibleToken",
+							"pin": "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
+							"pin_block_height": 34166296
+						},
+						"testnet":
+						{
+							"address": "0x9a0766d93b6608b7",
+							"fq_address": "A.0x9a0766d93b6608b7.FungibleToken",
+							"contract": "FungibleToken",
+							"pin": "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
+							"pin_block_height": 74776482
+						}
+					}
+				}
+			}
+		}
+	}`
+	cadence := `
+	import "HelloWorld"
+	transaction(greeting: String) {
+	
+	  prepare(acct: AuthAccount) {
+		log(acct.address)
+	  }
+	
+	  execute {
+		HelloWorld.updateGreeting(newGreeting: greeting)
+	  }
+	}
+	
+`
+	codeBytes := []byte(cadence)
+	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
+
+	template, err := flixkit.ParseFlix(templateString)
+	if err != nil {
+		t.Errorf("ParseFlix() err %v", err)
+	}
+	err = ProcessParameters(program, template)
+	if err != nil {
+		t.Errorf("GenerateFlixID err %v", err)
+	}
+	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+
+	autogold.ExpectFile(t, string(prettyJSON))
 }
 
 func TestUnNormalizeCode(t *testing.T) {

@@ -17,13 +17,21 @@ import (
 func ProcessParameters(program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
 	if program.SoleTransactionDeclaration() != nil {
 		if program.SoleTransactionDeclaration().ParameterList != nil {
+			if template.Data.Arguments == nil {
+				template.Data.Arguments = flixkit.Arguments{}
+			}
+
 			for i, param := range program.SoleTransactionDeclaration().ParameterList.Parameters {
+
+				fmt.Println(i, param.Identifier.String(), param.TypeAnnotation.Type.String())
 				template.Data.Arguments[param.Identifier.String()] = flixkit.Argument{
 					Type:  param.TypeAnnotation.Type.String(),
 					Index: i,
 				}
 			}
 		}
+	} else {
+		fmt.Println("no parameters")
 	}
 
 	return nil

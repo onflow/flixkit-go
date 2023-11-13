@@ -146,65 +146,58 @@ func TestMinimumCommentBlock(t *testing.T) {
 
 }
 
-func TestParseImport(t *testing.T) {
-	generator := GeneratorV1_0_0{
-		deployedContracts: []flixkit.Contracts{},
-		coreContracts:     generator.GetDefaultCoreContracts(),
-		testnetClient:     nil,
-		mainnetClient:     nil,
-	}
+func TestGetDependenceContract(t *testing.T) {
 	fungi := flixkit.Contracts{
-		"FungibleToken": {
+		"LocalContract": {
 			"mainnet": {
 				Address:        "0xf233dcee88fe0abe",
-				FqAddress:      "A.0xf233dcee88fe0abe.FungibleToken",
-				Contract:       "FungibleToken",
+				FqAddress:      "A.0xf233dcee88fe0abe.LocalContract",
+				Contract:       "LocalContract",
 				Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
 				PinBlockHeight: 34166296,
 			},
 			"testnet": {
 				Address:        "0x9a0766d93b6608b7",
-				FqAddress:      "A.0x9a0766d93b6608b7.FungibleToken",
-				Contract:       "FungibleToken",
+				FqAddress:      "A.0x9a0766d93b6608b7.LocalContract",
+				Contract:       "LocalContract",
 				Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
 				PinBlockHeight: 74776482,
 			},
 		},
 	}
+	genV1 := GeneratorV1_0_0{
+		deployedContracts: []flixkit.Contracts{fungi},
+		coreContracts:     generator.GetDefaultCoreContracts(),
+		testnetClient:     nil,
+		mainnetClient:     nil,
+	}
+
 	tests := []struct {
-		cadence string
-		want    flixkit.Contracts
+		contractName string
+		want         flixkit.Contracts
 	}{
 		{
-			cadence: `import FungibleToken from 0xFungibleTokenAddress`,
-			want:    fungi,
+			contractName: `FungibleToken`,
+			want:         fungi,
 		},
 		{
-			cadence: `import "FungibleToken"`,
-			want:    fungi,
-		},
-		{
-			cadence: `import FungibleToken from 0x9a0766d93b6608b7`,
-			want:    fungi,
-		},
-		{
-			cadence: `import "FungibleToken"`,
-			want:    fungi,
+			contractName: `LocalContract`,
+			want:         fungi,
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.cadence, func(t *testing.T) {
-			got, err := generator.parseImport(context.Background(), tt.cadence)
+		t.Run(tt.contractName, func(t *testing.T) {
+			got, err := genV1.generateDependenceInfo(context.Background(), tt.contractName)
 			if err != nil {
-				t.Errorf("parseImport() err %v", err)
+				t.Errorf("generateDependenceInfo() err %v", err)
 			}
 			if got == nil {
-				t.Errorf("parseImport() got = %v, want %v", got, tt.want)
+				t.Errorf("generateDependenceInfo() got = %v, want %v", got, tt.want)
 			}
 			prettyJSON, err := json.MarshalIndent(got, "", "    ")
 			if err != nil {
-				t.Errorf("parseImport() err %v", err)
+				t.Errorf("generateDependenceInfo() err %v", err)
 			}
 			autogold.ExpectFile(t, string(prettyJSON))
 		})

@@ -2,7 +2,6 @@ package generator
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -15,7 +14,7 @@ import (
 	"github.com/onflow/flow-go-sdk"
 )
 
-func ProcessParameters(program *ast.Program, code string, template *flixkit.FlowInteractionTemplate) error {
+func ProcessParameters(program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
 	template.Data.Arguments = make(flixkit.Arguments)
 	if program.SoleTransactionDeclaration() != nil {
 		if program.SoleTransactionDeclaration().ParameterList != nil {
@@ -25,116 +24,6 @@ func ProcessParameters(program *ast.Program, code string, template *flixkit.Flow
 					Index: i,
 				}
 			}
-		}
-	}
-
-	return nil
-}
-
-// Support FLIP - Interaction Template Cadence Doc
-// # Interaction Template Cadence Doc (v1.0.0)
-// https://github.com/onflow/flips/pull/80
-func ProcessCadenceCommentBlock(program *ast.Program, cadenceCode string, template *flixkit.FlowInteractionTemplate) error {
-	commentBlockPattern := regexp.MustCompile(`/\*[\s\S]*?@f_version[\s\S]*?\*/`)
-	codeCommentBlock := commentBlockPattern.FindString(cadenceCode)
-	template.Data.Cadence = cadenceCode
-	fType := determineCadenceType(program)
-
-	template.Data.Type = fType
-	if fType == "interface" {
-		template.FType = "InteractionTemplateInterface"
-	}
-
-	// no comment block found
-	if codeCommentBlock == "" {
-		return nil
-	}
-
-	versionRE := regexp.MustCompile(`\s*@f_version (.+)`)
-	template.FVersion = versionRE.FindStringSubmatch(codeCommentBlock)[1]
-	template.FType = "InteractionTemplate"
-	// branch logic for version 1.0.0 and future 1.1.0, currently 1.1.0 not supported
-	if template.FVersion != "1.0.0" {
-		return errors.New("only version 1.0.0 is supported at this time")
-	}
-
-	// Regular expressions for various properties
-	messageTitleRE := regexp.MustCompile(`\s*@message title: (.+)`)
-	messageDescRE := regexp.MustCompile(`\s*@message description: (.+)`)
-
-	langRE := regexp.MustCompile(`\s*@lang (.+)`)
-	paramTitleRE := regexp.MustCompile(`\s*@parameter title (\w+): (.+)`)
-	paramDescRE := regexp.MustCompile(`\s*@parameter description (\w+): (.+)`)
-	balanceRE := regexp.MustCompile(`\s*@balance (\w+): (.+)`)
-
-	langMatch := langRE.FindStringSubmatch(codeCommentBlock)
-	if langMatch == nil {
-		langMatch = []string{"", "en-US"}
-	}
-	messageTitleMatch := messageTitleRE.FindStringSubmatch(codeCommentBlock)
-	if len(messageTitleMatch) > 0 {
-		// Populate the template with extracted data
-		if template.Data.Messages.Title == nil {
-			template.Data.Messages.Title = &flixkit.Title{
-				I18N: map[string]string{
-					"en-US": "",
-				},
-			}
-		}
-		template.Data.Messages.Title = &flixkit.Title{
-			I18N: map[string]string{
-				langMatch[1]: messageTitleMatch[1],
-			},
-		}
-	}
-
-	messageDescMatch := messageDescRE.FindStringSubmatch(codeCommentBlock)
-	if len(messageDescMatch) > 0 {
-		if template.Data.Messages.Description == nil {
-			template.Data.Messages.Description = &flixkit.Description{
-				I18N: map[string]string{
-					"en-US": "",
-				},
-			}
-		}
-		template.Data.Messages.Description = &flixkit.Description{
-			I18N: map[string]string{
-				langMatch[1]: messageDescMatch[1],
-			},
-		}
-	}
-
-	paramTitleMatches := paramTitleRE.FindAllStringSubmatch(codeCommentBlock, -1)
-	paramDescMatches := paramDescRE.FindAllStringSubmatch(codeCommentBlock, -1)
-	balanceMatches := balanceRE.FindAllStringSubmatch(codeCommentBlock, -1)
-
-	for _, match := range paramTitleMatches {
-		argName := match[1]
-		argTitle := match[2]
-
-		if arg, exists := template.Data.Arguments[argName]; exists {
-			arg.Messages.Title = &flixkit.Title{I18N: map[string]string{langRE.FindStringSubmatch(codeCommentBlock)[1]: argTitle}}
-			template.Data.Arguments[argName] = arg
-		}
-	}
-
-	for _, match := range paramDescMatches {
-		argName := match[1]
-		argDesc := match[2]
-
-		if arg, exists := template.Data.Arguments[argName]; exists {
-			arg.Messages.Description = &flixkit.Description{I18N: map[string]string{langRE.FindStringSubmatch(codeCommentBlock)[1]: argDesc}}
-			template.Data.Arguments[argName] = arg
-		}
-	}
-
-	for _, match := range balanceMatches {
-		argName := match[1]
-		balance := match[2]
-
-		if arg, exists := template.Data.Arguments[argName]; exists {
-			arg.Balance = balance
-			template.Data.Arguments[argName] = arg
 		}
 	}
 
@@ -169,41 +58,35 @@ func determineCadenceType(program *ast.Program) string {
 	return "interface"
 }
 
-func stripComments(cadenceCode string) string {
-	// Strip block comments
-	blockCommentRe := regexp.MustCompile(`(?s)/\*.*?\*/`)
-	cadenceCode = blockCommentRe.ReplaceAllString(cadenceCode, "")
-
-	// Strip single line comments
-	singleCommentRe := regexp.MustCompile(`//.*\n?`)
-	cadenceCode = singleCommentRe.ReplaceAllString(cadenceCode, "")
-
-	return cadenceCode
-}
-
-func StripImports(cadenceCode string) string {
-	// Match lines starting with optional leading whitespaces followed by the word "import"
-	re := regexp.MustCompile(`(?m)^\s*import.*$\n?`)
-	return re.ReplaceAllString(cadenceCode, "")
-}
-
 func NormalizeImports(cadenceCode string) string {
-	// replace new import syntax with old import syntax to be used in templates
-	// import "0xNonFungibleTokenAddress" -> import NonFungibleToken from 0xNonFungibleTokenAddress
-	// Use a regex pattern to match the new import syntax
-	pattern := regexp.MustCompile(`import "(.+?)"`)
-
-	// Replace the matched pattern with the old syntax
-	replaced := pattern.ReplaceAllStringFunc(cadenceCode, func(match string) string {
-		submatch := pattern.FindStringSubmatch(match)
-		if len(submatch) > 1 {
-			return fmt.Sprintf(`import %s from 0x%s`, submatch[1], submatch[1])
-		}
-		return match
-	})
-
+	// Define a regular expression to match the "import ContractName from 0xContractName" pattern
+	pattern := regexp.MustCompile(`import\s+(\w+)\s+from\s+0x\w+`)
+	// Replace the matched pattern with "import \"ContractName\""
+	replaced := pattern.ReplaceAllString(cadenceCode, `import "$1"`)
 	return replaced
+}
 
+func UnNormalizeImports(cadenceCode string) string {
+	// Define a regular expression to match the import "ContractName" pattern
+	pattern := regexp.MustCompile(`import "(.+?)"`)
+	// Replace the matched pattern with "import ContractName from 0xContractName"
+	replaced := pattern.ReplaceAllString(cadenceCode, `import $1 from 0x$1`)
+	return replaced
+}
+
+func ExtractContractName(importStr string) (string, error) {
+	// Create a regex pattern to find the contract name inside the quotes
+	pattern := regexp.MustCompile(`import "([^"]+)"`)
+	matches := pattern.FindStringSubmatch(importStr)
+
+	// Check if we found a match and that the match has at least two elements
+	// The first element (0 index) is the entire match
+	// The second element (1 index) is the first captured group, which is the contract name
+	if len(matches) >= 2 {
+		return matches[1], nil
+	}
+
+	return "", fmt.Errorf("no contract name found in string")
 }
 
 /*

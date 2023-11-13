@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/onflow/cadence/runtime/parser"
@@ -104,81 +103,6 @@ execute {}}
 		})
 	}
 
-}
-
-func TestStripComments(t *testing.T) {
-	removedComment := "Here is a comment"
-	tests := []struct {
-		cadence string
-	}{
-		{
-			cadence: `import FungibleToken from 0xFungibleTokenAddress
-			/* Here is a comment */
-			pub fun main(accountAddress: Address): UFix64 {
-				return balanceRef.balance
-			}
-			`,
-		},
-		{
-			cadence: `import FungibleToken from 0xFungibleTokenAddress
-
-			transaction(amount: UFix64, recipient: Address) {
-				/* 
-				Here is a comment
-				*/
-				execute {
-
-				}
-			}
-			`,
-		}, {
-			cadence: `
-/*
-Here are some comments and transaction is on start of a line
-*/
-transaction(amount: UFix64, recipient: Address) {
-// Here is a comment
-// Here is a comment
-prepare(signer: AuthAccount) {}
-execute {}
-			`,
-		},
-		{
-			cadence: `import NonFungibleToken from 0xNonFungibleTokenAddress
-			/*
-			Here is a comment
-			Her is a comment
-			*/
-			pub fun main(accountAddress: Address, tokenId: UInt64): Bool {
-				return collectionRef.borrowNFT(id: tokenId) != nil
-			}
-			`,
-		},
-		{
-			cadence: `pub contract interface TokenContract {
-				/* Here is a comment */
-				// Here is a comment
-				pub fun totalSupply(): UFix64
-			
-				// Returns the balance of the specified address
-				pub fun balanceOf(address: Address): UFix64
-			
-				// Transfers tokens from one address to another
-				pub fun transfer(from: Address, to: Address, amount: UFix64): Bool
-			}
-			`,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.cadence, func(t *testing.T) {
-			got := stripComments(tt.cadence)
-
-			if strings.Contains(got, removedComment) {
-				t.Errorf("stripComments got = %v, want no comments", got)
-			}
-		})
-	}
 }
 
 func TestGenerateTemplateId(t *testing.T) {
@@ -330,6 +254,124 @@ func TestGenerateTemplateIdWithDeps(t *testing.T) {
 
 	if id != templateId {
 		t.Errorf("GenerateFlixID got = %v, want %v", id, templateId)
+	}
+
+}
+
+func TestUnNormalizeCode(t *testing.T) {
+	tests := []struct {
+		cadence      string
+		unNormalized string
+	}{
+		{
+			cadence: `import "FungibleToken"
+			/* Here is a comment */
+			pub fun main(accountAddress: Address): UFix64 {
+				return balanceRef.balance
+			}
+			`,
+			unNormalized: `import FungibleToken from 0xFungibleToken
+			/* Here is a comment */
+			pub fun main(accountAddress: Address): UFix64 {
+				return balanceRef.balance
+			}
+			`,
+		},
+		{
+			cadence: `import "NonFungibleToken"
+			import "FungibleToken"
+
+			transaction(amount: UFix64, recipient: Address) {
+				/* 
+				Here is a comment
+				*/
+				execute {
+
+				}
+			}
+			`,
+			unNormalized: `import NonFungibleToken from 0xNonFungibleToken
+			import FungibleToken from 0xFungibleToken
+
+			transaction(amount: UFix64, recipient: Address) {
+				/* 
+				Here is a comment
+				*/
+				execute {
+
+				}
+			}
+			`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.cadence, func(t *testing.T) {
+			got := UnNormalizeImports(tt.cadence)
+
+			if got != tt.unNormalized {
+				t.Errorf("UnNormalizedImports got = %v, want %v", got, tt.unNormalized)
+			}
+		})
+	}
+
+}
+
+func TestNormalizeCode(t *testing.T) {
+	tests := []struct {
+		cadence    string
+		normalized string
+	}{
+		{
+			cadence: `import FungibleToken from 0xFungibleToken
+			/* Here is a comment */
+			pub fun main(accountAddress: Address): UFix64 {
+				return balanceRef.balance
+			}
+			`,
+			normalized: `import "FungibleToken"
+			/* Here is a comment */
+			pub fun main(accountAddress: Address): UFix64 {
+				return balanceRef.balance
+			}
+			`,
+		},
+		{
+			cadence: `import NonFungibleToken from 0xNonFungibleToken
+			import FungibleToken from 0xFungibleToken
+
+			transaction(amount: UFix64, recipient: Address) {
+				/* 
+				Here is a comment
+				*/
+				execute {
+
+				}
+			}
+			`,
+			normalized: `import "NonFungibleToken"
+			import "FungibleToken"
+
+			transaction(amount: UFix64, recipient: Address) {
+				/* 
+				Here is a comment
+				*/
+				execute {
+
+				}
+			}
+			`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.cadence, func(t *testing.T) {
+			got := NormalizeImports(tt.cadence)
+
+			if got != tt.normalized {
+				t.Errorf("NormalizedImports got = %v, want %v", got, tt.normalized)
+			}
+		})
 	}
 
 }

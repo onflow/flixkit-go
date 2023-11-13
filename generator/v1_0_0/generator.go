@@ -3,9 +3,8 @@ package v1_0_0
 import (
 	"context"
 	"fmt"
-	"regexp"
-	"sort"
 
+	"github.com/onflow/cadence/runtime/ast"
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go"
 	"github.com/onflow/flixkit-go/generator"
@@ -62,25 +61,24 @@ func (g GeneratorV1_0_0) Generate(ctx context.Context, code string, preFill *fli
 	if preFill != nil {
 		template = preFill
 	}
-	// strip out imports in case invalid cadenece code is provided with imports that have placeholders like 0xFUNGIBLETOKENADDRESS
-	withoutImports := generator.StripImports(code)
-	codeBytes := []byte(withoutImports)
+
+	// make sure imports use new import syntax "string import"
+	normalizedCode := generator.NormalizeImports(code)
+
+	codeBytes := []byte(normalizedCode)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
 	if err != nil {
 		return nil, err
 	}
 
-	err = generator.ProcessParameters(program, code, template)
+	err = generator.ProcessParameters(program, template)
 	if err != nil {
 		return nil, err
 	}
 
-	err = generator.ProcessCadenceCommentBlock(program, code, template)
-	if err != nil {
-		return nil, err
-	}
-	// parsing cadence manually cuz cadence parser does not like old import syntax statements "from 0xPLACEHOLDER"
-	err = g.processDependencies(ctx, template)
+	// save v1.0.0 cadence code to template, with placeholder imports
+	template.Data.Cadence = generator.UnNormalizeImports(normalizedCode)
+	err = g.processDependencies(ctx, program, template)
 	if err != nil {
 		return nil, err
 	}
@@ -94,14 +92,8 @@ func (g GeneratorV1_0_0) Generate(ctx context.Context, code string, preFill *fli
 	return template, nil
 }
 
-func (g GeneratorV1_0_0) processDependencies(ctx context.Context, template *flixkit.FlowInteractionTemplate) error {
-	normalizedCode := generator.NormalizeImports(template.Data.Cadence)
-	// update cadence code in template so that dependencies match
-	template.Data.Cadence = normalizedCode
-	re := regexp.MustCompile(`(?m)^\s*import.*$`)
-	imports := re.FindAllString(normalizedCode, -1)
-	// sort imports so they are processed consistently
-	sort.Strings(imports)
+func (g GeneratorV1_0_0) processDependencies(ctx context.Context, program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
+	imports := program.ImportDeclarations()
 
 	if len(imports) == 0 {
 		return nil
@@ -110,7 +102,11 @@ func (g GeneratorV1_0_0) processDependencies(ctx context.Context, template *flix
 	// fill in dependence information
 	deps := make(flixkit.Dependencies, len(imports))
 	for _, imp := range imports {
-		dep, err := g.parseImport(ctx, imp)
+		contractName, err := generator.ExtractContractName(imp.String())
+		if err != nil {
+			return err
+		}
+		dep, err := g.generateDependenceInfo(ctx, contractName)
 		if err != nil {
 			return err
 		}
@@ -123,24 +119,12 @@ func (g GeneratorV1_0_0) processDependencies(ctx context.Context, template *flix
 	return nil
 }
 
-func (g *GeneratorV1_0_0) parseImport(ctx context.Context, line string) (map[string]flixkit.Contracts, error) {
-	// Define regex patterns
-	importSyntax := `import "(?P<contract>[^"]+)"`
-	oldImportSyntax := `import (?P<contract>\w+) from (?P<address>[\w]+)`
-
+func (g *GeneratorV1_0_0) generateDependenceInfo(ctx context.Context, contractName string) (map[string]flixkit.Contracts, error) {
 	var placeholder string
-	var contractName string
 	var info flixkit.Networks
-	if matches, _ := generator.RegexpMatch(importSyntax, line); matches != nil {
-		// new import syntax detected, convert to old import syntax, limitation of 1.0.0
-		contractName := matches["contract"]
-		placeholder = "0x" + contractName
-		info = generator.GetContractInformation(contractName, g.deployedContracts, g.coreContracts)
-	} else if matches, _ := generator.RegexpMatch(oldImportSyntax, line); matches != nil {
-		contractName = matches["contract"]
-		placeholder = matches["address"]
-		info = generator.GetContractInformation(contractName, g.deployedContracts, g.coreContracts)
-	}
+	// new import syntax detected, convert to old import syntax, limitation of 1.0.0
+	placeholder = "0x" + contractName
+	info = generator.GetContractInformation(contractName, g.deployedContracts, g.coreContracts)
 
 	for name, network := range info {
 		var flowkit *flowkit.Flowkit

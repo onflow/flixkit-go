@@ -11,28 +11,73 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGenerateCommentBlock(t *testing.T) {
+func TestGenerateWithPrefill(t *testing.T) {
 	assert := assert.New(t)
+	templatePreFill := `{
+		"f_type": "InteractionTemplate",
+		"f_version": "1.0.0",
+		"id": "",
+		"data": {
+			"type": "transaction",
+			"interface": "",
+			"messages": {
+				"title": {
+					"i18n": {
+						"en-US": "Transfer Tokens"
+					}
+				},
+				"description": {
+					"i18n": {
+						"en-US": "Transfer tokens from one account to another"
+					}
+				}
+			},
+			"cadence": "",
+			"dependencies": {},
+			"arguments": {
+				"amount": {
+					"index": 0,
+					"type": "UFix64",
+					"messages": {
+						"title": {
+							"i18n": {
+								"en-US": "Amount "
+							}
+						},
+						"description": {
+							"i18n": {
+								"en-US": "Number of tokens to transfer"
+							}
+						}
+					},
+					"balance": ""
+				},
+				"to": {
+					"index": 1,
+					"type": "Address",
+					"messages": {
+						"title": {
+							"i18n": {
+								"en-US": "Account"
+							}
+						},
+						"description": {
+							"i18n": {
+								"en-US": "Destination Account"
+							}
+						}
+					},
+					"balance": ""
+				}
+			}
+		}
+	}`
+	prefill, _ := flixkit.ParseFlix(templatePreFill)
 
 	code := `
 	import FungibleToken from 0xFungibleTokenAddress
 	import FlowToken from 0xFlowTokenAddress
 	
-	/**
-	@f_version 1.0.0
-	@lang en-US
-
-	@message title: Transfer Tokens
-	@message description: Transfer tokens from one account to another
-	
-	@parameter title amount: Amount
-	@parameter title to: To
-	@parameter description amount: The amount of FLOW tokens to send
-	@parameter description to: The Flow account the tokens will go to
-	
-	@balance amount: FlowToken
-	*/
-
 	transaction(amount: UFix64, to: Address) {
 	  let vault: @FungibleToken.Vault
 	
@@ -57,14 +102,39 @@ func TestGenerateCommentBlock(t *testing.T) {
 		mainnetClient:     nil,
 	}
 	ctx := context.Background()
-	template, err := gen.Generate(ctx, code, nil)
+	template, err := gen.Generate(ctx, code, prefill)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
 	autogold.ExpectFile(t, string(prettyJSON))
 }
 
-func TestScriptGenCommentBlock(t *testing.T) {
+func TestSimpleScriptGen(t *testing.T) {
+	templatePreFill := `{
+		"f_type": "InteractionTemplate",
+		"f_version": "1.0.0",
+		"id": "",
+		"data": {
+			"type": "script",
+			"interface": "",
+			"messages": {
+				"title": {
+					"i18n": {
+						"en-US": "read Greeting"
+					}
+				},
+				"description": {
+					"i18n": {
+						"en-US": "read greeting of the HelloWorld smart contract"
+					}
+				}
+			},
+			"cadence": "",
+			"dependencies": {},
+			"arguments": {}
+		}
+	}`
+	prefill, _ := flixkit.ParseFlix(templatePreFill)
 	contracts := []flixkit.Contracts{
 		{
 			"HelloWorld": flixkit.Networks{
@@ -83,15 +153,6 @@ func TestScriptGenCommentBlock(t *testing.T) {
 	}
 	assert := assert.New(t)
 	code := `
-	/*
-		@f_version 1.0.0
-		@lang en-US
-
-		@message title: read greeting
-		@message description: read greeting of the HelloWorld smart contract
-
-		@return title greeting: Greeting
-	*/
 	import "HelloWorld"
 
 	pub fun main(): String {
@@ -99,7 +160,7 @@ func TestScriptGenCommentBlock(t *testing.T) {
 	}
 `
 	ctx := context.Background()
-	template, err := generator.Generate(ctx, code, nil)
+	template, err := generator.Generate(ctx, code, prefill)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
@@ -107,7 +168,7 @@ func TestScriptGenCommentBlock(t *testing.T) {
 
 }
 
-func TestMinimumCommentBlock(t *testing.T) {
+func TestMinimumValues(t *testing.T) {
 	contracts := []flixkit.Contracts{
 		{
 			"HelloWorld": flixkit.Networks{
@@ -128,9 +189,6 @@ func TestMinimumCommentBlock(t *testing.T) {
 	}
 	assert := assert.New(t)
 	code := `
-	/*
-		@f_version 1.0.0
-	*/
 	import "HelloWorld"
 
 	pub fun main(): String {

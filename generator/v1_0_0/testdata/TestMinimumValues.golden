@@ -1,12 +1,12 @@
 `{
     "f_type": "InteractionTemplate",
     "f_version": "1.0.0",
-    "id": "c5664dce3ab79a7a6cbca147ea0b7b497418d24d6add50f647bdae7956d757fe",
+    "id": "325ce118598e38d5c282415ebe4fab7530a30f26af3d414abf229efb83bab97a",
     "data": {
         "type": "script",
         "interface": "",
         "messages": {},
-        "cadence": "\n\t/*\n\t\t@f_version 1.0.0\n\t*/\n\timport HelloWorld from 0xHelloWorld\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
+        "cadence": "\n\timport HelloWorld from 0xHelloWorld\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
         "dependencies": {
             "0xHelloWorld": {
                 "HelloWorld": {
@@ -20,6 +20,6 @@
                 }
             }
         },
-        "arguments": {}
+        "arguments": null
     }
 }`

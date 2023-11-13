@@ -83,6 +83,10 @@ func (g GeneratorV1_0_0) Generate(ctx context.Context, code string, preFill *fli
 		return nil, err
 	}
 
+	// ignore interface type for now
+	template.FType = "InteractionTemplate"
+	template.FVersion = "1.0.0"
+	template.Data.Type = generator.DetermineCadenceType(program)
 	id, err := flixkit.GenerateFlixID(template)
 	if err != nil {
 		return nil, err

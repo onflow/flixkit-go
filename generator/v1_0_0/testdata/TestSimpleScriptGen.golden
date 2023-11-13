@@ -1,14 +1,14 @@
 `{
     "f_type": "InteractionTemplate",
     "f_version": "1.0.0",
-    "id": "54898889fd632fdbf446edf3222d065eaa534728f6122130563a8c7194dfab05",
+    "id": "fccf61e27f0fde29fb4ea6e51de36f454297c2e92f6f3ec2f7cece1243737261",
     "data": {
         "type": "script",
         "interface": "",
         "messages": {
             "title": {
                 "i18n": {
-                    "en-US": "read greeting"
+                    "en-US": "read Greeting"
                 }
             },
             "description": {
@@ -17,7 +17,7 @@
                 }
             }
         },
-        "cadence": "\n\t/*\n\t\t@f_version 1.0.0\n\t\t@lang en-US\n\n\t\t@message title: read greeting\n\t\t@message description: read greeting of the HelloWorld smart contract\n\n\t\t@return title greeting: Greeting\n\t*/\n\timport HelloWorld from 0xHelloWorld\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
+        "cadence": "\n\timport HelloWorld from 0xHelloWorld\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
         "dependencies": {
             "0xHelloWorld": {
                 "HelloWorld": {

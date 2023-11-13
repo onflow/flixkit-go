@@ -96,9 +96,9 @@ execute {}}
 		t.Run(tt.cadence, func(t *testing.T) {
 			codeBytes := []byte(tt.cadence)
 			program, _ := parser.ParseProgram(nil, codeBytes, parser.Config{})
-			got := determineCadenceType(program)
+			got := DetermineCadenceType(program)
 			if got != tt.cadenceType {
-				t.Errorf("determineCadenceType() got = %v, want %v", got, tt.cadenceType)
+				t.Errorf("DetermineCadenceType() got = %v, want %v", got, tt.cadenceType)
 			}
 		})
 	}

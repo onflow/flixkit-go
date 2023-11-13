@@ -15,7 +15,6 @@ import (
 )
 
 func ProcessParameters(program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
-	template.Data.Arguments = make(flixkit.Arguments)
 	if program.SoleTransactionDeclaration() != nil {
 		if program.SoleTransactionDeclaration().ParameterList != nil {
 			for i, param := range program.SoleTransactionDeclaration().ParameterList.Parameters {
@@ -46,7 +45,7 @@ func RegexpMatch(pattern, text string) (map[string]string, error) {
 	return m, nil
 }
 
-func determineCadenceType(program *ast.Program) string {
+func DetermineCadenceType(program *ast.Program) string {
 	funcs := program.FunctionDeclarations()
 	trans := program.TransactionDeclarations()
 
@@ -79,9 +78,6 @@ func ExtractContractName(importStr string) (string, error) {
 	pattern := regexp.MustCompile(`import "([^"]+)"`)
 	matches := pattern.FindStringSubmatch(importStr)
 
-	// Check if we found a match and that the match has at least two elements
-	// The first element (0 index) is the entire match
-	// The second element (1 index) is the first captured group, which is the contract name
 	if len(matches) >= 2 {
 		return matches[1], nil
 	}

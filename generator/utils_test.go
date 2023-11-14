@@ -312,6 +312,29 @@ func TestGenerateParameters(t *testing.T) {
 						}
 					}
 				}
+			},
+			"arguments":
+			{
+				"greeting":
+				{
+					"messages":
+					{
+						"title":
+						{
+							"i18n":
+							{
+								"en-US": "Greeting Update"
+							}
+						},
+						"description":
+						{
+							"i18n":
+							{
+								"en-US": "Update contract greeting message"
+							}
+						}
+					}
+				}
 			}
 		}
 	}`
@@ -338,7 +361,7 @@ func TestGenerateParameters(t *testing.T) {
 	}
 	err = ProcessParameters(program, template)
 	if err != nil {
-		t.Errorf("GenerateFlixID err %v", err)
+		t.Errorf("process parameters err %v", err)
 	}
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 

@@ -42,7 +42,18 @@
             "greeting": {
                 "index": 0,
                 "type": "String",
-                "messages": {},
+                "messages": {
+                    "title": {
+                        "i18n": {
+                            "en-US": "Greeting Update"
+                        }
+                    },
+                    "description": {
+                        "i18n": {
+                            "en-US": "Update contract greeting message"
+                        }
+                    }
+                },
                 "balance": ""
             }
         }

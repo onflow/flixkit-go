@@ -1,4 +1,4 @@
-package v1_0_0
+package flixkitv1_0_0
 
 import (
 	"context"
@@ -95,7 +95,7 @@ func TestGenerateWithPrefill(t *testing.T) {
 	  }
 	}
 `
-	gen := GeneratorV1_0_0{
+	gen := Generator{
 		deployedContracts: []flixkit.Contracts{},
 		coreContracts:     generator.GetDefaultCoreContracts(),
 		testnetClient:     nil,
@@ -146,7 +146,7 @@ func TestSimpleScriptGen(t *testing.T) {
 			},
 		},
 	}
-	generator := GeneratorV1_0_0{
+	generator := Generator{
 		deployedContracts: contracts,
 		testnetClient:     nil,
 		mainnetClient:     nil,
@@ -182,7 +182,7 @@ func TestMinimumValues(t *testing.T) {
 			},
 		},
 	}
-	generator := GeneratorV1_0_0{
+	generator := Generator{
 		deployedContracts: contracts,
 		testnetClient:     nil,
 		mainnetClient:     nil,
@@ -223,7 +223,7 @@ func TestGetDependenceContract(t *testing.T) {
 			},
 		},
 	}
-	genV1 := GeneratorV1_0_0{
+	genV1 := Generator{
 		deployedContracts: []flixkit.Contracts{fungi},
 		coreContracts:     generator.GetDefaultCoreContracts(),
 		testnetClient:     nil,

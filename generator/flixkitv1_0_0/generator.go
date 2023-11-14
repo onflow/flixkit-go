@@ -1,4 +1,4 @@
-package v1_0_0
+package flixkitv1_0_0
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 	"github.com/spf13/afero"
 )
 
-type GeneratorV1_0_0 struct {
+type Generator struct {
 	deployedContracts []flixkit.Contracts
 	coreContracts     flixkit.Contracts
 	testnetClient     *flowkit.Flowkit
@@ -48,7 +48,7 @@ func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.C
 		coreContracts = generator.GetDefaultCoreContracts()
 	}
 
-	return &GeneratorV1_0_0{
+	return &Generator{
 		deployedContracts: deployedContracts,
 		coreContracts:     coreContracts,
 		testnetClient:     testnetClient,
@@ -56,7 +56,7 @@ func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.C
 	}, nil
 }
 
-func (g GeneratorV1_0_0) Generate(ctx context.Context, code string, preFill *flixkit.FlowInteractionTemplate) (*flixkit.FlowInteractionTemplate, error) {
+func (g Generator) Generate(ctx context.Context, code string, preFill *flixkit.FlowInteractionTemplate) (*flixkit.FlowInteractionTemplate, error) {
 	template := &flixkit.FlowInteractionTemplate{}
 	if preFill != nil {
 		template = preFill
@@ -96,7 +96,7 @@ func (g GeneratorV1_0_0) Generate(ctx context.Context, code string, preFill *fli
 	return template, nil
 }
 
-func (g GeneratorV1_0_0) processDependencies(ctx context.Context, program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
+func (g Generator) processDependencies(ctx context.Context, program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
 	imports := program.ImportDeclarations()
 
 	if len(imports) == 0 {
@@ -123,7 +123,7 @@ func (g GeneratorV1_0_0) processDependencies(ctx context.Context, program *ast.P
 	return nil
 }
 
-func (g *GeneratorV1_0_0) generateDependenceInfo(ctx context.Context, contractName string) (map[string]flixkit.Contracts, error) {
+func (g *Generator) generateDependenceInfo(ctx context.Context, contractName string) (map[string]flixkit.Contracts, error) {
 	var placeholder string
 	var info flixkit.Networks
 	// new import syntax detected, convert to old import syntax, limitation of 1.0.0

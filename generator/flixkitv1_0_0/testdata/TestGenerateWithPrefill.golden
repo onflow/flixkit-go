@@ -1,7 +1,7 @@
 `{
     "f_type": "InteractionTemplate",
     "f_version": "1.0.0",
-    "id": "e938e8bd40a4a2cddaea70a0dd418f0c25ac901b9bad9ecabb0f38dfabcc7abf",
+    "id": "90f71b92526db34818081ea9855484c2230c5b06d0abc2cbd6750631429ce3f0",
     "data": {
         "type": "transaction",
         "interface": "",
@@ -60,13 +60,35 @@
             "amount": {
                 "index": 0,
                 "type": "UFix64",
-                "messages": {},
+                "messages": {
+                    "title": {
+                        "i18n": {
+                            "en-US": "Amount "
+                        }
+                    },
+                    "description": {
+                        "i18n": {
+                            "en-US": "Number of tokens to transfer"
+                        }
+                    }
+                },
                 "balance": ""
             },
             "to": {
                 "index": 1,
                 "type": "Address",
-                "messages": {},
+                "messages": {
+                    "title": {
+                        "i18n": {
+                            "en-US": "Account"
+                        }
+                    },
+                    "description": {
+                        "i18n": {
+                            "en-US": "Destination Account"
+                        }
+                    }
+                },
                 "balance": ""
             }
         }

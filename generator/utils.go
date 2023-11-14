@@ -15,16 +15,29 @@ import (
 )
 
 func ProcessParameters(program *ast.Program, template *flixkit.FlowInteractionTemplate) error {
-	if program != nil && program.SoleTransactionDeclaration() != nil && program.SoleTransactionDeclaration().ParameterList != nil {
-		if template.Data.Arguments == nil {
+
+	if program != nil {
+		var parameterList []*ast.Parameter
+		functionDeclaration := program.FunctionDeclarations()
+		// only interested in main function of script
+		for _, d := range functionDeclaration {
+			if d.Identifier.String() == "main" {
+				parameterList = d.ParameterList.Parameters
+			}
+		}
+
+		if program.SoleTransactionDeclaration() != nil && program.SoleTransactionDeclaration().ParameterList != nil {
+			parameterList = program.SoleTransactionDeclaration().ParameterList.Parameters
+		}
+
+		if parameterList != nil && template.Data.Arguments == nil {
 			template.Data.Arguments = flixkit.Arguments{}
 		}
 
-		for i, param := range program.SoleTransactionDeclaration().ParameterList.Parameters {
+		for i, param := range parameterList {
 			argMessages := flixkit.Messages{}
-			if template.Data.Arguments != nil && template.Data.Arguments[param.Identifier.String()] != (flixkit.Argument{}) {
+			if template.Data.Arguments[param.Identifier.String()] != (flixkit.Argument{}) {
 				argMessages = template.Data.Arguments[param.Identifier.String()].Messages
-				fmt.Println("found argMessages", argMessages)
 			}
 			template.Data.Arguments[param.Identifier.String()] = flixkit.Argument{
 				Type:     param.TypeAnnotation.Type.String(),
@@ -33,7 +46,6 @@ func ProcessParameters(program *ast.Program, template *flixkit.FlowInteractionTe
 			}
 		}
 	}
-
 	return nil
 }
 

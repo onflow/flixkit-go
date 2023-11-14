@@ -368,6 +368,95 @@ func TestGenerateParameters(t *testing.T) {
 	autogold.ExpectFile(t, string(prettyJSON))
 }
 
+func TestGenerateParametersScripts(t *testing.T) {
+	templateString := `
+	{
+		"f_type": "InteractionTemplate",
+		"f_version": "1.0.0",
+		"id": "",
+		"data":
+		{
+			"type": "script",
+			"interface": "",
+			"messages":
+			{
+				"title":
+				{
+					"i18n":
+					{
+						"en-US": "Get Tokens Balance"
+					}
+				},
+				"description":
+				{
+					"i18n":
+					{
+						"en-US": "Get user token balance"
+					}
+				}
+			},
+			"cadence": "",
+			"dependencies":	{},
+			"arguments":
+			{
+				"address":
+				{
+					"messages":
+					{
+						"title":
+						{
+							"i18n":
+							{
+								"en-US": "User Account"
+							}
+						},
+						"description":
+						{
+							"i18n":
+							{
+								"en-US": "User account address"
+							}
+						}
+					}
+				}
+			}
+		}
+	}`
+
+	cadence := `
+	   import "FungibleToken"
+	   import "FlowToken"
+
+	   pub fun main(address: Address): UFix64 {
+	   	let account = getAccount(address)
+	   	let vaultRef = account.getCapability(/public/flowTokenBalance)
+	   						.borrow<&FlowToken.Vault{FungibleToken.Balance}>()
+	   						?? panic("Could not borrow balance reference to the Vault")
+
+	   	return vaultRef.balance
+	   }
+
+	   `
+
+	codeBytes := []byte(cadence)
+	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
+	if err != nil {
+		t.Errorf("ParseProgram() err %v", err)
+	}
+
+	template, err := flixkit.ParseFlix(templateString)
+	if err != nil {
+		t.Errorf("ParseFlix() err %v", err)
+	}
+	err = ProcessParameters(program, template)
+	if err != nil {
+		t.Errorf("process parameters err %v", err)
+	}
+	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+
+	autogold.ExpectFile(t, string(prettyJSON))
+}
+
 func TestUnNormalizeCode(t *testing.T) {
 	tests := []struct {
 		cadence      string

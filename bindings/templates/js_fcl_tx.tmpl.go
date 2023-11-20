@@ -1,4 +1,7 @@
-export async function {{.Title}}({ 
+package bindings
+
+func GetJsFclTxTemplate() string {
+	const template = `{{define "tx"}}export async function {{.Title}}({ 
  {{- if len .Parameters -}}
     {{- range $index, $ele := .Parameters -}}
       {{if $index}}, {{end}}{{.Name}}
@@ -17,4 +20,9 @@ export async function {{.Title}}({
   });
 
   return transactionId
+}{{end}}
+`
+
+	return template
+
 }

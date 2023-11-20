@@ -5,6 +5,7 @@ import (
 
 	"github.com/hexops/autogold/v2"
 	"github.com/onflow/flixkit-go"
+	bindings "github.com/onflow/flixkit-go/bindings/templates"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -193,7 +194,11 @@ var minimumNoParamTemplate = &flixkit.FlowInteractionTemplate{
 
 func TestJSGenTransaction(t *testing.T) {
 	generator := FclJSGenerator{
-		TemplateDir: "./templates",
+		Templates: []string{
+			bindings.GetJsFclMainTemplate(),
+			bindings.GetJsFclScriptTemplate(),
+			bindings.GetJsFclTxTemplate(),
+		},
 	}
 	got, _ := generator.Generate(parsedTemplateTX, "./transfer_token.json", true)
 	autogold.ExpectFile(t, got)
@@ -201,7 +206,11 @@ func TestJSGenTransaction(t *testing.T) {
 
 func TestJSGenScript(t *testing.T) {
 	generator := FclJSGenerator{
-		TemplateDir: "./templates",
+		Templates: []string{
+			bindings.GetJsFclMainTemplate(),
+			bindings.GetJsFclScriptTemplate(),
+			bindings.GetJsFclTxTemplate(),
+		},
 	}
 	assert := assert.New(t)
 	got, err := generator.Generate(parsedTemplateScript, "./multiply_two_integers.template.json", true)
@@ -211,7 +220,11 @@ func TestJSGenScript(t *testing.T) {
 
 func TestJSGenArrayScript(t *testing.T) {
 	generator := FclJSGenerator{
-		TemplateDir: "./templates",
+		Templates: []string{
+			bindings.GetJsFclMainTemplate(),
+			bindings.GetJsFclScriptTemplate(),
+			bindings.GetJsFclTxTemplate(),
+		},
 	}
 	assert := assert.New(t)
 

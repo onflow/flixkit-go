@@ -1,4 +1,7 @@
-export async function {{.Title}}( 
+package bindings
+
+func GetJsFclScriptTemplate() string {
+	const template = `{{define "script"}}export async function {{.Title}}( 
  {{- if len .Parameters -}}
   {
     {{- range $index, $ele := .Parameters -}}
@@ -19,4 +22,9 @@ export async function {{.Title}}(
   });
 
   return info
+}{{end}}
+`
+
+	return template
+
 }

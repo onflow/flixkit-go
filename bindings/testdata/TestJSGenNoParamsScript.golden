@@ -9,13 +9,12 @@ import flixTemplate from "./min.template.json"
 
 /**
 *
-* @param {Object} Parameters - parameters for the cadence
-* @param {Array<string>} Parameters.numbers - : Int
+* No parameters needed.
 */
-export async function request({numbers}) {
+export async function request() {
   const info = await fcl.query({
     template: flixTemplate,
-    args: (arg, t) => [arg(numbers, t.Array(t.Int))]
+
   });
 
   return info

@@ -1,0 +1,25 @@
+`{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.0.0",
+    "id": "325ce118598e38d5c282415ebe4fab7530a30f26af3d414abf229efb83bab97a",
+    "data": {
+        "type": "script",
+        "interface": "",
+        "messages": {},
+        "cadence": "\n\timport HelloWorld from 0xHelloWorld\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
+        "dependencies": {
+            "0xHelloWorld": {
+                "HelloWorld": {
+                    "emulator": {
+                        "address": "0x01cf0e2f2f715450",
+                        "fq_address": "A.01cf0e2f2f715450.HelloWorld",
+                        "contract": "HelloWorld",
+                        "pin": "xxxxxmake-up-data",
+                        "pin_block_height": 10
+                    }
+                }
+            }
+        },
+        "arguments": null
+    }
+}`

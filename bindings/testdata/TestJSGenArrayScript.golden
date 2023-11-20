@@ -7,11 +7,10 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./multiply-numbers.template.json"
 
-
 /**
 * Multiply numbers in an array
 * @param {Object} Parameters - parameters for the cadence
-* @param { Array<string> } Parameters.numbers - Array of numbers to be multiplied: Int
+* @param {Array<string>} Parameters.numbers - Array of numbers to be multiplied: Int
 */
 export async function multiplyNumbers({numbers}) {
   const info = await fcl.query({

@@ -7,12 +7,11 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./multiply_two_integers.template.json"
 
-
 /**
 * Multiply two numbers to another
 * @param {Object} Parameters - parameters for the cadence
-* @param { string } Parameters.x - number to be multiplied: Int
-* @param { string } Parameters.y - second number to be multiplied: Int
+* @param {string} Parameters.x - number to be multiplied: Int
+* @param {string} Parameters.y - second number to be multiplied: Int
 */
 export async function multiplyTwoIntegers({x, y}) {
   const info = await fcl.query({

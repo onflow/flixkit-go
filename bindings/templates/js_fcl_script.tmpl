@@ -1,10 +1,12 @@
-export async function {{.Title}}({ 
+export async function {{.Title}}( 
  {{- if len .Parameters -}}
+  {
     {{- range $index, $ele := .Parameters -}}
       {{if $index}}, {{end}}{{.Name}}
     {{- end -}}
+  }
   {{- end -}}
-}) {
+) {
   const info = await fcl.query({
     template: flixTemplate,
     {{ if len .Parameters -}}

@@ -2,13 +2,11 @@ package bindings
 
 import (
 	"bytes"
-	"os"
-	"path/filepath"
-	"runtime"
 	"sort"
 	"text/template"
 
 	"github.com/onflow/flixkit-go"
+	bindings "github.com/onflow/flixkit-go/bindings/templates"
 	"github.com/stoewer/go-strcase"
 )
 
@@ -31,25 +29,23 @@ type templateData struct {
 }
 
 type FclJSGenerator struct {
-	TemplateDir string
+	Templates []string
 }
 
 func NewFclJSGenerator() *FclJSGenerator {
-	_, currentFilePath, _, _ := runtime.Caller(0)
-	baseDir := filepath.Dir(currentFilePath)
-	templateDir := filepath.Join(baseDir, "templates")
+	templates := []string{
+		bindings.GetJsFclMainTemplate(),
+		bindings.GetJsFclScriptTemplate(),
+		bindings.GetJsFclTxTemplate(),
+	}
 
 	return &FclJSGenerator{
-		TemplateDir: templateDir,
+		Templates: templates,
 	}
 }
 
 func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
-	templateFiles, err := getAllFiles(g.TemplateDir)
-	if err != nil {
-		return "", err
-	}
-	tmpl, err := template.ParseFiles(templateFiles...)
+	tmpl, err := parseTemplates(g.Templates)
 	if err != nil {
 		return "", err
 	}
@@ -125,21 +121,15 @@ func convertCadenceTypeToJS(cadenceType string) string {
 	}
 }
 
-func getAllFiles(dir string) ([]string, error) {
-	var files []string
-	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+func parseTemplates(templates []string) (*template.Template, error) {
+	baseTemplate := template.New("base")
+
+	for _, tmplStr := range templates {
+		_, err := baseTemplate.Parse(tmplStr)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		// If it's a directory, skip it
-		if info.IsDir() {
-			return nil
-		}
-		files = append(files, path)
-		return nil
-	})
-	if err != nil {
-		return nil, err
 	}
-	return files, nil
+
+	return baseTemplate, nil
 }

@@ -1,4 +1,7 @@
-/**
+package bindings
+
+func GetJsFclMainTemplate() string {
+	const template = `/**
     This binding file was auto generated based on FLIX template v{{.Version}}. 
     Changes to this file might get overwritten.
     Note fcl version 1.3.0 or higher is required to use templates. 
@@ -25,10 +28,15 @@ const flixTemplate = "{{.Location}}"
  {{- end -}}
 {{- "\n"}}*/
 {{if .IsScript}}
-{{- template "js_fcl_script.tmpl" .}}
+{{- template "script" .}}
 {{else}}
-{{- template "js_fcl_tx.tmpl" .}}
+{{- template "tx" .}}
 {{- end}}
 
 
 
+
+`
+
+	return template
+}

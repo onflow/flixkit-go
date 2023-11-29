@@ -2,6 +2,9 @@ package bindings
 
 import (
 	"bytes"
+	"fmt"
+	"net/url"
+	"path/filepath"
 	"sort"
 	"text/template"
 
@@ -44,11 +47,19 @@ func NewFclJSGenerator() *FclJSGenerator {
 	}
 }
 
-func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) (string, error) {
+func (g FclJSGenerator) Generate(flixString string, templateLocation string) (string, error) {
 	tmpl, err := parseTemplates(g.Templates)
 	if err != nil {
 		return "", err
 	}
+	if flixString == "" {
+		return "", fmt.Errorf("no flix template provided")
+	}
+	flix, err := flixkit.ParseFlix(flixString)
+	if err != nil {
+		return "", err
+	}
+	isLocal := !isUrl(templateLocation)
 
 	methodName := strcase.LowerCamelCase(flix.Data.Messages.GetTitleValue("Request"))
 	description := flix.GetDescription()
@@ -65,6 +76,11 @@ func (g FclJSGenerator) Generate(flix *flixkit.FlowInteractionTemplate, template
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, data)
 	return buf.String(), err
+}
+
+func isUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
 }
 
 func transformArguments(args flixkit.Arguments) []simpleParameter {
@@ -132,4 +148,21 @@ func parseTemplates(templates []string) (*template.Template, error) {
 	}
 
 	return baseTemplate, nil
+}
+
+// GetRelativePath computes the relative path from generated file to flix json file.
+// This path is used in the binding file to reference the flix json file.
+func GetRelativePath(configFile, bindingFile string) (string, error) {
+	relPath, err := filepath.Rel(filepath.Dir(bindingFile), configFile)
+	if err != nil {
+		return "", err
+	}
+
+	// If the file is in the same directory and doesn't start with "./", prepend it.
+	if !filepath.IsAbs(relPath) && relPath[0] != '.' {
+		relPath = "./" + relPath
+	}
+
+	// Currently binding files are js, we need to convert the path to unix style
+	return filepath.ToSlash(relPath), nil
 }

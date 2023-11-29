@@ -11,7 +11,6 @@ require (
 	github.com/spf13/afero v1.9.4
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.8.4
-	github.com/zeebo/assert v1.3.0
 	golang.org/x/crypto v0.14.0
 )
 

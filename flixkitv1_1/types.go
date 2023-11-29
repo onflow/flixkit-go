@@ -1,6 +1,7 @@
-package v1_1_0
+package v1_1
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 )
@@ -90,7 +91,7 @@ func (t *InteractionTemplate) IsTransaction() bool {
 }
 
 func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
-	cadence := t.Data.Cadence.Body
+	var cadence string
 
 	for _, Dependence := range t.Data.Dependencies {
 		for _, contract := range Dependence.Contracts {
@@ -112,9 +113,21 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 			}
 
 			replacement := fmt.Sprintf("import %s from %s", contractName, dependencyAddress)
-			cadence = re.ReplaceAllString(cadence, replacement)
+			cadence = re.ReplaceAllString(t.Data.Cadence.Body, replacement)
 		}
 	}
 
 	return cadence, nil
+
+}
+
+func ParseFlix(template string) (*InteractionTemplate, error) {
+	var flowTemplate InteractionTemplate
+
+	err := json.Unmarshal([]byte(template), &flowTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	return &flowTemplate, nil
 }

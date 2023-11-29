@@ -281,7 +281,7 @@ func TestGetFlix(t *testing.T) {
 	flix, err := flixService.GetFlix(ctx, "templateName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
-	assert.Equal(parsedTemplate, flix, "GetParsedFlixByName should return the correct Flix")
+	assert.Equal(flix_template, flix, "GetParsedFlixByName should return the correct Flix")
 }
 
 func TestGetFlixByIDRaw(t *testing.T) {
@@ -313,9 +313,53 @@ func TestGetFlixByID(t *testing.T) {
 	flix, err := flixService.GetFlixByID(ctx, "templateID")
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
-	assert.Equal(parsedTemplate, flix, "GetParsedFlixByID should return the correct Flix")
+	assert.Equal(flix_template, flix, "GetParsedFlixByID should return the correct Flix")
 }
 
 type MapFsReader struct {
 	FS fs.FS
+}
+
+func TestTemplateVersion(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		templateStr string
+		version     string
+		wantErr     bool
+	}{
+		{
+			templateStr: `{
+				"f_version": "1.0.0"
+			}`,
+			version: "1.0.0",
+			wantErr: false,
+		},
+		{
+			templateStr: `{
+				"f_version": "1.1.0"
+			}`,
+			version: "1.1.0",
+			wantErr: false,
+		},
+		{
+			templateStr: `{
+				"f_ver": "1.x"
+			}`,
+			version: "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.templateStr, func(t *testing.T) {
+			ver, err := GetTemplateVersion(tt.templateStr)
+			if tt.wantErr {
+				assert.Error(err, "TemplateVersion should return an error")
+			} else {
+				assert.NoError(err, "TemplateVersion should not return an error")
+				assert.Equal(tt.version, ver, "TemplateVersion should return the correct version")
+			}
+		})
+	}
 }

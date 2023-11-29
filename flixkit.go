@@ -2,23 +2,46 @@ package flixkit
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"log"
 	"net/http"
+	"net/url"
+	"os"
+
+	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
 )
+
+type FlowInteractionTemplateExecution struct {
+	Network       string
+	Cadence       string
+	IsTransaciton bool
+	IsScript      bool
+}
+
+type FlowInteractionTemplateVersion struct {
+	FVersion string `json:"f_version"`
+}
 
 type Generator interface {
 	Generate(ctx context.Context, code string, preFill *FlowInteractionTemplate) (*FlowInteractionTemplate, error)
 }
 
+type FlowInteractionTemplateCadence interface {
+	GetAndReplaceCadenceImports(templateName string) (*FlowInteractionTemplateExecution, error)
+	IsTransaction() bool
+	IsScript() bool
+}
+
 type FlixService interface {
 	GetFlixRaw(ctx context.Context, templateName string) (string, error)
-	GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)
+	GetFlix(ctx context.Context, templateName string) (string, error)
 	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
-	GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error)
+	GetFlixByID(ctx context.Context, templateID string) (string, error)
+	GetAndReplaceCadenceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error)
 }
 
 type flixServiceImpl struct {
@@ -47,18 +70,13 @@ func (s *flixServiceImpl) GetFlixRaw(ctx context.Context, templateName string) (
 	return FetchFlixWithContext(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error) {
+func (s *flixServiceImpl) GetFlix(ctx context.Context, templateName string) (string, error) {
 	template, err := s.GetFlixRaw(ctx, templateName)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	parsedTemplate, err := ParseFlix(template)
-	if err != nil {
-		return nil, err
-	}
-
-	return parsedTemplate, nil
+	return template, nil
 }
 
 func (s *flixServiceImpl) GetFlixByIDRaw(ctx context.Context, templateID string) (string, error) {
@@ -66,29 +84,27 @@ func (s *flixServiceImpl) GetFlixByIDRaw(ctx context.Context, templateID string)
 	return FetchFlixWithContext(ctx, url)
 }
 
-func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (*FlowInteractionTemplate, error) {
+func (s *flixServiceImpl) GetFlixByID(ctx context.Context, templateID string) (string, error) {
 	template, err := s.GetFlixByIDRaw(ctx, templateID)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-
-	parsedTemplate, err := ParseFlix(template)
-	if err != nil {
-		return nil, err
-	}
-
-	return parsedTemplate, nil
+	return template, nil
 }
 
-func ParseFlix(template string) (*FlowInteractionTemplate, error) {
-	var flowTemplate FlowInteractionTemplate
+func GetTemplateVersion(template string) (string, error) {
+	var flowTemplate FlowInteractionTemplateVersion
 
 	err := json.Unmarshal([]byte(template), &flowTemplate)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return &flowTemplate, nil
+	if flowTemplate.FVersion == "" {
+		return "", fmt.Errorf("version not found")
+	}
+
+	return flowTemplate.FVersion, nil
 }
 
 func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
@@ -113,4 +129,115 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 	}
 
 	return string(body), nil
+}
+
+func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error) {
+	template, err := s.getTemplate(ctx, templateName)
+	if err != nil {
+		return nil, err
+	}
+	var cadenceCode string
+	var isScript bool
+	var isTransaction bool
+	if parsedTemplate, err := v1_1.ParseFlix(template); err == nil {
+		cadenceCode, err = parsedTemplate.GetAndReplaceCadenceImports(network)
+		if err != nil {
+			return nil, err
+		}
+		isScript = parsedTemplate.IsScript()
+		isTransaction = parsedTemplate.IsTransaction()
+	}
+	if parsedTemplate, err := ParseFlix(template); err == nil {
+		cadenceCode, err = parsedTemplate.GetAndReplaceCadenceImports(network)
+		if err != nil {
+			return nil, err
+		}
+		isScript = parsedTemplate.IsScript()
+		isTransaction = parsedTemplate.IsTransaction()
+	}
+
+	return &FlowInteractionTemplateExecution{
+		Network:       network,
+		Cadence:       cadenceCode,
+		IsTransaciton: isTransaction,
+		IsScript:      isScript,
+	}, nil
+}
+
+type flixQueryTypes string
+
+const (
+	flixName flixQueryTypes = "name"
+	flixPath flixQueryTypes = "path"
+	flixId   flixQueryTypes = "id"
+	flixUrl  flixQueryTypes = "url"
+)
+
+func isHex(str string) bool {
+	if len(str) != 64 {
+		return false
+	}
+	_, err := hex.DecodeString(str)
+	return err == nil
+}
+
+func isPath(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func isUrl(str string) bool {
+	u, err := url.Parse(str)
+	return err == nil && u.Scheme != "" && u.Host != ""
+}
+func getType(s string) flixQueryTypes {
+	switch {
+	case isPath(s):
+		return flixPath
+	case isHex(s):
+		return flixId
+	case isUrl(s):
+		return flixUrl
+	default:
+		return flixName
+	}
+}
+
+func (s *flixServiceImpl) getTemplate(ctx context.Context, flixQuery string) (string, error) {
+	var template string
+	var err error
+	switch getType(flixQuery) {
+	case flixId:
+		template, err = s.GetFlixByID(ctx, flixQuery)
+		if err != nil {
+			return "", fmt.Errorf("could not find flix with id %s: %w", flixQuery, err)
+		}
+
+	case flixName:
+		template, err = s.GetFlix(ctx, flixQuery)
+		if err != nil {
+			return "", fmt.Errorf("could not find flix with name %s: %w", flixQuery, err)
+		}
+
+	case flixPath:
+		file, err := s.config.FileReader.ReadFile(flixQuery)
+		if err != nil {
+			return "", fmt.Errorf("could not read flix file %s: %w", flixQuery, err)
+		}
+		template = string(file)
+		if err != nil {
+			return "", fmt.Errorf("could not parse flix from file %s: %w", flixQuery, err)
+		}
+
+	case flixUrl:
+		template, err = FetchFlixWithContext(ctx, flixQuery)
+		if err != nil {
+			return "", fmt.Errorf("could not parse flix from url %s: %w", flixQuery, err)
+		}
+
+	default:
+		return "", fmt.Errorf("invalid flix query type: %s", flixQuery)
+	}
+
+	return template, nil
 }

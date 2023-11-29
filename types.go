@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"sort"
@@ -69,8 +70,19 @@ func (t *FlowInteractionTemplate) IsTransaction() bool {
 	return t.Data.Type == "transaction"
 }
 
+func ParseFlix(template string) (*FlowInteractionTemplate, error) {
+	var flowTemplate FlowInteractionTemplate
+
+	err := json.Unmarshal([]byte(template), &flowTemplate)
+	if err != nil {
+		return nil, err
+	}
+
+	return &flowTemplate, nil
+}
+
 func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
-	cadence := t.Data.Cadence
+	var cadence string
 
 	for dependencyAddress, contracts := range t.Data.Dependencies {
 		for contractName, networks := range contracts {
@@ -86,7 +98,7 @@ func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string
 			}
 
 			replacement := fmt.Sprintf("import %s from %s", contractName, network.Address)
-			cadence = re.ReplaceAllString(cadence, replacement)
+			cadence = re.ReplaceAllString(t.Data.Cadence, replacement)
 		}
 	}
 

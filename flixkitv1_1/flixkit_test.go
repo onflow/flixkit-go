@@ -1,4 +1,4 @@
-package v1_1_0
+package v1_1
 
 import (
 	"testing"
@@ -255,14 +255,14 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cadence, err := parsedTemplate.GetAndReplaceCadenceImports(tt.network)
+			cadenceCode, err := parsedTemplate.GetAndReplaceCadenceImports(tt.network)
 			if tt.wantErr {
 				assert.Error(err, "GetCadenceWithReplacedImports should return an error")
 			} else {
 				assert.NoError(err, "GetCadenceWithReplacedImports should not return an error")
-				assert.NotEmpty(cadence, "Cadence should not be empty")
+				assert.NotEmpty(cadenceCode, "Cadence should not be empty")
 
-				assert.Contains(cadence, tt.wantImport, "Cadence should contain the expected import")
+				assert.Contains(cadenceCode, tt.wantImport, "Cadence should contain the expected import")
 			}
 		})
 	}

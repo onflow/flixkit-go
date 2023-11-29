@@ -288,14 +288,14 @@ func TestGetFlixByIDRaw(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		assert.Equal("/templateID", req.URL.String(), "GetFlixByID should request the correct path")
+		assert.Equal("/1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF", req.URL.String(), "GetFlixByID should request the correct path")
 		rw.Write([]byte("Hello World"))
 	}))
 	defer server.Close()
 
 	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
 	ctx := context.Background()
-	body, err := flixService.GetTemplate(ctx, "templateID")
+	body, err := flixService.GetTemplate(ctx, "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF")
 	assert.NoError(err, "GetFlixByID should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
 }

@@ -72,7 +72,6 @@ func TestGenerateWithPrefill(t *testing.T) {
 			}
 		}
 	}`
-	prefill, _ := flixkit.ParseFlix(templatePreFill)
 
 	code := `
 	import FungibleToken from 0xFungibleTokenAddress
@@ -102,11 +101,9 @@ func TestGenerateWithPrefill(t *testing.T) {
 		mainnetClient:     nil,
 	}
 	ctx := context.Background()
-	template, err := gen.Generate(ctx, code, prefill)
+	prettyJSON, err := gen.Generate(ctx, code, templatePreFill)
 	assert.NoError(err, "Generate should not return an error")
-	prettyJSON, err := json.MarshalIndent(template, "", "    ")
-	assert.NoError(err, "marshal template to json should not return an error")
-	autogold.ExpectFile(t, string(prettyJSON))
+	autogold.ExpectFile(t, prettyJSON)
 }
 
 func TestSimpleScriptGen(t *testing.T) {
@@ -134,7 +131,6 @@ func TestSimpleScriptGen(t *testing.T) {
 			"arguments": {}
 		}
 	}`
-	prefill, _ := flixkit.ParseFlix(templatePreFill)
 	contracts := []flixkit.Contracts{
 		{
 			"HelloWorld": flixkit.Networks{
@@ -160,7 +156,7 @@ func TestSimpleScriptGen(t *testing.T) {
 	}
 `
 	ctx := context.Background()
-	template, err := generator.Generate(ctx, code, prefill)
+	template, err := generator.Generate(ctx, code, templatePreFill)
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")
@@ -196,7 +192,7 @@ func TestMinimumValues(t *testing.T) {
 	}
 `
 	ctx := context.Background()
-	template, err := generator.Generate(ctx, code, nil)
+	template, err := generator.Generate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
 	assert.NoError(err, "marshal template to json should not return an error")

@@ -27,20 +27,17 @@ type FlowInteractionTemplateVersion struct {
 }
 
 type Generator interface {
-	Generate(ctx context.Context, code string, preFill *FlowInteractionTemplate) (*FlowInteractionTemplate, error)
+	Generate(ctx context.Context, code string, preFill string) (string, error)
 }
 
 type FlowInteractionTemplateCadence interface {
-	GetAndReplaceCadenceImports(templateName string) (*FlowInteractionTemplateExecution, error)
+	GetAndReplaceCadenceImports(templateName string) (string, error)
 	IsTransaction() bool
 	IsScript() bool
 }
 
 type FlixService interface {
-	GetFlixRaw(ctx context.Context, templateName string) (string, error)
-	GetFlix(ctx context.Context, templateName string) (string, error)
-	GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)
-	GetFlixByID(ctx context.Context, templateID string) (string, error)
+	GetTemplate(ctx context.Context, templateName string) (string, error)
 	GetAndReplaceCadenceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error)
 }
 
@@ -132,29 +129,29 @@ func FetchFlixWithContext(ctx context.Context, url string) (string, error) {
 }
 
 func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error) {
-	template, err := s.getTemplate(ctx, templateName)
+	template, err := s.GetTemplate(ctx, templateName)
 	if err != nil {
 		return nil, err
 	}
 	var cadenceCode string
-	var isScript bool
-	var isTransaction bool
-	if parsedTemplate, err := v1_1.ParseFlix(template); err == nil {
-		cadenceCode, err = parsedTemplate.GetAndReplaceCadenceImports(network)
+	var replaceableCadence FlowInteractionTemplateCadence
+	if replaceableCadence, err = v1_1.ParseFlix(template); err == nil {
+		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
 		if err != nil {
 			return nil, err
 		}
-		isScript = parsedTemplate.IsScript()
-		isTransaction = parsedTemplate.IsTransaction()
 	}
-	if parsedTemplate, err := ParseFlix(template); err == nil {
-		cadenceCode, err = parsedTemplate.GetAndReplaceCadenceImports(network)
+	if replaceableCadence, err = ParseFlix(template); err == nil {
+		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
 		if err != nil {
 			return nil, err
 		}
-		isScript = parsedTemplate.IsScript()
-		isTransaction = parsedTemplate.IsTransaction()
 	}
+	if err != nil {
+		return nil, err
+	}
+	isScript := replaceableCadence.IsScript()
+	isTransaction := replaceableCadence.IsTransaction()
 
 	return &FlowInteractionTemplateExecution{
 		Network:       network,
@@ -171,6 +168,7 @@ const (
 	flixPath flixQueryTypes = "path"
 	flixId   flixQueryTypes = "id"
 	flixUrl  flixQueryTypes = "url"
+	flixJson flixQueryTypes = "json"
 )
 
 func isHex(str string) bool {
@@ -190,6 +188,12 @@ func isUrl(str string) bool {
 	u, err := url.Parse(str)
 	return err == nil && u.Scheme != "" && u.Host != ""
 }
+
+func isJson(str string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(str), &js) == nil
+}
+
 func getType(s string) flixQueryTypes {
 	switch {
 	case isPath(s):
@@ -198,12 +202,14 @@ func getType(s string) flixQueryTypes {
 		return flixId
 	case isUrl(s):
 		return flixUrl
+	case isJson(s):
+		return flixJson
 	default:
 		return flixName
 	}
 }
 
-func (s *flixServiceImpl) getTemplate(ctx context.Context, flixQuery string) (string, error) {
+func (s *flixServiceImpl) GetTemplate(ctx context.Context, flixQuery string) (string, error) {
 	var template string
 	var err error
 	switch getType(flixQuery) {

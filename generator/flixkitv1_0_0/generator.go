@@ -2,6 +2,7 @@ package flixkitv1_0_0
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/onflow/cadence/runtime/ast"
@@ -56,10 +57,14 @@ func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.C
 	}, nil
 }
 
-func (g Generator) Generate(ctx context.Context, code string, preFill *flixkit.FlowInteractionTemplate) (*flixkit.FlowInteractionTemplate, error) {
+func (g Generator) Generate(ctx context.Context, code string, preFill string) (string, error) {
 	template := &flixkit.FlowInteractionTemplate{}
-	if preFill != nil {
-		template = preFill
+	if preFill != "" {
+		t, err := flixkit.ParseFlix(preFill)
+		if err != nil {
+			return "", err
+		}
+		template = t
 	}
 
 	// make sure imports use new import syntax "string import"
@@ -68,19 +73,19 @@ func (g Generator) Generate(ctx context.Context, code string, preFill *flixkit.F
 	codeBytes := []byte(normalizedCode)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	err = generator.ProcessParameters(program, template)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// save v1.0.0 cadence code to template, with placeholder imports
 	template.Data.Cadence = generator.UnNormalizeImports(normalizedCode)
 	err = g.processDependencies(ctx, program, template)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// ignore interface type for now
@@ -89,11 +94,12 @@ func (g Generator) Generate(ctx context.Context, code string, preFill *flixkit.F
 	template.Data.Type = generator.DetermineCadenceType(program)
 	id, err := flixkit.GenerateFlixID(template)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	template.ID = id
+	templateJson, err := json.MarshalIndent(template, "", "    ")
 
-	return template, nil
+	return string(templateJson), err
 }
 
 func (g Generator) processDependencies(ctx context.Context, program *ast.Program, template *flixkit.FlowInteractionTemplate) error {

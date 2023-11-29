@@ -354,6 +354,9 @@ func TestGenerateParameters(t *testing.T) {
 `
 	codeBytes := []byte(cadence)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
+	if err != nil {
+		t.Errorf("process parameters err %v", err)
+	}
 
 	template, err := flixkit.ParseFlix(templateString)
 	if err != nil {
@@ -364,6 +367,9 @@ func TestGenerateParameters(t *testing.T) {
 		t.Errorf("process parameters err %v", err)
 	}
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+	if err != nil {
+		t.Errorf("process parameters err %v", err)
+	}
 
 	autogold.ExpectFile(t, string(prettyJSON))
 }
@@ -453,6 +459,9 @@ func TestGenerateParametersScripts(t *testing.T) {
 		t.Errorf("process parameters err %v", err)
 	}
 	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+	if err != nil {
+		t.Errorf("process parameters err %v", err)
+	}
 
 	autogold.ExpectFile(t, string(prettyJSON))
 }

@@ -140,6 +140,7 @@ func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templ
 	if err != nil {
 		return nil, err
 	}
+	var execution FlowInteractionTemplateExecution
 	var cadenceCode string
 	var replaceableCadence FlowInteractionTemplateCadence
 	if replaceableCadence, err = v1_1.ParseFlix(template); err == nil {
@@ -147,25 +148,25 @@ func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templ
 		if err != nil {
 			return nil, err
 		}
+		execution.Cadence = cadenceCode
+		execution.IsScript = replaceableCadence.IsScript()
+		execution.IsTransaciton = replaceableCadence.IsTransaction()
 	}
 	if replaceableCadence, err = ParseFlix(template); err == nil {
 		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
 		if err != nil {
 			return nil, err
 		}
+		execution.Cadence = cadenceCode
+		execution.IsScript = replaceableCadence.IsScript()
+		execution.IsTransaciton = replaceableCadence.IsTransaction()
 	}
-	if err != nil {
-		return nil, err
-	}
-	isScript := replaceableCadence.IsScript()
-	isTransaction := replaceableCadence.IsTransaction()
 
-	return &FlowInteractionTemplateExecution{
-		Network:       network,
-		Cadence:       cadenceCode,
-		IsTransaciton: isTransaction,
-		IsScript:      isScript,
-	}, nil
+	if execution.Cadence == "" {
+		return nil, fmt.Errorf("could not parse template, invalid flix template")
+	}
+
+	return &execution, nil
 }
 
 type flixQueryTypes string

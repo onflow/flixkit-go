@@ -93,28 +93,40 @@ func (t *InteractionTemplate) IsTransaction() bool {
 func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
 	var cadence string
 
-	for _, Dependence := range t.Data.Dependencies {
-		for _, contract := range Dependence.Contracts {
-			contractName := contract.Contract
-			var dependencyAddress string
-			for _, network := range contract.Networks {
-				if network.Network == networkName {
-					dependencyAddress = network.Address
+	fmt.Println("try replacing body v1.1")
+
+	// Compile regular expression to match and capture contract names
+	re := regexp.MustCompile(`import\s*"([^"]+)"`)
+
+	// Find all matches and their captured groups
+	matches := re.FindAllStringSubmatch(t.Data.Cadence.Body, -1)
+
+	if len(matches) == 0 {
+		return t.Data.Cadence.Body, nil
+	}
+	for _, match := range matches {
+		contractName := match[1]
+		var dependencyAddress string
+		for _, Dependence := range t.Data.Dependencies {
+			for _, contract := range Dependence.Contracts {
+				if contract.Contract == contractName {
+					for _, network := range contract.Networks {
+						if network.Network == networkName {
+							dependencyAddress = network.Address
+							break
+						}
+					}
 					break
 				}
 			}
-			if dependencyAddress == "" {
-				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
-			}
-
-			re, err := regexp.Compile(`import "(.+?)"`)
-			if err != nil {
-				return "", fmt.Errorf("invalid regex pattern: %v", err)
-			}
-
-			replacement := fmt.Sprintf("import %s from %s", contractName, dependencyAddress)
-			cadence = re.ReplaceAllString(t.Data.Cadence.Body, replacement)
 		}
+
+		if dependencyAddress == "" {
+			return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+		}
+
+		replacement := fmt.Sprintf("import %s from %s", contractName, dependencyAddress)
+		cadence = re.ReplaceAllString(t.Data.Cadence.Body, replacement)
 	}
 
 	return cadence, nil
@@ -123,7 +135,6 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 
 func ParseFlix(template string) (*InteractionTemplate, error) {
 	var flowTemplate InteractionTemplate
-
 	err := json.Unmarshal([]byte(template), &flowTemplate)
 	if err != nil {
 		return nil, err

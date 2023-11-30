@@ -217,8 +217,29 @@ const template = `
 	  ]
 	}
   }
-  
+`
 
+const templateMissing = `
+{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.1.0",
+    "id": "a2b2d73def...aabc5472d2",
+    "data": {
+        "type": "transaction",
+        "interface": "asadf23234...fas234234",
+        "messages": [],
+        "cadence": {
+            "body": "import \"FlowToken\"\n        transaction(amount: UFix64, to: Address) {\n            let vault: @FungibleToken.Vault\n            prepare(signer: AuthAccount) {\n                %%self.vault <- signer\n                .borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n                .withdraw(amount: amount)\n                self.vault <- FungibleToken.getVault(signer)\n            }\n            execute {\n                getAccount(to)\n                .getCapability(/public/flowTokenReceiver)!\n                .borrow<&{FungibleToken.Receiver}>()!\n                .deposit(from: <-self.vault)\n            }\n        }",
+            "network_pins": []
+        },
+        "dependencies": [
+            {
+                "contracts": [],
+                "parameters": []
+            }
+        ]
+    }
+}
 `
 
 func TestGetAndReplaceCadenceImports(t *testing.T) {
@@ -229,32 +250,43 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 		network    string
 		wantErr    bool
 		wantImport string
+		template   string
 	}{
 		{
 			name:       "Mainnet",
 			network:    "mainnet",
 			wantErr:    false,
 			wantImport: "import FlowToken from 0x1654653399040a61",
+			template:   template,
 		},
 		{
 			name:       "Testnet",
 			network:    "testnet",
 			wantErr:    false,
 			wantImport: "import FlowToken from 0x7e60df042a9c0868",
+			template:   template,
 		},
 		{
-			name:    "MissingNetwork",
-			network: "missing",
-			wantErr: true,
+			name:     "MissingNetwork",
+			network:  "missing",
+			wantErr:  true,
+			template: template,
+		},
+		{
+			name:     "MissingCadence",
+			network:  "mainnet",
+			wantErr:  true,
+			template: templateMissing,
 		},
 	}
 
-	parsedTemplate, err := ParseFlix(template)
-	if err != nil {
-		t.Fatal(err)
-	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			parsedTemplate, err := ParseFlix(tt.template)
+			if err != nil {
+				t.Fatal(err)
+			}
+
 			cadenceCode, err := parsedTemplate.GetAndReplaceCadenceImports(tt.network)
 			if tt.wantErr {
 				assert.Error(err, "GetCadenceWithReplacedImports should return an error")

@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/fs"
 	"log"
 	"net/http"
 	"net/url"
@@ -51,9 +50,13 @@ type flixServiceImpl struct {
 
 var _ FlixService = (*flixServiceImpl)(nil)
 
+type FileReader interface {
+	ReadFile(path string) ([]byte, error)
+}
+
 type Config struct {
 	FlixServerURL string
-	FileReader    fs.ReadFileFS
+	FileReader    FileReader
 }
 
 func NewFlixService(config *Config) FlixService {
@@ -230,6 +233,9 @@ func (s *flixServiceImpl) GetTemplate(ctx context.Context, flixQuery string) (st
 		}
 
 	case flixPath:
+		if s.config.FileReader == nil {
+			return "", fmt.Errorf("file reader not provided")
+		}
 		file, err := s.config.FileReader.ReadFile(flixQuery)
 		if err != nil {
 			return "", fmt.Errorf("could not read flix file %s: %w", flixQuery, err)

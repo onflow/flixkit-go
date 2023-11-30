@@ -2,7 +2,6 @@ package flixkit
 
 import (
 	"context"
-	"io/fs"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -252,6 +251,12 @@ func TestFetchFlix(t *testing.T) {
 	assert.Equal("Hello World", body, "GetFlix should return the correct body")
 }
 
+type DefaultReader struct{}
+
+func (d DefaultReader) ReadFile(path string) ([]byte, error) {
+	return []byte(flix_template), nil
+}
+
 func TestGetFlixRaw(t *testing.T) {
 	assert := assert.New(t)
 
@@ -261,14 +266,14 @@ func TestGetFlixRaw(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: DefaultReader{}})
 	ctx := context.Background()
 	body, err := flixService.GetTemplate(ctx, "templateName")
 	assert.NoError(err, "GetFlixByName should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByName should return the correct body")
 }
 
-func TestGetFlix(t *testing.T) {
+func TestGetFlixFilename(t *testing.T) {
 	assert := assert.New(t)
 
 	server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
@@ -276,9 +281,9 @@ func TestGetFlix(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: DefaultReader{}})
 	ctx := context.Background()
-	flix, err := flixService.GetTemplate(ctx, "templateName")
+	flix, err := flixService.GetTemplate(ctx, "./templateFileName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
 	assert.Equal(flix_template, flix, "GetParsedFlixByName should return the correct Flix")
@@ -314,10 +319,6 @@ func TestGetFlixByID(t *testing.T) {
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
 	assert.Equal(flix_template, flix, "GetParsedFlixByID should return the correct Flix")
-}
-
-type MapFsReader struct {
-	FS fs.FS
 }
 
 func TestTemplateVersion(t *testing.T) {

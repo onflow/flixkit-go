@@ -295,7 +295,6 @@ func ShaHex(value interface{}, debugKey string) string {
 	// Convert the hash to a hexadecimal string
 	hashHex := hex.EncodeToString(hash[:])
 
-	//fmt.Println(value, hashHex)
 	return hashHex
 }
 

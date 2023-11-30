@@ -88,7 +88,7 @@ func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string
 		for contractName, networks := range contracts {
 			network, ok := networks[networkName]
 			if !ok {
-				return "", fmt.Errorf("network %s not found for contract %s", networkName, contractName)
+				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 			}
 
 			pattern := fmt.Sprintf(`import\s*%s\s*from\s*%s`, contractName, dependencyAddress)

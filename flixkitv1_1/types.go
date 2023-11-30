@@ -104,7 +104,7 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 				}
 			}
 			if dependencyAddress == "" {
-				return "", fmt.Errorf("network %s not found for contract %s", networkName, contractName)
+				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 			}
 
 			re, err := regexp.Compile(`import "(.+?)"`)

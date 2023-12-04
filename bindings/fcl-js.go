@@ -55,6 +55,12 @@ func (g FclJSGenerator) Generate(flixString string, templateLocation string) (st
 	if flixString == "" {
 		return "", fmt.Errorf("no flix template provided")
 	}
+
+	ver, err := flixkit.GetTemplateVersion(flixString)
+	if err != nil || ver != "1.0.0" {
+		return "", fmt.Errorf("invalid flix template version, support v1.0.0")
+	}
+
 	flix, err := flixkit.ParseFlix(flixString)
 	if err != nil {
 		return "", err

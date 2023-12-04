@@ -220,6 +220,7 @@ func getType(s string) flixQueryTypes {
 func (s *flixServiceImpl) GetTemplate(ctx context.Context, flixQuery string) (string, error) {
 	var template string
 	var err error
+
 	switch getType(flixQuery) {
 	case flixId:
 		template, err = s.GetFlixByID(ctx, flixQuery)

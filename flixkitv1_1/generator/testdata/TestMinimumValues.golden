@@ -1,0 +1,1 @@
+`"{\n    \"f_type\": \"\",\n    \"f_version\": \"\",\n    \"id\": \"\",\n    \"data\": {\n        \"type\": \"\",\n        \"interface\": \"\",\n        \"messages\": null,\n        \"cadence\": {\n            \"body\": \"\",\n            \"network_pins\": null\n        },\n        \"dependencies\": null,\n        \"parameters\": null\n    }\n}"`

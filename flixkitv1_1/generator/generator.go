@@ -133,6 +133,9 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 	// not all networks are supported, depends on what clients are passed in
 	_ = g.calculateNetworkPins(program)
 
+	id, _ := v1_1.GenerateFlixID(g.template)
+	g.template.ID = id
+
 	templateJson, err := json.MarshalIndent(g.template, "", "    ")
 	fmt.Println(string(templateJson))
 

@@ -1,6 +1,7 @@
 package v1_1
 
 import (
+	"bytes"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
@@ -8,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/onflow/cadence/runtime/ast"
 	"golang.org/x/crypto/sha3"
 )
@@ -375,6 +377,66 @@ func (template *InteractionTemplate) ProcessImports(cadenceCode string) {
 	// Replace the matched pattern with "import \"ContractName\""
 	replaced := pattern.ReplaceAllString(cadenceCode, `import "$1"`)
 	template.Data.Cadence.Body = replaced
+}
+
+func messagesToRlp(messages []Message) []interface{} {
+	values := make([]interface{}, 0)
+	for _, message := range messages {
+		var mv []interface{}
+		mv = append(mv, ShaHex(message.Key, message.Key))
+		var templateMessageTranslations []interface{}
+		for _, v := range message.I18n {
+			var tagTranslation []interface{}
+			tagTranslation = append(tagTranslation, ShaHex(v.Tag, v.Tag))
+			tagTranslation = append(tagTranslation, ShaHex(v.Translation, v.Translation))
+			templateMessageTranslations = append(templateMessageTranslations, tagTranslation)
+		}
+		mv = append(mv, templateMessageTranslations)
+		values = append(values, mv)
+	}
+	return values
+}
+
+func (flix InteractionTemplate) EncodeRLP() (result string, err error) {
+	var buffer bytes.Buffer // Create a new buffer
+
+	input := []interface{}{
+		ShaHex(flix.FType, "f-type"),
+		ShaHex(flix.FVersion, "f-version"),
+		ShaHex(flix.Data.Type, "type"),
+		ShaHex(flix.Data.Interface, "interface"),
+		messagesToRlp(flix.Data.Messages),
+		ShaHex(flix.Data.Cadence, "cadence"),
+
+		// todo: add dependencies and parameters
+		//		dependenciesToRlp(flix.Data.Dependencies),
+		//		argumentsToRlp(flix.Data.Parameters),
+	}
+
+	//	msg := dependenciesToRlp(flix.Data.Dependencies)
+	//prettyJSON, _ := json.MarshalIndent(input, "", "    ")
+	//fmt.Println(string(prettyJSON))
+
+	err = rlp.Encode(&buffer, input)
+	if err != nil {
+		return "", err
+	}
+	hexString := hex.EncodeToString(buffer.Bytes())
+
+	//fmt.Println("call to hash hex string")
+	fullyHashed := ShaHex(hexString, "input")
+
+	//fmt.Println("hexString", fullyHashed)
+	return fullyHashed, nil
+
+}
+
+func GenerateFlixID(flix *InteractionTemplate) (string, error) {
+	rlpOutput, err := flix.EncodeRLP()
+	if err != nil {
+		return "", err
+	}
+	return string(rlpOutput), nil
 }
 
 func ShaHex(value interface{}, debugKey string) string {

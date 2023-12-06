@@ -137,7 +137,7 @@ func TestParsePragma(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			err = ParsePragma(program.PragmaDeclarations(), &template)
+			err = template.ParsePragma(program)
 			if err != nil && !tt.wantErr {
 				t.Fatal(err)
 			}

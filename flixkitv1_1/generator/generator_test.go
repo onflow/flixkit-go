@@ -2,7 +2,6 @@ package flixkitv1_1
 
 import (
 	"context"
-	"encoding/json"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
@@ -55,11 +54,11 @@ func TestHelloScript(t *testing.T) {
 	ctx := context.Background()
 	template, err := generator.Generate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
-	prettyJSON, err := json.MarshalIndent(template, "", "    ")
-	assert.NoError(err, "marshal template to json should not return an error")
-	autogold.ExpectFile(t, string(prettyJSON))
+	autogold.ExpectFile(t, template)
 
 }
+
+// setup test flowkit client for networks
 
 func TestTransactionValue(t *testing.T) {
 	contracts := []v1_1.Contract{
@@ -118,8 +117,6 @@ func TestTransactionValue(t *testing.T) {
 	ctx := context.Background()
 	template, err := generator.Generate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
-	prettyJSON, err := json.MarshalIndent(template, "", "    ")
-	assert.NoError(err, "marshal template to json should not return an error")
-	autogold.ExpectFile(t, string(prettyJSON))
+	autogold.ExpectFile(t, template)
 
 }

@@ -2,14 +2,7 @@ package bindings
 
 func GetJsFclScriptTemplate() string {
 	const template = `{{define "script"}}export async function {{.Title}}( 
- {{- if len .Parameters -}}
-  {
-    {{- range $index, $ele := .Parameters -}}
-      {{if $index}}, {{end}}{{.Name}}
-    {{- end -}}
-  }
-  {{- end -}}
-) {
+{{- template "params" .}}) {
   const info = await fcl.query({
     template: flixTemplate,
     {{ if len .Parameters -}}

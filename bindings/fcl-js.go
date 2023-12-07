@@ -3,51 +3,28 @@ package bindings
 import (
 	"bytes"
 	"fmt"
-	"net/url"
-	"path/filepath"
 	"sort"
-	"text/template"
 
 	"github.com/onflow/flixkit-go"
 	bindings "github.com/onflow/flixkit-go/bindings/templates"
+	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
 	"github.com/stoewer/go-strcase"
 )
 
-type simpleParameter struct {
-	Name        string
-	JsType      string
-	Description string
-	FclType     string
-	CadType     string
-}
-
-type templateData struct {
-	Version         string
-	Parameters      []simpleParameter
-	Title           string
-	Description     string
-	Location        string
-	IsScript        bool
-	IsLocalTemplate bool
-}
-
-type FclJSGenerator struct {
-	Templates []string
-}
-
-func NewFclJSGenerator() *FclJSGenerator {
+func NewFclJSGenerator() *FclGenerator {
 	templates := []string{
 		bindings.GetJsFclMainTemplate(),
 		bindings.GetJsFclScriptTemplate(),
 		bindings.GetJsFclTxTemplate(),
+		bindings.GetJsFclParamsTemplate(),
 	}
 
-	return &FclJSGenerator{
+	return &FclGenerator{
 		Templates: templates,
 	}
 }
 
-func (g FclJSGenerator) Generate(flixString string, templateLocation string) (string, error) {
+func (g FclGenerator) GenerateJS(flixString string, templateLocation string) (string, error) {
 	tmpl, err := parseTemplates(g.Templates)
 	if err != nil {
 		return "", err
@@ -55,18 +32,55 @@ func (g FclJSGenerator) Generate(flixString string, templateLocation string) (st
 	if flixString == "" {
 		return "", fmt.Errorf("no flix template provided")
 	}
-
-	ver, err := flixkit.GetTemplateVersion(flixString)
-	if err != nil || ver != "1.0.0" {
-		return "", fmt.Errorf("invalid flix template version, support v1.0.0")
-	}
-
-	flix, err := flixkit.ParseFlix(flixString)
-	if err != nil {
-		return "", err
-	}
 	isLocal := !isUrl(templateLocation)
 
+	ver, err := flixkit.GetTemplateVersion(flixString)
+	if err != nil {
+		return "", fmt.Errorf("invalid flix template version, %s", err)
+	}
+	var data templateData
+	data.FclVersion = GetFlixFclCompatibility(ver)
+	if ver == "1.0.0" {
+		flix, err := flixkit.ParseFlix(flixString)
+		if err != nil {
+			return "", err
+		}
+		data = getTemplateDataV1_0(flix, templateLocation, isLocal)
+
+	} else if ver == "1.1.0" {
+		flix, err := v1_1.ParseFlix(flixString)
+		if err != nil {
+			return "", err
+		}
+		data = getTemplateDataV1_1(flix, templateLocation, isLocal)
+
+	} else {
+		return "", fmt.Errorf("invalid flix template version, support v1.0.0 and v1.1.0")
+	}
+	data.FclVersion = GetFlixFclCompatibility(ver)
+
+	var buf bytes.Buffer
+	err = tmpl.Execute(&buf, data)
+	return buf.String(), err
+}
+
+func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string, isLocal bool) templateData {
+	var msgs v1_1.InteractionTemplateMessages = flix.Data.Messages
+	methodName := strcase.LowerCamelCase(msgs.GetTitle("Request"))
+	description := msgs.GetDescription("")
+	data := templateData{
+		Version:         flix.FVersion,
+		Parameters:      transformParameters(flix.Data.Parameters),
+		Title:           methodName,
+		Description:     description,
+		Location:        templateLocation,
+		IsScript:        flix.IsScript(),
+		IsLocalTemplate: isLocal,
+	}
+	return data
+}
+
+func getTemplateDataV1_0(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) templateData {
 	methodName := strcase.LowerCamelCase(flix.Data.Messages.GetTitleValue("Request"))
 	description := flix.GetDescription()
 	data := templateData{
@@ -78,15 +92,27 @@ func (g FclJSGenerator) Generate(flixString string, templateLocation string) (st
 		IsScript:        flix.IsScript(),
 		IsLocalTemplate: isLocal,
 	}
-
-	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, data)
-	return buf.String(), err
+	return data
 }
 
-func isUrl(str string) bool {
-	u, err := url.Parse(str)
-	return err == nil && u.Scheme != "" && u.Host != ""
+func transformParameters(args []v1_1.Parameter) []simpleParameter {
+	simpleArgs := []simpleParameter{}
+	sort.Slice(args, func(i, j int) bool {
+		return args[i].Index < args[j].Index
+	})
+
+	for _, arg := range args {
+		isArray, cType, jsType := isArrayParameter(FlixParameter{Name: arg.Label, Type: arg.Type})
+		var msgs v1_1.InteractionTemplateMessages = arg.Messages
+		desciption := msgs.GetDescription("")
+		if isArray {
+			simpleArgs = append(simpleArgs, simpleParameter{Name: arg.Label, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
+		} else {
+			jsType := convertCadenceTypeToJS(arg.Type)
+			simpleArgs = append(simpleArgs, simpleParameter{Name: arg.Label, CadType: arg.Type, JsType: jsType, FclType: arg.Type, Description: desciption})
+		}
+	}
+	return simpleArgs
 }
 
 func transformArguments(args flixkit.Arguments) []simpleParameter {
@@ -102,7 +128,7 @@ func transformArguments(args flixkit.Arguments) []simpleParameter {
 	})
 	for _, key := range keys {
 		arg := args[key]
-		isArray, cType, jsType := isArrayParameter(arg)
+		isArray, cType, jsType := isArrayParameter(FlixParameter{Name: key, Type: arg.Type})
 		desciption := arg.Messages.GetTitleValue("")
 		if isArray {
 			simpleArgs = append(simpleArgs, simpleParameter{Name: key, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
@@ -114,61 +140,11 @@ func transformArguments(args flixkit.Arguments) []simpleParameter {
 	return simpleArgs
 }
 
-func isArrayParameter(arg flixkit.Argument) (isArray bool, cType string, jsType string) {
+func isArrayParameter(arg FlixParameter) (isArray bool, cType string, jsType string) {
 	if arg.Type == "" || arg.Type[0] != '[' {
 		return false, "", ""
 	}
 	cadenceType := arg.Type[1 : len(arg.Type)-1]
 	javascriptType := "Array<" + convertCadenceTypeToJS(cadenceType) + ">"
 	return true, cadenceType, javascriptType
-}
-
-func convertCadenceTypeToJS(cadenceType string) string {
-	// need to determine js type based on fcl supported types
-	// looking at fcl types and how arguments work as parameters
-	// https://github.com/onflow/fcl-js/blob/master/packages/types/src/types.js
-	switch cadenceType {
-	case "Bool":
-		return "boolean"
-	case "Void":
-		return "void"
-	case "Dictionary":
-		return "object"
-	case "Struct":
-		return "object"
-	case "Enum":
-		return "object"
-	default:
-		return "string"
-	}
-}
-
-func parseTemplates(templates []string) (*template.Template, error) {
-	baseTemplate := template.New("base")
-
-	for _, tmplStr := range templates {
-		_, err := baseTemplate.Parse(tmplStr)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return baseTemplate, nil
-}
-
-// GetRelativePath computes the relative path from generated file to flix json file.
-// This path is used in the binding file to reference the flix json file.
-func GetRelativePath(configFile, bindingFile string) (string, error) {
-	relPath, err := filepath.Rel(filepath.Dir(bindingFile), configFile)
-	if err != nil {
-		return "", err
-	}
-
-	// If the file is in the same directory and doesn't start with "./", prepend it.
-	if !filepath.IsAbs(relPath) && relPath[0] != '.' {
-		relPath = "./" + relPath
-	}
-
-	// Currently binding files are js, we need to convert the path to unix style
-	return filepath.ToSlash(relPath), nil
 }

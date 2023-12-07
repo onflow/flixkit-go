@@ -158,9 +158,7 @@ func TestSimpleScriptGen(t *testing.T) {
 	ctx := context.Background()
 	template, err := generator.Generate(ctx, code, templatePreFill)
 	assert.NoError(err, "Generate should not return an error")
-	prettyJSON, err := json.MarshalIndent(template, "", "    ")
-	assert.NoError(err, "marshal template to json should not return an error")
-	autogold.ExpectFile(t, string(prettyJSON))
+	autogold.ExpectFile(t, template)
 
 }
 
@@ -194,10 +192,7 @@ func TestMinimumValues(t *testing.T) {
 	ctx := context.Background()
 	template, err := generator.Generate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
-	prettyJSON, err := json.MarshalIndent(template, "", "    ")
-	assert.NoError(err, "marshal template to json should not return an error")
-	autogold.ExpectFile(t, string(prettyJSON))
-
+	autogold.ExpectFile(t, template)
 }
 
 func TestGetDependenceContract(t *testing.T) {

@@ -35,6 +35,33 @@ type Message struct {
 	I18n []I18n `json:"i18n"`
 }
 
+type InteractionTemplateMessages []Message
+
+func (msgs InteractionTemplateMessages) GetTitle(placeholder string) string {
+	return msgs.getMessageValue("title", placeholder)
+}
+
+func (msgs InteractionTemplateMessages) GetDescription(placeholder string) string {
+	return msgs.getMessageValue("description", placeholder)
+}
+
+func (msgs InteractionTemplateMessages) getMessageValue(key string, placeholder string) string {
+	s := placeholder
+	for _, msg := range msgs {
+		if msg.Key == key {
+			for _, i18n := range msg.I18n {
+				// set default if en-US not present
+				s = i18n.Translation
+				if i18n.Tag == "en-US" {
+					s = i18n.Translation
+					break
+				}
+			}
+		}
+	}
+	return s
+}
+
 type I18n struct {
 	Tag         string `json:"tag"`
 	Translation string `json:"translation"`

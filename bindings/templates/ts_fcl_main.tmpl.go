@@ -1,6 +1,6 @@
 package bindings
 
-func GetJsFclMainTemplate() string {
+func GetTsFclMainTemplate() string {
 	const template = `/**
     This binding file was auto generated based on FLIX template v{{.Version}}. 
     Changes to this file might get overwritten.

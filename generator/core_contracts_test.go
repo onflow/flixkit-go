@@ -2,7 +2,7 @@ package generator
 
 import "testing"
 
-func TestContractExist(t *testing.T) {
+func TestExistContract(t *testing.T) {
 	tests := []struct {
 		name   string
 		input  string

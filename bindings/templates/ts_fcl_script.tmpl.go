@@ -1,9 +1,10 @@
 package bindings
 
-func GetJsFclTxTemplate() string {
-	const template = `{{define "tx"}}export async function {{.Title}}(
-  {{- template "params" .}}) {
-  const transactionId = await fcl.mutate({
+func GetTsFclScriptTemplate() string {
+	const template = `{{define "script"}}export async function {{.Title}}( 
+{{- template "params" .}}) {
+  const info = await fcl.query({
+    cadence: "",
     template: flixTemplate,
     {{ if len .Parameters -}}
     args: (arg, t) => [
@@ -14,7 +15,7 @@ func GetJsFclTxTemplate() string {
     {{- end }}
   });
 
-  return transactionId
+  return info
 }{{end}}
 `
 

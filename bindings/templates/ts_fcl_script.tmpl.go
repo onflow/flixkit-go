@@ -2,7 +2,7 @@ package bindings
 
 func GetTsFclScriptTemplate() string {
 	const template = `{{define "script"}}export async function {{.Title}}( 
-{{- template "params" .}}) {
+{{- template "params" .}}): Promise<{{.Output.JsType}}> {
   const info = await fcl.query({
     cadence: "",
     template: flixTemplate,

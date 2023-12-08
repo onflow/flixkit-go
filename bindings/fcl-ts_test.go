@@ -71,11 +71,11 @@ var minimumParamTemplateTS_SCRIPT = &v1_1.InteractionTemplate{
 			Type:  "Int",
 			Messages: []v1_1.Message{
 				{
-					Key: "result",
+					Key: "description",
 					I18n: []v1_1.I18n{
 						{
 							Tag:         "en-US",
-							Translation: "Result",
+							Translation: "Result of some number plus one",
 						},
 					},
 				},

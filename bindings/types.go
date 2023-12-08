@@ -1,8 +1,8 @@
 package bindings
 
 import (
-	"fmt"
 	"net/url"
+	"sort"
 	"text/template"
 
 	"github.com/onflow/flixkit-go"
@@ -23,6 +23,7 @@ type templateData struct {
 	Version              string
 	Parameters           []simpleParameter
 	ParametersPrefixName string
+	Output               simpleParameter
 	Title                string
 	Description          string
 	Location             string
@@ -59,16 +60,16 @@ func GetFlixFclCompatibility(flixVersion string) string {
 }
 
 func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string, isLocal bool) templateData {
-	fmt.Println("hello v1_1")
 	var msgs v1_1.InteractionTemplateMessages = flix.Data.Messages
 	title := msgs.GetTitle("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := msgs.GetDescription("")
-	fmt.Println("found xxx", description, "scirption", title)
+	o := transformParameters([]v1_1.Parameter{flix.Data.Output})
 	data := templateData{
 		Version:              flix.FVersion,
 		Parameters:           transformParameters(flix.Data.Parameters),
 		ParametersPrefixName: strcase.UpperCamelCase(title),
+		Output:               o[0],
 		Title:                methodName,
 		Description:          description,
 		Location:             templateLocation,
@@ -127,4 +128,58 @@ func parseTemplates(templates []string) (*template.Template, error) {
 	}
 
 	return baseTemplate, nil
+}
+
+func transformParameters(args []v1_1.Parameter) []simpleParameter {
+	simpleArgs := []simpleParameter{}
+	sort.Slice(args, func(i, j int) bool {
+		return args[i].Index < args[j].Index
+	})
+
+	for _, arg := range args {
+		isArray, cType, jsType := isArrayParameter(FlixParameter{Name: arg.Label, Type: arg.Type})
+		var msgs v1_1.InteractionTemplateMessages = arg.Messages
+		desciption := msgs.GetDescription("")
+		if isArray {
+			simpleArgs = append(simpleArgs, simpleParameter{Name: arg.Label, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
+		} else {
+			jsType := convertCadenceTypeToJS(arg.Type)
+			simpleArgs = append(simpleArgs, simpleParameter{Name: arg.Label, CadType: arg.Type, JsType: jsType, FclType: arg.Type, Description: desciption})
+		}
+	}
+	return simpleArgs
+}
+
+func transformArguments(args flixkit.Arguments) []simpleParameter {
+	simpleArgs := []simpleParameter{}
+	var keys []string
+	// get keys for sorting
+	for k := range args {
+		keys = append(keys, k)
+	}
+
+	sort.SliceStable(keys, func(i, j int) bool {
+		return args[keys[i]].Index < args[keys[j]].Index
+	})
+	for _, key := range keys {
+		arg := args[key]
+		isArray, cType, jsType := isArrayParameter(FlixParameter{Name: key, Type: arg.Type})
+		desciption := arg.Messages.GetTitleValue("")
+		if isArray {
+			simpleArgs = append(simpleArgs, simpleParameter{Name: key, CadType: cType, JsType: jsType, FclType: "Array(t." + cType + ")", Description: desciption})
+		} else {
+			jsType := convertCadenceTypeToJS(arg.Type)
+			simpleArgs = append(simpleArgs, simpleParameter{Name: key, CadType: arg.Type, JsType: jsType, FclType: arg.Type, Description: desciption})
+		}
+	}
+	return simpleArgs
+}
+
+func isArrayParameter(arg FlixParameter) (isArray bool, cType string, jsType string) {
+	if arg.Type == "" || arg.Type[0] != '[' {
+		return false, "", ""
+	}
+	cadenceType := arg.Type[1 : len(arg.Type)-1]
+	javascriptType := "Array<" + convertCadenceTypeToJS(cadenceType) + ">"
+	return true, cadenceType, javascriptType
 }

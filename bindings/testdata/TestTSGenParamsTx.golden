@@ -7,16 +7,20 @@
 import * as fcl from "@onflow/fcl"
 import flixTemplate from "./min.template.json"
 
+interface UpdateGreetingParams {
+  greeting: string;
+}
 
 /**
-* request:
+* updateGreeting: Update HelloWorld Greeting
+* @param string greeting -
 * @returns {Promise<string>} - Returns a promise that resolves to the transaction ID
 */
-export async function request(): Promise<string> {
+export async function updateGreeting({greeting}: UpdateGreetingParams): Promise<string> {
   const transactionId = await fcl.mutate({
     cadence: "",
     template: flixTemplate,
-
+    args: (arg, t) => [arg(greeting, t.String)]
   });
 
   return transactionId

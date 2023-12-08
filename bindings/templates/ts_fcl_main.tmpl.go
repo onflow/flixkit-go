@@ -14,7 +14,7 @@ import flixTemplate from "{{.Location}}"
 const flixTemplate = "{{.Location}}"
 {{- end}}
 {{"\n"}}
-{{ template "interface" . }}
+{{- template "interface" . -}}
 /**
 * {{.Title}}: {{.Description}}
 {{- range $param := .Parameters }}
@@ -24,7 +24,7 @@ const flixTemplate = "{{.Location}}"
 * @returns {Promise<string>} - Returns a promise that resolves to the transaction ID
 {{else}}
 * @returns {Promise<{{.Output.JsType}}>} - {{.Output.Description}}
-{{- end }}
+{{ end -}}
 */
 {{if .IsScript}}
 {{- template "script" .}}

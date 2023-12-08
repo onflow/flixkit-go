@@ -28,6 +28,7 @@ type Data struct {
 	Cadence      Cadence      `json:"cadence"`
 	Dependencies []Dependency `json:"dependencies"`
 	Parameters   []Parameter  `json:"parameters"`
+	Output       Parameter    `json:"output"`
 }
 
 type Message struct {
@@ -59,7 +60,7 @@ func (msgs InteractionTemplateMessages) getMessageValue(key string, placeholder 
 			}
 		}
 	}
-	return s
+	return strings.TrimSpace(s)
 }
 
 type I18n struct {

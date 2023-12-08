@@ -8,7 +8,6 @@ import (
 	"github.com/onflow/flixkit-go"
 	bindings "github.com/onflow/flixkit-go/bindings/templates"
 	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
-	"github.com/stoewer/go-strcase"
 )
 
 func NewFclJSGenerator() *FclGenerator {
@@ -62,37 +61,6 @@ func (g FclGenerator) GenerateJS(flixString string, templateLocation string) (st
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, data)
 	return buf.String(), err
-}
-
-func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string, isLocal bool) templateData {
-	var msgs v1_1.InteractionTemplateMessages = flix.Data.Messages
-	methodName := strcase.LowerCamelCase(msgs.GetTitle("Request"))
-	description := msgs.GetDescription("")
-	data := templateData{
-		Version:         flix.FVersion,
-		Parameters:      transformParameters(flix.Data.Parameters),
-		Title:           methodName,
-		Description:     description,
-		Location:        templateLocation,
-		IsScript:        flix.IsScript(),
-		IsLocalTemplate: isLocal,
-	}
-	return data
-}
-
-func getTemplateDataV1_0(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) templateData {
-	methodName := strcase.LowerCamelCase(flix.Data.Messages.GetTitleValue("Request"))
-	description := flix.GetDescription()
-	data := templateData{
-		Version:         flix.FVersion,
-		Parameters:      transformArguments(flix.Data.Arguments),
-		Title:           methodName,
-		Description:     description,
-		Location:        templateLocation,
-		IsScript:        flix.IsScript(),
-		IsLocalTemplate: isLocal,
-	}
-	return data
 }
 
 func transformParameters(args []v1_1.Parameter) []simpleParameter {

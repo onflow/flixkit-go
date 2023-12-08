@@ -13,20 +13,18 @@ import flixTemplate from "{{.Location}}"
 {{- else}}
 const flixTemplate = "{{.Location}}"
 {{- end}}
-{{"\n"}}/**
-* {{.Description}}{{"\n"}}
-   {{- if gt (len .Parameters) 0 -}}
-* @param {Object} Parameters - parameters for the cadence
-    {{- range $index, $ele := .Parameters -}}
-{{"\n"}}* @param {{"{"}}{{$ele.JsType}}{{"}"}} Parameters.{{$ele.Name}} - {{$ele.Description}}: {{$ele.CadType}}
-    {{- end -}}
-    {{ else -}}
-* No parameters needed.
- {{- end -}}
- {{- if not .IsScript -}}
-{{"\n"}}* @returns {Promise<string>} - returns a promise which resolves to the transaction id
- {{- end -}}
-{{- "\n"}}*/
+{{"\n"}}
+{{ template "interface" . }}
+/**
+* {{.Title}}: {{.Description}}
+{{- range $param := .Parameters }}
+* @param {{$param.JsType}} {{$param.Name}} - {{$param.Description}}
+{{- end }}
+{{- if not .IsScript }}
+* @returns {Promise<string>} - Returns a promise that resolves to the transaction ID
+{{- end }}
+*/
+
 {{if .IsScript}}
 {{- template "script" .}}
 {{else}}

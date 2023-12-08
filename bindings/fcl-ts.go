@@ -4,12 +4,10 @@ import (
 	"bytes"
 	"fmt"
 	"path/filepath"
-	"text/template"
 
 	"github.com/onflow/flixkit-go"
 	bindings "github.com/onflow/flixkit-go/bindings/templates"
 	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
-	"github.com/stoewer/go-strcase"
 )
 
 func NewFclTSGenerator() *FclGenerator {
@@ -18,6 +16,7 @@ func NewFclTSGenerator() *FclGenerator {
 		bindings.GetTsFclScriptTemplate(),
 		bindings.GetTsFclTxTemplate(),
 		bindings.GetTsFclParamsTemplate(),
+		bindings.GetTsFclInterfaceTemplate(),
 	}
 
 	return &FclGenerator{
@@ -63,55 +62,6 @@ func (g FclGenerator) GenerateTS(flixString string, templateLocation string) (st
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, data)
 	return buf.String(), err
-}
-
-func GetTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string, isLocal bool) templateData {
-	var msgs v1_1.InteractionTemplateMessages = flix.Data.Messages
-	methodName := strcase.LowerCamelCase(msgs.GetTitle("Request"))
-	description := msgs.GetDescription("")
-	data := templateData{
-		Version:         flix.FVersion,
-		Parameters:      transformParameters(flix.Data.Parameters),
-		Title:           methodName,
-		Description:     description,
-		Location:        templateLocation,
-		IsScript:        flix.IsScript(),
-		IsLocalTemplate: isLocal,
-	}
-	return data
-}
-
-func convertCadenceTypeToJS(cadenceType string) string {
-	// need to determine js type based on fcl supported types
-	// looking at fcl types and how arguments work as parameters
-	// https://github.com/onflow/fcl-js/blob/master/packages/types/src/types.js
-	switch cadenceType {
-	case "Bool":
-		return "boolean"
-	case "Void":
-		return "void"
-	case "Dictionary":
-		return "object"
-	case "Struct":
-		return "object"
-	case "Enum":
-		return "object"
-	default:
-		return "string"
-	}
-}
-
-func parseTemplates(templates []string) (*template.Template, error) {
-	baseTemplate := template.New("base")
-
-	for _, tmplStr := range templates {
-		_, err := baseTemplate.Parse(tmplStr)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return baseTemplate, nil
 }
 
 // GetRelativePath computes the relative path from generated file to flix json file.

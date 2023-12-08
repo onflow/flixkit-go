@@ -2,7 +2,7 @@ package bindings
 
 func GetTsFclTxTemplate() string {
 	const template = `{{define "tx"}}export async function {{.Title}}(
-  {{- template "params" .}}) {
+  {{- template "params" .}}): Promise<string> {
   const transactionId = await fcl.mutate({
     cadence: "",
     template: flixTemplate,

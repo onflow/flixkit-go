@@ -10,6 +10,7 @@ import flixTemplate from "./min.template.json"
 /**
 *
 * No parameters needed.
+
 * @returns {Promise<string>} - returns a promise which resolves to the transaction id
 */
 export async function request() {

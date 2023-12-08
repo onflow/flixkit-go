@@ -9,6 +9,20 @@ import (
 	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
 )
 
+func NewFclTSGenerator() *FclGenerator {
+	templates := []string{
+		bindings.GetTsFclMainTemplate(),
+		bindings.GetTsFclScriptTemplate(),
+		bindings.GetTsFclTxTemplate(),
+		bindings.GetTsFclParamsTemplate(),
+		bindings.GetTsFclInterfaceTemplate(),
+	}
+
+	return &FclGenerator{
+		Templates: templates,
+	}
+}
+
 func NewFclJSGenerator() *FclGenerator {
 	templates := []string{
 		bindings.GetJsFclMainTemplate(),
@@ -22,7 +36,7 @@ func NewFclJSGenerator() *FclGenerator {
 	}
 }
 
-func (g FclGenerator) GenerateJS(flixString string, templateLocation string) (string, error) {
+func (g *FclGenerator) Generate(flixString string, templateLocation string) (string, error) {
 	tmpl, err := parseTemplates(g.Templates)
 	if err != nil {
 		return "", err

@@ -204,7 +204,7 @@ func TestJSGenTransaction(t *testing.T) {
 			bindings.GetJsFclParamsTemplate(),
 		},
 	}
-	got, _ := generator.GenerateJS(string(ttemp), "./transfer_token.json")
+	got, _ := generator.Generate(string(ttemp), "./transfer_token.json")
 	autogold.ExpectFile(t, got)
 }
 
@@ -221,7 +221,7 @@ func TestJSGenScript(t *testing.T) {
 		},
 	}
 	assert := assert.New(t)
-	got, err := generator.GenerateJS(string(ttemp), "./multiply_two_integers.template.json")
+	got, err := generator.Generate(string(ttemp), "./multiply_two_integers.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, got)
 }
@@ -240,7 +240,7 @@ func TestJSGenArrayScript(t *testing.T) {
 	}
 	assert := assert.New(t)
 
-	out, err := generator.GenerateJS(string(ttemp), "./multiply-numbers.template.json")
+	out, err := generator.Generate(string(ttemp), "./multiply-numbers.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -252,7 +252,7 @@ func TestJSGenMinScript(t *testing.T) {
 	generator := NewFclJSGenerator()
 	assert := assert.New(t)
 
-	out, err := generator.GenerateJS(string(ttemp), "./min.template.json")
+	out, err := generator.Generate(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -263,7 +263,7 @@ func TestJSGenNoParamsScript(t *testing.T) {
 	generator := NewFclJSGenerator()
 	assert := assert.New(t)
 
-	out, err := generator.GenerateJS(string(ttemp), "./min.template.json")
+	out, err := generator.Generate(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }

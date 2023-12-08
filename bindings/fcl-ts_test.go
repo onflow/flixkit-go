@@ -143,7 +143,7 @@ func TestTSGenNoParamsScript(t *testing.T) {
 	generator := NewFclTSGenerator()
 	assert := assert.New(t)
 
-	out, err := generator.GenerateTS(string(ttemp), "./min.template.json")
+	out, err := generator.Generate(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -155,7 +155,7 @@ func TestTSGenNoParamsTx(t *testing.T) {
 	generator := NewFclTSGenerator()
 	assert := assert.New(t)
 
-	out, err := generator.GenerateTS(string(ttemp), "./min.template.json")
+	out, err := generator.Generate(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -167,7 +167,7 @@ func TestTSGenParamsScript(t *testing.T) {
 	generator := NewFclTSGenerator()
 	assert := assert.New(t)
 
-	out, err := generator.GenerateTS(string(ttemp), "./min.template.json")
+	out, err := generator.Generate(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -179,7 +179,7 @@ func TestTSGenParamsTx(t *testing.T) {
 	generator := NewFclTSGenerator()
 	assert := assert.New(t)
 
-	out, err := generator.GenerateTS(string(ttemp), "./min.template.json")
+	out, err := generator.Generate(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }

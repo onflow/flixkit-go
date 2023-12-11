@@ -58,8 +58,6 @@ func TestHelloScript(t *testing.T) {
 
 }
 
-// setup test flowkit client for networks
-
 func TestTransactionValue(t *testing.T) {
 	contracts := []v1_1.Contract{
 		{
@@ -111,6 +109,49 @@ func TestTransactionValue(t *testing.T) {
 		
 		execute {
 			HelloWorld.updateGreeting(newGreeting: greeting)
+		}
+	}
+`
+	ctx := context.Background()
+	template, err := generator.Generate(ctx, code, "")
+	assert.NoError(err, "Generate should not return an error")
+	autogold.ExpectFile(t, template)
+
+}
+
+func TestTransferFlowTransaction(t *testing.T) {
+	contracts := []v1_1.Contract{}
+
+	generator, err := NewGenerator(contracts, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert := assert.New(t)
+	code := `
+	#interaction(
+		version: "1.1.0",
+		title: "Transfer Flow",
+		description: "Transfer Flow to account",
+		language: "en-US",
+		parameters: [
+			Parameter(
+				name: "amount", 
+				title: "Amount", 
+				description: "Amount of Flow to transfer"
+			),
+			Parameter(
+				name: "to", 
+				title: "Reciever", 
+				description: "Destination address to receive Flow Tokens"
+			)
+		],
+	)
+	
+	import "FlowToken"
+	transaction(amount: UFix64, to: Address) {
+		let vault: @FlowToken.Vault
+		prepare(signer: AuthAccount) {
+		
 		}
 	}
 `

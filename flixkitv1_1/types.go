@@ -11,6 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/onflow/cadence/runtime/ast"
+	"github.com/onflow/flixkit-go/core_contracts"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -28,7 +29,7 @@ type Data struct {
 	Cadence      Cadence      `json:"cadence"`
 	Dependencies []Dependency `json:"dependencies"`
 	Parameters   []Parameter  `json:"parameters"`
-	Output       Parameter    `json:"output"`
+	Output       *Parameter   `json:"output,omitempty"`
 }
 
 type Message struct {
@@ -171,7 +172,10 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 		}
 
 		if dependencyAddress == "" {
-			return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+			dependencyAddress = core_contracts.GetCoreContractForNetwork(networkName, contractName)
+			if dependencyAddress == "" {
+				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+			}
 		}
 
 		replacement := fmt.Sprintf("import %s from %s", contractName, dependencyAddress)
@@ -392,6 +396,7 @@ func (template *InteractionTemplate) DetermineCadenceType(program *ast.Program) 
 		t = "script"
 	} else if len(trans) > 0 {
 		t = "transaction"
+		template.Data.Output = nil
 	} else {
 		return fmt.Errorf("no function or transaction declarations found")
 	}

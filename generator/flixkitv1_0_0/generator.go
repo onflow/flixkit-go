@@ -19,13 +19,12 @@ import (
 
 type Generator struct {
 	deployedContracts []flixkit.Contracts
-	coreContracts     flixkit.Contracts
 	testnetClient     *flowkit.Flowkit
 	mainnetClient     *flowkit.Flowkit
 }
 
 // stubb to pass in parameters
-func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.Contracts, logger output.Logger) (flixkit.GenerateTemplate, error) {
+func NewGenerator(deployedContracts []flixkit.Contracts, logger output.Logger) (flixkit.GenerateTemplate, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
@@ -45,13 +44,8 @@ func NewGenerator(deployedContracts []flixkit.Contracts, coreContracts flixkit.C
 	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 
-	if coreContracts == nil {
-		coreContracts = generator.GetDefaultCoreContracts()
-	}
-
 	return &Generator{
 		deployedContracts: deployedContracts,
-		coreContracts:     coreContracts,
 		testnetClient:     testnetClient,
 		mainnetClient:     mainnetClient,
 	}, nil
@@ -134,7 +128,6 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 	var info flixkit.Networks
 	// new import syntax detected, convert to old import syntax, limitation of 1.0.0
 	placeholder = "0x" + contractName
-	info = generator.GetContractInformation(contractName, g.deployedContracts, g.coreContracts)
 
 	for name, network := range info {
 		var flowkit *flowkit.Flowkit

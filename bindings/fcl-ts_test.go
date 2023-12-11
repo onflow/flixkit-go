@@ -20,6 +20,21 @@ var minimumNoParamTemplateTS_SCRIPT = &v1_1.InteractionTemplate{
 			Body:        "pub fun main(): Int { return 1 }",
 			NetworkPins: []v1_1.NetworkPin{},
 		},
+		Output: &v1_1.Parameter{
+			Label: "result",
+			Type:  "Int",
+			Messages: []v1_1.Message{
+				{
+					Key: "description",
+					I18n: []v1_1.I18n{
+						{
+							Tag:         "en-US",
+							Translation: "Result of some number plus one",
+						},
+					},
+				},
+			},
+		},
 	},
 }
 
@@ -66,7 +81,7 @@ var minimumParamTemplateTS_SCRIPT = &v1_1.InteractionTemplate{
 				},
 			},
 		},
-		Output: v1_1.Parameter{
+		Output: &v1_1.Parameter{
 			Label: "result",
 			Type:  "Int",
 			Messages: []v1_1.Message{

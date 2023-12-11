@@ -10,6 +10,7 @@ import (
 	"sort"
 
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/onflow/flixkit-go/core_contracts"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -86,9 +87,15 @@ func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string
 
 	for dependencyAddress, contracts := range t.Data.Dependencies {
 		for contractName, networks := range contracts {
+			var networkAddress string
 			network, ok := networks[networkName]
+			networkAddress = network.Address
 			if !ok {
-				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+				coreContractAddress := core_contracts.GetCoreContractForNetwork(contractName, networkName)
+				if coreContractAddress == "" {
+					return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+				}
+				networkAddress = coreContractAddress
 			}
 
 			pattern := fmt.Sprintf(`import\s*%s\s*from\s*%s`, contractName, dependencyAddress)
@@ -97,7 +104,7 @@ func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string
 				return "", fmt.Errorf("invalid regex pattern: %v", err)
 			}
 
-			replacement := fmt.Sprintf("import %s from %s", contractName, network.Address)
+			replacement := fmt.Sprintf("import %s from %s", contractName, networkAddress)
 			cadence = re.ReplaceAllString(t.Data.Cadence, replacement)
 		}
 	}

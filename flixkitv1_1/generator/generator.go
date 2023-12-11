@@ -10,7 +10,7 @@ import (
 	"github.com/onflow/cadence/runtime/cmd"
 	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/cadence/runtime/parser"
-	"github.com/onflow/flixkit-go"
+	"github.com/onflow/flixkit-go/core_contracts"
 	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
 	"github.com/onflow/flixkit-go/generator"
 	"github.com/onflow/flow-cli/flowkit"
@@ -24,14 +24,13 @@ import (
 
 type Generator struct {
 	deployedContracts []v1_1.Contract
-	coreContracts     []v1_1.Contract
 	testnetClient     *flowkit.Flowkit
 	mainnetClient     *flowkit.Flowkit
 	template          *v1_1.InteractionTemplate
 }
 
 // stubb to pass in parameters
-func NewGenerator(deployedContracts []v1_1.Contract, coreContracts []v1_1.Contract, logger output.Logger) (*Generator, error) {
+func NewGenerator(deployedContracts []v1_1.Contract, logger output.Logger) (*Generator, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
@@ -50,41 +49,22 @@ func NewGenerator(deployedContracts []v1_1.Contract, coreContracts []v1_1.Contra
 	}
 	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
-
-	if coreContracts == nil {
-		// get default core contracts
-		//coreContracts = generator.GetDefaultCoreContracts()
-		coreContracts = []v1_1.Contract{
-			{
-				Contract: "FungibleToken",
-				Networks: []v1_1.Network{
-					{
-						Network: "emulator",
-						Address: "0xee82856bf20e2aa6",
-					},
-				},
-			},
-			{
-				Contract: "NonFungibleToken",
-				Networks: []v1_1.Network{
-					{
-						Network: "emulator",
-						Address: "0x01cf0e2f2f715450",
-					},
-				},
+	// add core contracts to deployed contracts
+	cc := core_contracts.GetCoreContracts()
+	for contractName, c := range cc {
+		contract := v1_1.Contract{
+			Contract: contractName,
+			Networks: []v1_1.Network{
+				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
+				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
+				{Network: config.EmulatorNetwork.Name, Address: c[config.EmptyNetwork.Name]},
 			},
 		}
+		deployedContracts = append(deployedContracts, contract)
 	}
-
-	j, err := json.MarshalIndent(deployedContracts, " ", "     ")
-	if err != nil {
-		return nil, err
-	}
-	fmt.Println(string(j))
 
 	return &Generator{
 		deployedContracts: deployedContracts,
-		coreContracts:     coreContracts,
 		testnetClient:     testnetClient,
 		mainnetClient:     mainnetClient,
 		template:          &v1_1.InteractionTemplate{},
@@ -137,7 +117,7 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 	g.template.ID = id
 
 	templateJson, err := json.MarshalIndent(g.template, "", "    ")
-	fmt.Println(string(templateJson))
+	//fmt.Println(string(templateJson))
 
 	return string(templateJson), err
 }
@@ -156,7 +136,7 @@ func (g Generator) calculateNetworkPins(program *ast.Program) error {
 		}
 		networkPins = append(networkPins, v1_1.NetworkPin{
 			Network: netName,
-			PinSelf: flixkit.ShaHex(cad, ""),
+			PinSelf: v1_1.ShaHex(cad, ""),
 		})
 	}
 	g.template.Data.Cadence.NetworkPins = networkPins
@@ -224,14 +204,8 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 	return networks, nil
 }
 
-// basic contract lookup, (address, network) using information given to generator, deployed contracts in flow.json or core contracts
 func (g *Generator) LookupImportContractInfo(contractName string) []v1_1.Network {
-	contracts := make([]v1_1.Contract, len(g.coreContracts)+len(g.deployedContracts))
-	contracts = append(contracts, g.coreContracts...)
-	contracts = append(contracts, g.deployedContracts...)
-
-	// add deployed contracts to contracts map
-	for _, contract := range contracts {
+	for _, contract := range g.deployedContracts {
 		if contractName == contract.Contract {
 			return contract.Networks
 		}
@@ -264,7 +238,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit flowkit.Flowkit, ad
 	depend := v1_1.PinDetail{
 		PinContractName:    name,
 		PinContractAddress: address,
-		PinSelf:            flixkit.ShaHex(code, ""),
+		PinSelf:            v1_1.ShaHex(code, ""),
 	}
 	depend.CalculatePin(height)
 	imports := getAddressImports(code, name)

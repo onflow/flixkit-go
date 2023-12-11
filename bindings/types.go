@@ -64,12 +64,18 @@ func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string
 	title := msgs.GetTitle("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := msgs.GetDescription("")
-	o := transformParameters([]v1_1.Parameter{flix.Data.Output})
+	result := simpleParameter{}
+	if flix.Data.Output != nil {
+		o := transformParameters([]v1_1.Parameter{*flix.Data.Output})
+		if len(o) > 0 {
+			result = o[0]
+		}
+	}
 	data := templateData{
 		Version:              flix.FVersion,
 		Parameters:           transformParameters(flix.Data.Parameters),
 		ParametersPrefixName: strcase.UpperCamelCase(title),
-		Output:               o[0],
+		Output:               result,
 		Title:                methodName,
 		Description:          description,
 		Location:             templateLocation,
@@ -132,6 +138,9 @@ func parseTemplates(templates []string) (*template.Template, error) {
 
 func transformParameters(args []v1_1.Parameter) []simpleParameter {
 	simpleArgs := []simpleParameter{}
+	if len(args) == 0 {
+		return simpleArgs
+	}
 	sort.Slice(args, func(i, j int) bool {
 		return args[i].Index < args[j].Index
 	})

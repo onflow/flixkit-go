@@ -7,7 +7,6 @@ import (
 
 	"github.com/hexops/autogold/v2"
 	"github.com/onflow/flixkit-go"
-	"github.com/onflow/flixkit-go/generator"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -96,7 +95,6 @@ func TestGenerateWithPrefill(t *testing.T) {
 `
 	gen := Generator{
 		deployedContracts: []flixkit.Contracts{},
-		coreContracts:     generator.GetDefaultCoreContracts(),
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}
@@ -216,7 +214,6 @@ func TestGetDependenceContract(t *testing.T) {
 	}
 	genV1 := Generator{
 		deployedContracts: []flixkit.Contracts{fungi},
-		coreContracts:     generator.GetDefaultCoreContracts(),
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}

@@ -10,7 +10,7 @@ import flixTemplate from "./min.template.json"
 
 /**
 * request:
-* @returns {Promise<string>} -
+* @returns {Promise<string>} - Result of some number plus one
 */
 export async function request(): Promise<string> {
   const info = await fcl.query({

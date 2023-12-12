@@ -57,7 +57,7 @@ func NewGenerator(deployedContracts []v1_1.Contract, logger output.Logger) (*Gen
 			Networks: []v1_1.Network{
 				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
 				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
-				{Network: config.EmulatorNetwork.Name, Address: c[config.EmptyNetwork.Name]},
+				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
 			},
 		}
 		deployedContracts = append(deployedContracts, contract)
@@ -120,13 +120,14 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 	//fmt.Println(string(templateJson))
 
 	return string(templateJson), err
+
 }
 
 func (g Generator) calculateNetworkPins(program *ast.Program) error {
-	// only interested in public networks
 	networksOfInterest := []string{
 		config.MainnetNetwork.Name,
 		config.TestnetNetwork.Name,
+		config.EmptyNetwork.Name,
 	}
 	networkPins := make([]v1_1.NetworkPin, 0)
 	for _, netName := range networksOfInterest {
@@ -181,23 +182,28 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 		return nil, fmt.Errorf("could not find contract dependency %s", contractName)
 	}
 	var networks []v1_1.Network
-	for _, network := range contractNetworks {
+	for _, n := range contractNetworks {
+		network := v1_1.Network{
+			Network: n.Network,
+			Address: n.Address,
+		}
 		var flowkit *flowkit.Flowkit
-		if network.Network == config.MainnetNetwork.Name && g.mainnetClient != nil {
+		if n.Network == config.MainnetNetwork.Name && g.mainnetClient != nil {
 			flowkit = g.mainnetClient
-		} else if network.Network == config.TestnetNetwork.Name && g.testnetClient != nil {
+		} else if n.Network == config.TestnetNetwork.Name && g.testnetClient != nil {
 			flowkit = g.testnetClient
 		}
-		if network.DependencyPinBlockHeight == 0 && flowkit != nil {
+		if n.DependencyPinBlockHeight == 0 && flowkit != nil {
 			block, _ := flowkit.Gateway().GetLatestBlock()
-			details, err := g.GenerateDepPinDepthFirst(ctx, *flowkit, network.Address, contractName, block.Height)
+			height := block.Height
+
+			details, err := g.GenerateDepPinDepthFirst(ctx, flowkit, n.Address, contractName, height)
 			if err != nil {
 				return nil, err
 			}
-			network.DependencyPinBlockHeight = block.Height
+			network.DependencyPinBlockHeight = height
 			network.DependencyPin = details
 		}
-
 		networks = append(networks, network)
 	}
 
@@ -213,26 +219,26 @@ func (g *Generator) LookupImportContractInfo(contractName string) []v1_1.Network
 	return nil
 }
 
-func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit flowkit.Flowkit, address string, name string, height uint64) (details v1_1.PinDetail, err error) {
+func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, height uint64) (details *v1_1.PinDetail, err error) {
 	memoize := make(map[string]v1_1.PinDetail)
 	networkPinDetail, err := generateDependencyNetworks(ctx, flowkit, address, name, memoize, height)
 	if err != nil {
-		return networkPinDetail, err
+		return nil, err
 	}
 
 	return networkPinDetail, nil
 }
 
-func generateDependencyNetworks(ctx context.Context, flowkit flowkit.Flowkit, address string, name string, cache map[string]v1_1.PinDetail, height uint64) (v1_1.PinDetail, error) {
+func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, cache map[string]v1_1.PinDetail, height uint64) (*v1_1.PinDetail, error) {
 	identifier := fmt.Sprintf("A.%s.%s", strings.ReplaceAll(address, "0x", ""), name)
 	pinDetail, ok := cache[identifier]
 	if ok {
-		return pinDetail, nil
+		return &pinDetail, nil
 	}
 
 	account, err := flowkit.GetAccount(ctx, flow.HexToAddress(address))
 	if err != nil {
-		return pinDetail, err
+		return nil, err
 	}
 	code := account.Contracts[name]
 	depend := v1_1.PinDetail{
@@ -248,13 +254,15 @@ func generateDependencyNetworks(ctx context.Context, flowkit flowkit.Flowkit, ad
 		address, name := split[0], split[1]
 		dep, err := generateDependencyNetworks(ctx, flowkit, address, name, cache, height)
 		if err != nil {
-			return depend, err
+			return nil, err
 		}
-		detailImports = append(detailImports, dep)
-		cache[identifier] = dep
+		if dep != nil {
+			detailImports = append(detailImports, *dep)
+			cache[identifier] = *dep
+		}
 	}
 	depend.Imports = detailImports
-	return depend, nil
+	return &depend, nil
 }
 
 func getAddressImports(code []byte, name string) []string {

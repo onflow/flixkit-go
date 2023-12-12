@@ -141,7 +141,7 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 			network.Pin = hash
 			network.PinBlockHeight = height
 		}
-		info[name] = network
+		//info[name] = network
 	}
 
 	if info == nil {

@@ -89,10 +89,10 @@ type Contract struct {
 }
 
 type Network struct {
-	Network                  string    `json:"network"`
-	Address                  string    `json:"address"`
-	DependencyPinBlockHeight uint64    `json:"dependency_pin_block_height"`
-	DependencyPin            PinDetail `json:"dependency_pin"`
+	Network                  string     `json:"network"`
+	Address                  string     `json:"address"`
+	DependencyPinBlockHeight uint64     `json:"dependency_pin_block_height"`
+	DependencyPin            *PinDetail `json:"dependency_pin,omitempty"`
 }
 
 type PinDetail struct {

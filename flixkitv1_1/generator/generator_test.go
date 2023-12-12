@@ -5,7 +5,9 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
+	"github.com/onflow/flixkit-go/core_contracts"
 	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
+	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -121,10 +123,23 @@ func TestTransactionValue(t *testing.T) {
 
 func TestTransferFlowTransaction(t *testing.T) {
 	contracts := []v1_1.Contract{}
-
-	generator, err := NewGenerator(contracts, nil)
-	if err != nil {
-		t.Fatal(err)
+	cc := core_contracts.GetCoreContracts()
+	for contractName, c := range cc {
+		contract := v1_1.Contract{
+			Contract: contractName,
+			Networks: []v1_1.Network{
+				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
+				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
+				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
+			},
+		}
+		contracts = append(contracts, contract)
+	}
+	// fill in top level dependencies for the generator
+	generator := &Generator{
+		deployedContracts: contracts,
+		testnetClient:     nil,
+		mainnetClient:     nil,
 	}
 	assert := assert.New(t)
 	code := `

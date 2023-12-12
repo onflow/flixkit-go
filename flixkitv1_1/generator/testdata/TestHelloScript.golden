@@ -47,38 +47,17 @@
                             {
                                 "network": "testnet",
                                 "address": "0xee82856bf20e2aa6",
-                                "dependency_pin_block_height": 0,
-                                "dependency_pin": {
-                                    "pin": "",
-                                    "pin_self": "",
-                                    "pin_contract_name": "",
-                                    "pin_contract_address": "",
-                                    "imports": null
-                                }
+                                "dependency_pin_block_height": 0
                             },
                             {
                                 "network": "mainnet",
                                 "address": "0xee82856bf20e2aa6",
-                                "dependency_pin_block_height": 0,
-                                "dependency_pin": {
-                                    "pin": "",
-                                    "pin_self": "",
-                                    "pin_contract_name": "",
-                                    "pin_contract_address": "",
-                                    "imports": null
-                                }
+                                "dependency_pin_block_height": 0
                             },
                             {
                                 "network": "emulator",
                                 "address": "0xee82856bf20e2aa6",
-                                "dependency_pin_block_height": 0,
-                                "dependency_pin": {
-                                    "pin": "",
-                                    "pin_self": "",
-                                    "pin_contract_name": "",
-                                    "pin_contract_address": "",
-                                    "imports": null
-                                }
+                                "dependency_pin_block_height": 0
                             }
                         ]
                     }

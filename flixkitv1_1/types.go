@@ -568,3 +568,15 @@ func convertToBytes(value interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("unsupported type %T", v)
 	}
 }
+
+func ExtractContractName(importStr string) (string, error) {
+	// Create a regex pattern to find the contract name inside the quotes
+	pattern := regexp.MustCompile(`import "([^"]+)"`)
+	matches := pattern.FindStringSubmatch(importStr)
+
+	if len(matches) >= 2 {
+		return matches[1], nil
+	}
+
+	return "", fmt.Errorf("no contract name found in string")
+}

@@ -12,7 +12,6 @@ import (
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go/core_contracts"
 	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
-	"github.com/onflow/flixkit-go/generator"
 	"github.com/onflow/flow-cli/flowkit"
 	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/onflow/flow-cli/flowkit/gateway"
@@ -111,12 +110,9 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 
 	// need to process dependencies before calculating network pins
 	_ = g.calculateNetworkPins(program)
-
 	id, _ := v1_1.GenerateFlixID(g.template)
 	g.template.ID = id
-
 	templateJson, err := json.MarshalIndent(g.template, "", "    ")
-	//fmt.Println(string(templateJson))
 
 	return string(templateJson), err
 
@@ -152,7 +148,7 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	// fill in dependence information
 	g.template.Data.Dependencies = make([]v1_1.Dependency, 0)
 	for _, imp := range imports {
-		contractName, err := generator.ExtractContractName(imp.String())
+		contractName, err := v1_1.ExtractContractName(imp.String())
 		if err != nil {
 			return err
 		}

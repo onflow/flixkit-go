@@ -364,3 +364,23 @@ func TestGenerateTemplateIdWithDeps(t *testing.T) {
 	}
 
 }
+
+func TestEmptyPragmaWithParameter(t *testing.T) {
+	codeBytes := []byte(PragmaEmpty)
+	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var template InteractionTemplate
+	err = template.ProcessParameters(program)
+	if err != nil {
+		t.Errorf("process parameters err %v", err)
+	}
+	prettyJSON, err := json.MarshalIndent(template, "", "    ")
+	if err != nil {
+		t.Errorf("process parameters err %v", err)
+	}
+
+	autogold.ExpectFile(t, string(prettyJSON))
+
+}

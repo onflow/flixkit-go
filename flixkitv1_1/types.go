@@ -144,16 +144,25 @@ func (t *InteractionTemplate) IsTransaction() bool {
 	return t.Data.Type == "transaction"
 }
 
+func replaceImport(code string, from string, to string) string {
+	pathRegex := regexp.MustCompile(fmt.Sprintf(`import\s+(\w+)\s+from\s+"%s"`, from))
+	identifierRegex := regexp.MustCompile(fmt.Sprintf(`import\s+"(%s)"`, from))
+
+	replacement := fmt.Sprintf(`import $1 from %s`, to)
+	code = pathRegex.ReplaceAllString(code, replacement)
+	code = identifierRegex.ReplaceAllString(code, replacement)
+	return code
+}
+
 func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
-	var cadence string
+	cadence := t.Data.Cadence.Body
 	// Compile regular expression to match and capture contract names
 	re := regexp.MustCompile(`import\s*"([^"]+)"`)
 
 	// Find all matches and their captured groups
-	matches := re.FindAllStringSubmatch(t.Data.Cadence.Body, -1)
-
+	matches := re.FindAllStringSubmatch(cadence, -1)
 	if len(matches) == 0 {
-		return t.Data.Cadence.Body, nil
+		return cadence, nil
 	}
 	for _, match := range matches {
 		contractName := match[1]
@@ -178,9 +187,7 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 			}
 		}
-
-		replacement := fmt.Sprintf("import %s from %s", contractName, dependencyAddress)
-		cadence = re.ReplaceAllString(t.Data.Cadence.Body, replacement)
+		cadence = replaceImport(cadence, contractName, dependencyAddress)
 	}
 
 	return cadence, nil
@@ -368,12 +375,17 @@ func (template *InteractionTemplate) ProcessParameters(program *ast.Program) err
 			if tempParam.Label != param.Identifier.String() {
 				return fmt.Errorf("parameter name mismatch, expected %s, got %s", tempParam.Label, param.Identifier.String())
 			}
+			tempParam.Type = param.TypeAnnotation.Type.String()
+			tempParam.Index = i
 		} else {
+			tempParam = &Parameter{
+				Label:    param.Identifier.String(),
+				Index:    i,
+				Type:     param.TypeAnnotation.Type.String(),
+				Messages: make([]Message, 0),
+			}
 			template.Data.Parameters = append(template.Data.Parameters, *tempParam)
 		}
-		tempParam.Label = param.Identifier.String()
-		tempParam.Type = param.TypeAnnotation.Type.String()
-		tempParam.Index = i
 	}
 
 	return nil

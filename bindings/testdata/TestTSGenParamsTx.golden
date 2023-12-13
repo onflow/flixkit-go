@@ -18,7 +18,6 @@ interface UpdateGreetingParams {
 */
 export async function updateGreeting({greeting}: UpdateGreetingParams): Promise<string> {
   const transactionId = await fcl.mutate({
-    cadence: "",
     template: flixTemplate,
     args: (arg, t) => [arg(greeting, t.String)]
   });

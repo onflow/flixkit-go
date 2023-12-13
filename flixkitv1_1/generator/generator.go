@@ -110,7 +110,6 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 	}
 
 	// need to process dependencies before calculating network pins
-	// not all networks are supported, depends on what clients are passed in
 	_ = g.calculateNetworkPins(program)
 
 	id, _ := v1_1.GenerateFlixID(g.template)
@@ -127,7 +126,6 @@ func (g Generator) calculateNetworkPins(program *ast.Program) error {
 	networksOfInterest := []string{
 		config.MainnetNetwork.Name,
 		config.TestnetNetwork.Name,
-		config.EmptyNetwork.Name,
 	}
 	networkPins := make([]v1_1.NetworkPin, 0)
 	for _, netName := range networksOfInterest {
@@ -241,12 +239,16 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 		return nil, err
 	}
 	code := account.Contracts[name]
+	if !strings.HasPrefix(address, "0x") {
+		address = "0x" + address
+	}
 	depend := v1_1.PinDetail{
 		PinContractName:    name,
 		PinContractAddress: address,
 		PinSelf:            v1_1.ShaHex(code, ""),
 	}
 	depend.CalculatePin(height)
+	pins := []string{depend.PinSelf}
 	imports := getAddressImports(code, name)
 	detailImports := make([]v1_1.PinDetail, 0)
 	for _, imp := range imports {
@@ -260,8 +262,10 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 			detailImports = append(detailImports, *dep)
 			cache[identifier] = *dep
 		}
+		pins = append(pins, dep.PinSelf)
 	}
 	depend.Imports = detailImports
+	depend.Pin = v1_1.ShaHex(strings.Join(pins, ""), "")
 	return &depend, nil
 }
 

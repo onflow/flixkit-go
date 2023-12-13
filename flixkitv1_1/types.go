@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/rlp"
@@ -430,20 +431,77 @@ func messagesToRlp(messages []Message) []interface{} {
 	return values
 }
 
+func parameterToRLP(p Parameter) []interface{} {
+	var values []interface{}
+	values = append(values, ShaHex(p.Label, "label"))
+
+	var param []interface{}
+	param = append(param, ShaHex(fmt.Sprint(p.Index), "index"))
+	param = append(param, ShaHex(p.Type, "type"))
+	param = append(param, messagesToRlp(p.Messages))
+	values = append(values, param)
+
+	return values
+}
+
+func parametersToRlp(params []Parameter) []interface{} {
+	values := make([]interface{}, 0)
+	sort.Slice(params, func(i, j int) bool {
+		return params[i].Index < params[j].Index
+	})
+
+	for _, p := range params {
+		values = append(values, parameterToRLP(p))
+	}
+	return values
+}
+
+func networksToRlp(Networks []Network) []interface{} {
+	values := make([]interface{}, 0)
+	for _, network := range Networks {
+		var networks []interface{}
+		networks = append(networks, ShaHex(network.Network, "key"))
+		if network.DependencyPin != nil {
+			networks = append(networks, ShaHex(network.DependencyPin.Pin, "networkPin"))
+		}
+		values = append(values, networks)
+	}
+	return values
+}
+
+func contractsToRlp(Contracts []Contract) []interface{} {
+	values := make([]interface{}, 0)
+	for _, contract := range Contracts {
+		var contracts []interface{}
+		contracts = append(contracts, ShaHex(contract.Contract, "key"))
+		contracts = append(contracts, networksToRlp(contract.Networks))
+		values = append(values, contracts)
+	}
+	return values
+}
+
+func dependenciesToRlp(Dependencies []Dependency) []interface{} {
+	values := make([]interface{}, 0)
+	for _, dependency := range Dependencies {
+		var deps []interface{}
+		deps = append(deps, contractsToRlp(dependency.Contracts))
+		values = append(values, deps)
+	}
+	return values
+}
+
 func (flix InteractionTemplate) EncodeRLP() (result string, err error) {
 	var buffer bytes.Buffer // Create a new buffer
 
 	input := []interface{}{
-		ShaHex(flix.FType, "f-type"),
-		ShaHex(flix.FVersion, "f-version"),
-		ShaHex(flix.Data.Type, "type"),
-		ShaHex(flix.Data.Interface, "interface"),
+		ShaHex(flix.FType, ""),
+		ShaHex(flix.FVersion, ""),
+		ShaHex(flix.Data.Type, ""),
+		ShaHex(flix.Data.Interface, ""),
 		messagesToRlp(flix.Data.Messages),
-		ShaHex(flix.Data.Cadence, "cadence"),
-
-		// todo: add dependencies and parameters
-		//		dependenciesToRlp(flix.Data.Dependencies),
-		//		argumentsToRlp(flix.Data.Parameters),
+		ShaHex(flix.Data.Cadence, ""),
+		dependenciesToRlp(flix.Data.Dependencies),
+		parametersToRlp(flix.Data.Parameters),
 	}
 
 	//	msg := dependenciesToRlp(flix.Data.Dependencies)

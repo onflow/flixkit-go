@@ -268,11 +268,8 @@ func (flix FlowInteractionTemplate) EncodeRLP() (result string, err error) {
 		return "", err
 	}
 	hexString := hex.EncodeToString(buffer.Bytes())
-
-	//fmt.Println("call to hash hex string")
 	fullyHashed := ShaHex(hexString, "input")
 
-	//fmt.Println("hexString", fullyHashed)
 	return fullyHashed, nil
 
 }

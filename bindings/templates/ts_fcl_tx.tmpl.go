@@ -4,7 +4,6 @@ func GetTsFclTxTemplate() string {
 	const template = `{{define "tx"}}export async function {{.Title}}(
   {{- template "params" .}}): Promise<string> {
   const transactionId = await fcl.mutate({
-    cadence: "",
     template: flixTemplate,
     {{ if len .Parameters -}}
     args: (arg, t) => [

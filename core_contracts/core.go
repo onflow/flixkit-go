@@ -1,6 +1,8 @@
 package core_contracts
 
-import "github.com/onflow/flow-cli/flowkit/config"
+import (
+	"github.com/onflow/flow-cli/flowkit/config"
+)
 
 func GetCoreContracts() map[string]map[string]string {
 	// TODO: this should be from core contracts module

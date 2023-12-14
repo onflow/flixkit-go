@@ -182,7 +182,7 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 		}
 
 		if dependencyAddress == "" {
-			dependencyAddress = core_contracts.GetCoreContractForNetwork(networkName, contractName)
+			dependencyAddress = core_contracts.GetCoreContractForNetwork(contractName, networkName)
 			if dependencyAddress == "" {
 				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 			}

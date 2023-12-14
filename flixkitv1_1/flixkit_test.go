@@ -345,6 +345,24 @@ const templateMultipleImports = `
     }
 }
 `
+const templateMultipleCoreImports = `
+{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.1.0",
+    "id": "29d03aafbbb5a02e0d5f4ffee685c12494915410812305c2858008d3e2902b72",
+    "data": {
+        "type": "script",
+        "interface": "",
+        "messages": null,
+        "cadence": {
+            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\npub fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
+            "network_pins": []
+        },
+        "dependencies": [],
+        "parameters": []
+    }
+}
+`
 
 const templateMissing = `
 {
@@ -437,6 +455,20 @@ func TestGetAndReplaceCadenceImportsMultipleImports(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Contains(t, cadenceCode, "import FungibleToken from 0xf233dcee88fe0abe", "Cadence should contain the expected FungibleToken import")
-	assert.Contains(t, cadenceCode, "import FlowToken from 0x1654653399040a61", "Cadence should contain the expected FlowToken import")
+	assert.Contains(t, cadenceCode, "import FlowToken from 0x1654653399040a61", "Cadence should contain the expected FlowTokenimport")
+
+}
+
+func TestGetAndReplaceCadenceImportsMultipleCoreImports(t *testing.T) {
+	template, err := ParseFlix(templateMultipleCoreImports)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cadenceCode, err := template.GetAndReplaceCadenceImports("mainnet")
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Contains(t, cadenceCode, "import FungibleToken from 0xf233dcee88fe0abe", "Cadence should contain the expected FungibleToken import")
+	assert.Contains(t, cadenceCode, "import FlowToken from 0x1654653399040a61", "Cadence should contain the expected FlowTokenimport")
 
 }

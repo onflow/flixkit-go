@@ -29,7 +29,7 @@ const flixTemplate = "{{.Location}}"
 {{- "\n"}}*/
 {{if .IsScript}}
 {{- template "script" .}}
-{{else}}
+{{ else }}
 {{- template "tx" .}}
 {{- end}}
 

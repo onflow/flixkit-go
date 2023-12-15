@@ -143,17 +143,17 @@ func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templ
 	}
 	var execution FlowInteractionTemplateExecution
 	var cadenceCode string
-	var replaceableCadence FlowInteractionTemplateCadence
-	if replaceableCadence, err = v1_1.ParseFlix(template); err == nil {
-		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
-		if err != nil {
-			return nil, err
-		}
-		execution.Cadence = cadenceCode
-		execution.IsScript = replaceableCadence.IsScript()
-		execution.IsTransaciton = replaceableCadence.IsTransaction()
+	ver, err := GetTemplateVersion(template)
+	if err != nil {
+		return nil, fmt.Errorf("invalid flix template version, %w", err)
 	}
-	if replaceableCadence, err = v1.ParseFlix(template); err == nil {
+	var replaceableCadence FlowInteractionTemplateCadence
+	switch ver {
+	case "1.1.0":
+		replaceableCadence, err = v1_1.ParseFlix(template)
+		if err != nil {
+			return nil, err
+		}
 		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
 		if err != nil {
 			return nil, err
@@ -161,6 +161,20 @@ func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templ
 		execution.Cadence = cadenceCode
 		execution.IsScript = replaceableCadence.IsScript()
 		execution.IsTransaciton = replaceableCadence.IsTransaction()
+	case "1.0.0":
+		replaceableCadence, err = v1.ParseFlix(template)
+		if err != nil {
+			return nil, err
+		}
+		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
+		if err != nil {
+			return nil, err
+		}
+		execution.Cadence = cadenceCode
+		execution.IsScript = replaceableCadence.IsScript()
+		execution.IsTransaciton = replaceableCadence.IsTransaction()
+	default:
+		return nil, fmt.Errorf("flix template version: %s not supported", ver)
 	}
 
 	if execution.Cadence == "" {

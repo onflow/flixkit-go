@@ -22,13 +22,13 @@ const flixTemplate = "{{.Location}}"
 {{- end }}
 {{- if not .IsScript }}
 * @returns {Promise<string>} - Returns a promise that resolves to the transaction ID
-{{else}}
+{{ else }}
 * @returns {Promise<{{.Output.JsType}}>} - {{.Output.Description}}
 {{ end -}}
 */
 {{if .IsScript}}
 {{- template "script" .}}
-{{else}}
+{{ else }}
 {{- template "tx" .}}
 {{- end}}
 

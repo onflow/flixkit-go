@@ -6,7 +6,7 @@ import (
 	"sort"
 	"text/template"
 
-	"github.com/onflow/flixkit-go/flixkit/v1"
+	v1 "github.com/onflow/flixkit-go/flixkit/v1"
 	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 	"github.com/onflow/flixkit-go/internal/templates"
 	"github.com/stoewer/go-strcase"
@@ -47,33 +47,33 @@ func (g *FclGenerator) Generate(flixString string, templateLocation string) (str
 	if flixString == "" {
 		return "", fmt.Errorf("no flix template provided")
 	}
-	isLocal := !isUrl(templateLocation)
 
 	ver, err := GetTemplateVersion(flixString)
 	if err != nil {
-		return "", fmt.Errorf("invalid flix template version, %s", err)
+		return "", fmt.Errorf("invalid flix template version, %w", err)
 	}
+
+	isLocal := !isUrl(templateLocation)
 	var data templateData
-	data.FclVersion = GetFlixFclCompatibility(ver)
-	if ver == "1.0.0" {
-		flix, err := flixkit.ParseFlix(flixString)
+	switch ver {
+	case "1.0.0":
+
+		flix, err := v1.ParseFlix(flixString)
 		if err != nil {
 			return "", err
 		}
 		data = getTemplateDataV1_0(flix, templateLocation, isLocal)
-
-	} else if ver == "1.1.0" {
+	case "1.1.0":
 		flix, err := v1_1.ParseFlix(flixString)
 		if err != nil {
 			return "", err
 		}
 		data = getTemplateDataV1_1(flix, templateLocation, isLocal)
-
-	} else {
-		return "", fmt.Errorf("invalid flix template version, support v1.0.0 and v1.1.0")
+	default:
+		return "", fmt.Errorf("invalid flix template version: %s", ver)
 	}
-	data.FclVersion = GetFlixFclCompatibility(ver)
 
+	data.FclVersion = GetFlixFclCompatibility(ver)
 	var buf bytes.Buffer
 	err = tmpl.Execute(&buf, data)
 	return buf.String(), err
@@ -149,7 +149,7 @@ func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string
 	return data
 }
 
-func getTemplateDataV1_0(flix *flixkit.FlowInteractionTemplate, templateLocation string, isLocal bool) templateData {
+func getTemplateDataV1_0(flix *v1.FlowInteractionTemplate, templateLocation string, isLocal bool) templateData {
 	title := flix.Data.Messages.GetTitleValue("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := flix.GetDescription()
@@ -223,7 +223,7 @@ func transformParameters(args []v1_1.Parameter) []simpleParameter {
 	return simpleArgs
 }
 
-func transformArguments(args flixkit.Arguments) []simpleParameter {
+func transformArguments(args v1.Arguments) []simpleParameter {
 	simpleArgs := []simpleParameter{}
 	var keys []string
 	// get keys for sorting

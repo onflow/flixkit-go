@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/onflow/flixkit-go/core_contracts"
+	"github.com/onflow/flixkit-go/internal/contracts"
 )
 
 type Network struct {
@@ -79,13 +79,13 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
 	var cadence string
 
-	for dependencyAddress, contracts := range t.Data.Dependencies {
-		for contractName, networks := range contracts {
+	for dependencyAddress, c := range t.Data.Dependencies {
+		for contractName, networks := range c {
 			var networkAddress string
 			network, ok := networks[networkName]
 			networkAddress = network.Address
 			if !ok {
-				coreContractAddress := core_contracts.GetCoreContractForNetwork(contractName, networkName)
+				coreContractAddress := contracts.GetCoreContractForNetwork(contractName, networkName)
 				if coreContractAddress == "" {
 					return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 				}

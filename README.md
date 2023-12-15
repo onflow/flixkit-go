@@ -2,11 +2,14 @@
 
 > FlixKit is a Go package that provides functionalities for interacting with Flow Interaction Templates (aka FLIX). Please note that this package is currently in alpha and may undergo significant changes.
 
-The `flixkit` package is a Go module designed to interact with Flow Interaction Templates (FLIX). It allows users to fetch, parse, and handle Flow interaction templates.
+The `flixkit` package is a Go module designed to interact with Flow Interaction Templates (FLIX). It allows users to fetch, parse, and generate Flow interaction templates aka FLIX, aka Verified Interactions. 
 
 ## Structures
 
-The package provides a range of structs to represent data fetched from FLIX service:
+See FLIP that descibes json structure, [Here](https://github.com/onflow/flips/blob/main/application/20230330-interaction-templates-1.1.0.md) current version is v1.1.0
+
+This package provides three functionalities. 
+ - 
 
 - `Network`: Contains information about a specific network like address, contract and pin.
 - `Argument`: Represents the arguments that can be given to the contracts.
@@ -25,6 +28,7 @@ The package provides a `FlixService` interface with a constructor function `NewF
 
 The `FlixService` interface provides the following methods:
 
+- 
 - `GetFlixRaw(ctx context.Context, templateName string) (string, error)`: Fetches a raw Flix template by its name.
 - `GetFlix(ctx context.Context, templateName string) (*FlowInteractionTemplate, error)`: Fetches and parses a Flix template by its name.
 - `GetFlixByIDRaw(ctx context.Context, templateID string) (string, error)`: Fetches a raw Flix template by its ID.

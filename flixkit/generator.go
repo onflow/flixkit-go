@@ -1,4 +1,4 @@
-package flixkitv1_1
+package flixkit
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/onflow/cadence/runtime/cmd"
 	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/cadence/runtime/parser"
-	"github.com/onflow/flixkit-go/core_contracts"
-	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
+	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
+	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-cli/flowkit"
 	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/onflow/flow-cli/flowkit/gateway"
@@ -49,7 +49,7 @@ func NewGenerator(deployedContracts []v1_1.Contract, logger output.Logger) (*Gen
 	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 	// add core contracts to deployed contracts
-	cc := core_contracts.GetCoreContracts()
+	cc := contracts.GetCoreContracts()
 	for contractName, c := range cc {
 		contract := v1_1.Contract{
 			Contract: contractName,

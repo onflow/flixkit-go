@@ -11,7 +11,8 @@ import (
 	"net/url"
 	"os"
 
-	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
+	v1 "github.com/onflow/flixkit-go/flixkit/v1"
+	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 )
 
 type FlowInteractionTemplateExecution struct {
@@ -152,7 +153,7 @@ func (s *flixServiceImpl) GetAndReplaceCadenceImports(ctx context.Context, templ
 		execution.IsScript = replaceableCadence.IsScript()
 		execution.IsTransaciton = replaceableCadence.IsTransaction()
 	}
-	if replaceableCadence, err = ParseFlix(template); err == nil {
+	if replaceableCadence, err = v1.ParseFlix(template); err == nil {
 		cadenceCode, err = replaceableCadence.GetAndReplaceCadenceImports(network)
 		if err != nil {
 			return nil, err

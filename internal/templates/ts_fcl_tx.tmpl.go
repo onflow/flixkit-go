@@ -1,4 +1,4 @@
-package bindings
+package templates
 
 func GetTsFclTxTemplate() string {
 	const template = `{{define "tx"}}export async function {{.Title}}(

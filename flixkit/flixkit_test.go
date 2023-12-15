@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	v1 "github.com/onflow/flixkit-go/flixkit/v1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -78,37 +79,37 @@ var flix_template = `{
 	  }
 	}`
 
-var parsedTemplate = &FlowInteractionTemplate{
+var parsedTemplate = &v1.FlowInteractionTemplate{
 	FType:    "InteractionTemplate",
 	FVersion: "1.0.0",
 	ID:       "290b6b6222b2a77b16db896a80ddf29ebd1fa3038c9e6625a933fa213fce51fa",
-	Data: Data{
+	Data: v1.Data{
 		Type:      "transaction",
 		Interface: "",
-		Messages: Messages{
-			Title: &Title{
+		Messages: v1.Messages{
+			Title: &v1.Title{
 				I18N: map[string]string{
 					"en-US": "Transfer Tokens",
 				},
 			},
-			Description: &Description{
+			Description: &v1.Description{
 				I18N: map[string]string{
 					"en-US": "Transfer tokens from one account to another",
 				},
 			},
 		},
 		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
-		Dependencies: Dependencies{
-			"0xFUNGIBLETOKENADDRESS": Contracts{
-				"FungibleToken": Networks{
-					"mainnet": Network{
+		Dependencies: v1.Dependencies{
+			"0xFUNGIBLETOKENADDRESS": v1.Contracts{
+				"FungibleToken": v1.Networks{
+					"mainnet": v1.Network{
 						Address:        "0xf233dcee88fe0abe",
 						FqAddress:      "A.0xf233dcee88fe0abe.FungibleToken",
 						Contract:       "FungibleToken",
 						Pin:            "83c9e3d61d3b5ebf24356a9f17b5b57b12d6d56547abc73e05f820a0ae7d9cf5",
 						PinBlockHeight: 34166296,
 					},
-					"testnet": Network{
+					"testnet": v1.Network{
 						Address:        "0x9a0766d93b6608b7",
 						FqAddress:      "A.0x9a0766d93b6608b7.FungibleToken",
 						Contract:       "FungibleToken",
@@ -118,12 +119,12 @@ var parsedTemplate = &FlowInteractionTemplate{
 				},
 			},
 		},
-		Arguments: Arguments{
-			"amount": Argument{
+		Arguments: v1.Arguments{
+			"amount": v1.Argument{
 				Index: 0,
 				Type:  "UFix64",
-				Messages: Messages{
-					Title: &Title{
+				Messages: v1.Messages{
+					Title: &v1.Title{
 						I18N: map[string]string{
 							"en-US": "The amount of FLOW tokens to send",
 						},
@@ -131,11 +132,11 @@ var parsedTemplate = &FlowInteractionTemplate{
 				},
 				Balance: "",
 			},
-			"to": Argument{
+			"to": v1.Argument{
 				Index: 1,
 				Type:  "Address",
-				Messages: Messages{
-					Title: &Title{
+				Messages: v1.Messages{
+					Title: &v1.Title{
 						I18N: map[string]string{
 							"en-US": "The Flow account the tokens will go to",
 						},
@@ -150,7 +151,7 @@ var parsedTemplate = &FlowInteractionTemplate{
 func TestParseFlix(t *testing.T) {
 	assert := assert.New(t)
 
-	parsedTemplate, err := ParseFlix(flix_template)
+	parsedTemplate, err := v1.ParseFlix(flix_template)
 	assert.NoError(err, "ParseTemplate should not return an error")
 	assert.NotNil(parsedTemplate, "Parsed template should not be nil")
 
@@ -204,15 +205,15 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 func TestIsScript(t *testing.T) {
 	assert := assert.New(t)
 
-	scriptTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	scriptTemplate := &v1.FlowInteractionTemplate{
+		Data: v1.Data{
 			Type: "script",
 		},
 	}
 	assert.True(scriptTemplate.IsScript(), "IsScript() should return true")
 
-	transactionTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	transactionTemplate := &v1.FlowInteractionTemplate{
+		Data: v1.Data{
 			Type: "transaction",
 		},
 	}
@@ -222,15 +223,15 @@ func TestIsScript(t *testing.T) {
 func TestIsTransaction(t *testing.T) {
 	assert := assert.New(t)
 
-	scriptTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	scriptTemplate := &v1.FlowInteractionTemplate{
+		Data: v1.Data{
 			Type: "script",
 		},
 	}
 	assert.False(scriptTemplate.IsTransaction(), "IsTransaction() should return false")
 
-	transactionTemplate := &FlowInteractionTemplate{
-		Data: Data{
+	transactionTemplate := &v1.FlowInteractionTemplate{
+		Data: v1.Data{
 			Type: "transaction",
 		},
 	}

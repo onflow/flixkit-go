@@ -1,4 +1,4 @@
-package core_contracts
+package contracts
 
 import (
 	"github.com/onflow/flow-cli/flowkit/config"

@@ -1,4 +1,4 @@
-package bindings
+package templates
 
 func GetJsFclMainTemplate() string {
 	const template = `/**

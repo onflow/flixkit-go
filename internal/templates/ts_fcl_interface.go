@@ -1,4 +1,4 @@
-package bindings
+package templates
 
 func GetTsFclInterfaceTemplate() string {
 	const template = `{{ define "interface" }}

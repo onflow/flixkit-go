@@ -1,12 +1,12 @@
-package flixkitv1_1
+package flixkit
 
 import (
 	"context"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/flixkit-go/core_contracts"
-	v1_1 "github.com/onflow/flixkit-go/flixkitv1_1"
+	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
+	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/stretchr/testify/assert"
 )
@@ -122,8 +122,8 @@ func TestTransactionValue(t *testing.T) {
 }
 
 func TestTransferFlowTransaction(t *testing.T) {
-	contracts := []v1_1.Contract{}
-	cc := core_contracts.GetCoreContracts()
+	cs := []v1_1.Contract{}
+	cc := contracts.GetCoreContracts()
 	for contractName, c := range cc {
 		contract := v1_1.Contract{
 			Contract: contractName,
@@ -133,11 +133,11 @@ func TestTransferFlowTransaction(t *testing.T) {
 				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
 			},
 		}
-		contracts = append(contracts, contract)
+		cs = append(cs, contract)
 	}
 	// fill in top level dependencies for the generator
 	generator := &Generator{
-		deployedContracts: contracts,
+		deployedContracts: cs,
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}

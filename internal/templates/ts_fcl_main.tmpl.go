@@ -1,4 +1,4 @@
-package bindings
+package templates
 
 func GetTsFclMainTemplate() string {
 	const template = `/**

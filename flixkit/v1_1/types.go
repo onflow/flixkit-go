@@ -1,4 +1,4 @@
-package v1_1
+package flixkit
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/onflow/cadence/runtime/ast"
-	"github.com/onflow/flixkit-go/core_contracts"
+	"github.com/onflow/flixkit-go/internal/contracts"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -182,7 +182,7 @@ func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (s
 		}
 
 		if dependencyAddress == "" {
-			dependencyAddress = core_contracts.GetCoreContractForNetwork(contractName, networkName)
+			dependencyAddress = contracts.GetCoreContractForNetwork(contractName, networkName)
 			if dependencyAddress == "" {
 				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 			}

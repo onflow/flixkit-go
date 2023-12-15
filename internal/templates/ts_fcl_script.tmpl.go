@@ -1,4 +1,4 @@
-package bindings
+package templates
 
 func GetTsFclScriptTemplate() string {
 	const template = `{{define "script"}}export async function {{.Title}}( 

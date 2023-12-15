@@ -1,4 +1,4 @@
-package bindings
+package templates
 
 func GetJsFclParamsTemplate() string {
 	const template = `{{define "params"}}

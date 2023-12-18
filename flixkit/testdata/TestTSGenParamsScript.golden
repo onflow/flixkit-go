@@ -1,0 +1,33 @@
+`/**
+    This binding file was auto generated based on FLIX template v1.1.0.
+    Changes to this file might get overwritten.
+    Note fcl version 1.9.0 or higher is required to use templates.
+**/
+
+import * as fcl from "@onflow/fcl"
+import flixTemplate from "./min.template.json"
+
+interface RequestParams {
+  someNumber: string;
+}
+
+/**
+* request:
+* @param string someNumber -
+* @returns {Promise<string>} - Result of some number plus one
+*/
+export async function request({someNumber}: RequestParams): Promise<string> {
+  const info = await fcl.query({
+    cadence: "",
+    template: flixTemplate,
+    args: (arg, t) => [arg(someNumber, t.Int)]
+  });
+
+  return info
+}
+
+
+
+
+
+`

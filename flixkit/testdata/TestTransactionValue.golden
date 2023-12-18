@@ -1,0 +1,95 @@
+`{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.1.0",
+    "id": "88d07e6a46150c5e241f637d69b324fcbce1b7f06c130d442638422cff704b58",
+    "data": {
+        "type": "transaction",
+        "interface": "",
+        "messages": [
+            {
+                "key": "title",
+                "i18n": [
+                    {
+                        "tag": "en-US",
+                        "translation": "Update Greeting"
+                    }
+                ]
+            },
+            {
+                "key": "description",
+                "i18n": [
+                    {
+                        "tag": "en-US",
+                        "translation": "Update the greeting on the HelloWorld contract"
+                    }
+                ]
+            }
+        ],
+        "cadence": {
+            "body": "\n\t#interaction(\n\t\tversion: \"1.1.0\",\n\t\ttitle: \"Update Greeting\",\n\t\tdescription: \"Update the greeting on the HelloWorld contract\",\n\t\tlanguage: \"en-US\",\n\t\tparameters: [\n\t\t\tParameter(\n\t\t\t\tname: \"greeting\", \n\t\t\t\ttitle: \"Greeting\", \n\t\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t\t)\n\t\t],\n\t)\n\t\n\timport \"HelloWorld\"\n\ttransaction(greeting: String) {\n\t\n\t\tprepare(acct: AuthAccount) {\n\t\t\tlog(acct.address)\n\t\t}\n\t\t\n\t\texecute {\n\t\t\tHelloWorld.updateGreeting(newGreeting: greeting)\n\t\t}\n\t}\n",
+            "network_pins": [
+                {
+                    "network": "mainnet",
+                    "pin_self": "0ad0659f79f7b8336a588e24326c26cf6cf7f74af81c0c8a35ee58e190988af2"
+                },
+                {
+                    "network": "testnet",
+                    "pin_self": "0ad0659f79f7b8336a588e24326c26cf6cf7f74af81c0c8a35ee58e190988af2"
+                }
+            ]
+        },
+        "dependencies": [
+            {
+                "contracts": [
+                    {
+                        "contract": "HelloWorld",
+                        "networks": [
+                            {
+                                "network": "testnet",
+                                "address": "0xee82856bf20e2aa6",
+                                "dependency_pin_block_height": 0
+                            },
+                            {
+                                "network": "mainnet",
+                                "address": "0xee82856bf20e2aa6",
+                                "dependency_pin_block_height": 0
+                            },
+                            {
+                                "network": "emulator",
+                                "address": "0xee82856bf20e2aa6",
+                                "dependency_pin_block_height": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "parameters": [
+            {
+                "label": "greeting",
+                "index": 0,
+                "type": "String",
+                "messages": [
+                    {
+                        "key": "title",
+                        "i18n": [
+                            {
+                                "tag": "en-US",
+                                "translation": "Greeting"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "description",
+                        "i18n": [
+                            {
+                                "tag": "en-US",
+                                "translation": "The greeting to set on the HelloWorld contract"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}`

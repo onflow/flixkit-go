@@ -21,6 +21,16 @@ import (
 	"github.com/spf13/afero"
 )
 
+/*
+Same structure as core contracts, using config network names
+*/
+type NetworkAddressMap map[string]string
+
+/*
+Same structure as core contracts, keyed by contract name
+*/
+type ContractInfos map[string]NetworkAddressMap
+
 type Generator struct {
 	deployedContracts []v1_1.Contract
 	testnetClient     *flowkit.Flowkit
@@ -28,8 +38,7 @@ type Generator struct {
 	template          *v1_1.InteractionTemplate
 }
 
-// stubb to pass in parameters
-func NewGenerator(deployedContracts []v1_1.Contract, logger output.Logger) (*Generator, error) {
+func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
@@ -50,6 +59,7 @@ func NewGenerator(deployedContracts []v1_1.Contract, logger output.Logger) (*Gen
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 	// add core contracts to deployed contracts
 	cc := contracts.GetCoreContracts()
+	deployedContracts := make([]v1_1.Contract, 0)
 	for contractName, c := range cc {
 		contract := v1_1.Contract{
 			Contract: contractName,
@@ -58,6 +68,20 @@ func NewGenerator(deployedContracts []v1_1.Contract, logger output.Logger) (*Gen
 				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
 				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
 			},
+		}
+		deployedContracts = append(deployedContracts, contract)
+	}
+	// allow user contracts to override core contracts
+	for contractInfo, networks := range contractInfos {
+		contract := v1_1.Contract{
+			Contract: contractInfo,
+			Networks: make([]v1_1.Network, 0),
+		}
+		for network, address := range networks {
+			contract.Networks = append(contract.Networks, v1_1.Network{
+				Network: network,
+				Address: address,
+			})
 		}
 		deployedContracts = append(deployedContracts, contract)
 	}

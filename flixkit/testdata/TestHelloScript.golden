@@ -26,15 +26,15 @@
             }
         ],
         "cadence": {
-            "body": "\n\t#interaction(\n\t\tversion: \"1.1.0\",\n\t\ttitle: \"Say Hello\",\n\t\tdescription: \"Read the greeting from the HelloWorld contract\",\n\t\tlanguage: \"en-US\",\n\t\tparameters: [],\n\t)\n\t\n\timport \"HelloWorld\"\n\n\tpub fun main(): String {\n\treturn HelloWorld.greeting\n\t}\n",
+            "body": "\n\t#interaction(\n\t\tversion: \"1.1.0\",\n\t\ttitle: \"Say Hello\",\n\t\tdescription: \"Read the greeting from the HelloWorld contract\",\n\t\tlanguage: \"en-US\",\n\t\tparameters: [],\n\t)\n\n\timport \"HelloWorld\"\n\n\taccess(all)\n\tfun main(): String {\n\t\treturn HelloWorld.greeting\n\t}\n",
             "network_pins": [
                 {
                     "network": "mainnet",
-                    "pin_self": "57d66cd2e8370ef74feec033e768dc460514091fc82ba1b4c42697b600288048"
+                    "pin_self": "ab7702bc218a403fde58f290a89105f5c16d1462e1aedf19a73e2eb6d924245c"
                 },
                 {
                     "network": "testnet",
-                    "pin_self": "57d66cd2e8370ef74feec033e768dc460514091fc82ba1b4c42697b600288048"
+                    "pin_self": "ab7702bc218a403fde58f290a89105f5c16d1462e1aedf19a73e2eb6d924245c"
                 }
             ]
         },

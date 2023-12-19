@@ -110,33 +110,34 @@ fmt.Println(prettyJSON)
 
 ```go
 #interaction(
-		version: "1.1.0",
-		title: "Transfer Flow",
-		description: "Transfer Flow to account",
-		language: "en-US",
-		parameters: [
-			Parameter(
-				name: "amount", 
-				title: "Amount", 
-				description: "Amount of Flow to transfer"
-			),
-			Parameter(
-				name: "to", 
-				title: "Reciever", 
-				description: "Destination address to receive Flow Tokens"
-			)
-		],
-	)
-	
-	import "FlowToken"
-	transaction(amount: UFix64, to: Address) {
-		let vault: @FlowToken.Vault
-		prepare(signer: AuthAccount) {
-		...
-		}
-	}
-`
+	version: "1.1.0",
+	title: "Transfer Flow",
+	description: "Transfer Flow to account",
+	language: "en-US",
+	parameters: [
+		Parameter(
+			name: "amount", 
+			title: "Amount", 
+			description: "Amount of Flow to transfer"
+		),
+		Parameter(
+			name: "to", 
+			title: "Receiver", 
+			description: "Destination address to receive Flow Tokens"
+		)
+	],
+)
 
+import "FlowToken"
+
+transaction(amount: UFix64, to: Address) {
+
+	let vault: @FlowToken.Vault
+	
+	prepare(signer: &Account) {
+		// ...
+	}
+}
 ```
 
 The pragma describes the transaction parameters and reason for the transaction.

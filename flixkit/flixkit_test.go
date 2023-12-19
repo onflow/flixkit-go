@@ -6,8 +6,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	v1 "github.com/onflow/flixkit-go/flixkit/v1"
 	"github.com/stretchr/testify/assert"
+
+	v1 "github.com/onflow/flixkit-go/flixkit/v1"
 )
 
 var flix_template = `{
@@ -29,7 +30,7 @@ var flix_template = `{
 			}
 		  }
 		},
-		"cadence": "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
+		"cadence": "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: auth(Storage) &Account) {\nself.vault <- signer.storage\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to).capabilities\n.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n.deposit(from: <-self.vault)\n}\n}",
 		"dependencies": {
 		  "0xFUNGIBLETOKENADDRESS": {
 			"FungibleToken": {
@@ -98,7 +99,7 @@ var parsedTemplate = &v1.FlowInteractionTemplate{
 				},
 			},
 		},
-		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
+		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: auth(Storage) &Account) {\nself.vault <- signer.storage\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n.deposit(from: <-self.vault)\n}\n}",
 		Dependencies: v1.Dependencies{
 			"0xFUNGIBLETOKENADDRESS": v1.Contracts{
 				"FungibleToken": v1.Networks{

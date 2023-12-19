@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
-	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/stretchr/testify/assert"
+
+	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
+	"github.com/onflow/flixkit-go/internal/contracts"
 )
 
 func TestHelloScript(t *testing.T) {
@@ -46,11 +47,12 @@ func TestHelloScript(t *testing.T) {
 		language: "en-US",
 		parameters: [],
 	)
-	
+
 	import "HelloWorld"
 
-	pub fun main(): String {
-	return HelloWorld.greeting
+	access(all)
+	fun main(): String {
+		return HelloWorld.greeting
 	}
 `
 	ctx := context.Background()
@@ -95,20 +97,21 @@ func TestTransactionValue(t *testing.T) {
 		language: "en-US",
 		parameters: [
 			Parameter(
-				name: "greeting", 
-				title: "Greeting", 
+				name: "greeting",
+				title: "Greeting",
 				description: "The greeting to set on the HelloWorld contract"
 			)
 		],
 	)
-	
+
 	import "HelloWorld"
+
 	transaction(greeting: String) {
-	
-		prepare(acct: AuthAccount) {
+
+		prepare(acct: &Account) {
 			log(acct.address)
 		}
-		
+
 		execute {
 			HelloWorld.updateGreeting(newGreeting: greeting)
 		}
@@ -150,24 +153,24 @@ func TestTransferFlowTransaction(t *testing.T) {
 		language: "en-US",
 		parameters: [
 			Parameter(
-				name: "amount", 
-				title: "Amount", 
+				name: "amount",
+				title: "Amount",
 				description: "Amount of Flow to transfer"
 			),
 			Parameter(
-				name: "to", 
-				title: "Reciever", 
+				name: "to",
+				title: "Receiver",
 				description: "Destination address to receive Flow Tokens"
 			)
 		],
 	)
-	
+
 	import "FlowToken"
+
 	transaction(amount: UFix64, to: Address) {
 		let vault: @FlowToken.Vault
-		prepare(signer: AuthAccount) {
-		
-		}
+
+		prepare(signer: &Account) {}
 	}
 `
 	ctx := context.Background()

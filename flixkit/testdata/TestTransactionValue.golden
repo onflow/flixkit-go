@@ -26,15 +26,15 @@
             }
         ],
         "cadence": {
-            "body": "\n\t#interaction(\n\t\tversion: \"1.1.0\",\n\t\ttitle: \"Update Greeting\",\n\t\tdescription: \"Update the greeting on the HelloWorld contract\",\n\t\tlanguage: \"en-US\",\n\t\tparameters: [\n\t\t\tParameter(\n\t\t\t\tname: \"greeting\", \n\t\t\t\ttitle: \"Greeting\", \n\t\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t\t)\n\t\t],\n\t)\n\t\n\timport \"HelloWorld\"\n\ttransaction(greeting: String) {\n\t\n\t\tprepare(acct: AuthAccount) {\n\t\t\tlog(acct.address)\n\t\t}\n\t\t\n\t\texecute {\n\t\t\tHelloWorld.updateGreeting(newGreeting: greeting)\n\t\t}\n\t}\n",
+            "body": "\n\t#interaction(\n\t\tversion: \"1.1.0\",\n\t\ttitle: \"Update Greeting\",\n\t\tdescription: \"Update the greeting on the HelloWorld contract\",\n\t\tlanguage: \"en-US\",\n\t)\n\n\t#interaction_param_greeting(\n\t\ttitle: \"Greeting\",\n\t\tdescription: \"The greeting to set on the HelloWorld contract\",\n\t\tlanguage: \"en-US\",\n\t)\n\t\n\timport \"HelloWorld\"\n\ttransaction(greeting: String) {\n\t\n\t\tprepare(acct: AuthAccount) {\n\t\t\tlog(acct.address)\n\t\t}\n\t\t\n\t\texecute {\n\t\t\tHelloWorld.updateGreeting(newGreeting: greeting)\n\t\t}\n\t}\n",
             "network_pins": [
                 {
                     "network": "mainnet",
-                    "pin_self": "0ad0659f79f7b8336a588e24326c26cf6cf7f74af81c0c8a35ee58e190988af2"
+                    "pin_self": "75e97e50ae3f8f9ec2a33f78f58884504e15b5182c811c33c5eed7fa634b5f09"
                 },
                 {
                     "network": "testnet",
-                    "pin_self": "0ad0659f79f7b8336a588e24326c26cf6cf7f74af81c0c8a35ee58e190988af2"
+                    "pin_self": "75e97e50ae3f8f9ec2a33f78f58884504e15b5182c811c33c5eed7fa634b5f09"
                 }
             ]
         },

@@ -44,7 +44,6 @@ func TestHelloScript(t *testing.T) {
 		title: "Say Hello",
 		description: "Read the greeting from the HelloWorld contract",
 		language: "en-US",
-		parameters: [],
 	)
 	
 	import "HelloWorld"
@@ -93,13 +92,12 @@ func TestTransactionValue(t *testing.T) {
 		title: "Update Greeting",
 		description: "Update the greeting on the HelloWorld contract",
 		language: "en-US",
-		parameters: [
-			Parameter(
-				name: "greeting", 
-				title: "Greeting", 
-				description: "The greeting to set on the HelloWorld contract"
-			)
-		],
+	)
+
+	#interaction_param_greeting(
+		title: "Greeting",
+		description: "The greeting to set on the HelloWorld contract",
+		language: "en-US",
 	)
 	
 	import "HelloWorld"
@@ -148,18 +146,18 @@ func TestTransferFlowTransaction(t *testing.T) {
 		title: "Transfer Flow",
 		description: "Transfer Flow to account",
 		language: "en-US",
-		parameters: [
-			Parameter(
-				name: "amount", 
-				title: "Amount", 
-				description: "Amount of Flow to transfer"
-			),
-			Parameter(
-				name: "to", 
-				title: "Reciever", 
-				description: "Destination address to receive Flow Tokens"
-			)
-		],
+	)
+
+	#interaction_param_amount(
+		title: "Amount",
+		description: "Amount of Flow to transfer",
+		language: "en-US",
+	)
+
+	#interaction_param_to(
+		title: "Reciever",
+		description: "Destination address to receive Flow Tokens",
+		language: "en-US",
 	)
 	
 	import "FlowToken"

@@ -230,12 +230,14 @@ type Argument struct {
 }
 
 func (template *InteractionTemplate) ParsePragma(program *ast.Program) error {
+	PRAGMA_PARAM := "interaction_param_"
 	pragmas := program.PragmaDeclarations()
 	if len(pragmas) == 0 {
 		return nil
 	}
 
-	for _, prag := range pragmas {
+	hasProcessedInteractionPragma := false
+	for i, prag := range pragmas {
 		var pragmaDeclaration PragmaDeclaration
 		jsonData, err := prag.MarshalJSON()
 		if err != nil {
@@ -245,67 +247,73 @@ func (template *InteractionTemplate) ParsePragma(program *ast.Program) error {
 		if err != nil {
 			return err
 		}
-		if pragmaDeclaration.Expression.InvokedExpression.Identifier.Identifier == "interaction" {
+
+		pragmaName := pragmaDeclaration.Expression.InvokedExpression.Identifier.Identifier
+		if pragmaName == "interaction" {
+			hasProcessedInteractionPragma = true
 			pragmaInfo := flatten(pragmaDeclaration)
 			if template.FVersion == "" {
 				template.FVersion = pragmaInfo.meta["version"]
 			}
 			if pragmaInfo.meta["title"] != "" {
-				template.Data.Messages = append(template.Data.Messages, Message{
-					Key: "title",
-					I18n: []I18n{
-						{
-							Tag:         pragmaInfo.meta["language"],
-							Translation: pragmaInfo.meta["title"],
-						},
-					},
-				})
+				msg := createPragmaMessage("title", pragmaInfo)
+				template.Data.Messages = append(template.Data.Messages, msg)
 			}
 			if pragmaInfo.meta["description"] != "" {
-				template.Data.Messages = append(template.Data.Messages, Message{
-					Key: "description",
-					I18n: []I18n{
-						{
-							Tag:         pragmaInfo.meta["language"],
-							Translation: pragmaInfo.meta["description"],
-						},
-					},
-				})
+				msg := createPragmaMessage("description", pragmaInfo)
+				template.Data.Messages = append(template.Data.Messages, msg)
 			}
-			if pragmaInfo.parameters != nil {
-				for i, paramInfo := range pragmaInfo.parameters {
-					param := Parameter{
-						Label: paramInfo.params["name"],
-						Index: i,
-					}
-					if paramInfo.params["title"] != "" {
-						param.Messages = append(param.Messages, Message{
-							Key: "title",
-							I18n: []I18n{
-								{
-									Tag:         pragmaInfo.meta["language"],
-									Translation: paramInfo.params["title"],
-								},
-							},
-						})
-					}
-					if paramInfo.params["description"] != "" {
-						param.Messages = append(param.Messages, Message{
-							Key: "description",
-							I18n: []I18n{
-								{
-									Tag:         pragmaInfo.meta["language"],
-									Translation: paramInfo.params["description"],
-								},
-							},
-						})
-					}
-					template.Data.Parameters = append(template.Data.Parameters, param)
+		}
+		if strings.HasPrefix(pragmaName, PRAGMA_PARAM) {
+			pragmaInfo := flatten(pragmaDeclaration)
+			parameterName := strings.TrimPrefix(pragmaName, PRAGMA_PARAM)
+			var param *Parameter
+			for i, p := range template.Data.Parameters {
+				if p.Label == parameterName {
+					param = &template.Data.Parameters[i]
+					populateParameterMessages(param, pragmaInfo)
+					break
 				}
+			}
+			paramNumber := i
+			if hasProcessedInteractionPragma {
+				paramNumber = paramNumber - 1
+			}
+			if param == nil {
+				param = &Parameter{
+					Label:    parameterName,
+					Index:    paramNumber,
+					Messages: make([]Message, 0),
+				}
+				populateParameterMessages(param, pragmaInfo)
+				template.Data.Parameters = append(template.Data.Parameters, *param)
 			}
 		}
 	}
 	return nil
+}
+
+func populateParameterMessages(parameter *Parameter, pragmaInfo metadata) {
+	if pragmaInfo.meta["title"] != "" {
+		msg := createPragmaMessage("title", pragmaInfo)
+		parameter.Messages = append(parameter.Messages, msg)
+	}
+	if pragmaInfo.meta["description"] != "" {
+		msg := createPragmaMessage("description", pragmaInfo)
+		parameter.Messages = append(parameter.Messages, msg)
+	}
+}
+
+func createPragmaMessage(key string, pragmaInfo metadata) Message {
+	return Message{
+		Key: key,
+		I18n: []I18n{
+			{
+				Tag:         pragmaInfo.meta["language"],
+				Translation: pragmaInfo.meta[key],
+			},
+		},
+	}
 }
 
 type parametermetadata struct {

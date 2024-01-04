@@ -15,18 +15,18 @@ var pragmaWithParameters = `
 	title: "Update Greeting",
 	description: "Update the greeting on the HelloWorld contract",
 	language: "en-US",
-	parameters: [
-		Parameter(
-			name: "greeting", 
-			title: "Greeting", 
-			description: "The greeting to set on the HelloWorld contract"
-		),
-		Parameter(
-			name: "amount", 
-			title: "Amount", 
-			description: "The amount parameter to Test"
-		)
-	],
+)
+
+#interaction_param_greeting(
+	title: "Greeting",
+	description: "The greeting to set on the HelloWorld contract",
+	language: "en-US",
+)
+
+#interaction_param_amount(
+	title: "Amount",
+	description: "The amount parameter to Test",
+	language: "en-US",
 )
 
 import "HelloWorld"

@@ -117,12 +117,12 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 		return "", err
 	}
 
-	err = g.template.ParsePragma(program)
+	err = g.template.ProcessParameters(program)
 	if err != nil {
 		return "", err
 	}
 
-	err = g.template.ProcessParameters(program)
+	err = g.template.ParsePragma(program)
 	if err != nil {
 		return "", err
 	}

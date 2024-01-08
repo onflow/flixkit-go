@@ -78,9 +78,10 @@ func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator
 			Networks: make([]v1_1.Network, 0),
 		}
 		for network, address := range networks {
+			addr := flow.HexToAddress(address)
 			contract.Networks = append(contract.Networks, v1_1.Network{
 				Network: network,
-				Address: address,
+				Address: "0x" + addr.Hex(),
 			})
 		}
 		deployedContracts = append(deployedContracts, contract)
@@ -248,23 +249,21 @@ func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowk
 }
 
 func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, cache map[string]v1_1.PinDetail, height uint64) (*v1_1.PinDetail, error) {
-	identifier := fmt.Sprintf("A.%s.%s", strings.ReplaceAll(address, "0x", ""), name)
+	addr := flow.HexToAddress(address)
+	identifier := fmt.Sprintf("A.%s.%s", addr.Hex(), name)
 	pinDetail, ok := cache[identifier]
 	if ok {
 		return &pinDetail, nil
 	}
 
-	account, err := flowkit.GetAccount(ctx, flow.HexToAddress(address))
+	account, err := flowkit.GetAccount(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
 	code := account.Contracts[name]
-	if !strings.HasPrefix(address, "0x") {
-		address = "0x" + address
-	}
 	depend := v1_1.PinDetail{
 		PinContractName:    name,
-		PinContractAddress: address,
+		PinContractAddress: "0x" + addr.Hex(),
 		PinSelf:            v1_1.ShaHex(code, ""),
 	}
 	depend.CalculatePin(height)

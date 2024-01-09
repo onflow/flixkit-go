@@ -458,3 +458,140 @@ func TestTSGenParamsTx(t *testing.T) {
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
+
+const ReadTokenScript = `
+{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.1.0",
+    "id": "29d03aafbbb5a02e0d5f4ffee685c12494915410812305c2858008d3e2902b72",
+    "data": {
+        "type": "script",
+        "interface": "",
+        "messages": null,
+        "cadence": {
+            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\npub fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
+            "network_pins": [
+                {
+                    "network": "mainnet",
+                    "pin_self": "e0a1c0443b724d1238410c4a05c48441ee974160cad8cf1103c63b6999f81dd5"
+                },
+                {
+                    "network": "testnet",
+                    "pin_self": "6fee459b35d7013a83070c9ac42ea43ee04a3925deca445c34614c1bd6dc4cb8"
+                }
+            ]
+        },
+        "dependencies": [
+            {
+                "contracts": [
+                    {
+                        "contract": "FungibleToken",
+                        "networks": [
+                            {
+                                "network": "mainnet",
+                                "address": "0xf233dcee88fe0abe",
+                                "dependency_pin_block_height": 69539302,
+                                "dependency_pin": {
+                                    "pin": "ac0208f93d07829ec96584d618ddbec6af3cf4e2866bd5071249e8ec93c7e0dc",
+                                    "pin_self": "cdadd5b5897f2dfe35d8b25f4e41fea9f8fca8f40f8a8b506b33701ef5033076",
+                                    "pin_contract_name": "FungibleToken",
+                                    "pin_contract_address": "0xf233dcee88fe0abe",
+                                    "imports": []
+                                }
+                            },
+                            {
+                                "network": "testnet",
+                                "address": "0x9a0766d93b6608b7",
+                                "dependency_pin_block_height": 146201102,
+                                "dependency_pin": {
+                                    "pin": "ac0208f93d07829ec96584d618ddbec6af3cf4e2866bd5071249e8ec93c7e0dc",
+                                    "pin_self": "cdadd5b5897f2dfe35d8b25f4e41fea9f8fca8f40f8a8b506b33701ef5033076",
+                                    "pin_contract_name": "FungibleToken",
+                                    "pin_contract_address": "0x9a0766d93b6608b7",
+                                    "imports": []
+                                }
+                            },
+                            {
+                                "network": "emulator",
+                                "address": "0xee82856bf20e2aa6",
+                                "dependency_pin_block_height": 0
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "contracts": [
+                    {
+                        "contract": "FlowToken",
+                        "networks": [
+                            {
+                                "network": "mainnet",
+                                "address": "0x1654653399040a61",
+                                "dependency_pin_block_height": 69539302,
+                                "dependency_pin": {
+                                    "pin": "a341e772da413bfbcf43b0fc167bd50a20c9f40baf10e12d3dbc2f5181526de9",
+                                    "pin_self": "0e932728b73bff3c09dd58922f2529fc7b7fe7477f1dcc61169bc8f46948ad91",
+                                    "pin_contract_name": "FlowToken",
+                                    "pin_contract_address": "0x1654653399040a61",
+                                    "imports": [
+                                        {
+                                            "pin": "ac0208f93d07829ec96584d618ddbec6af3cf4e2866bd5071249e8ec93c7e0dc",
+                                            "pin_self": "cdadd5b5897f2dfe35d8b25f4e41fea9f8fca8f40f8a8b506b33701ef5033076",
+                                            "pin_contract_name": "FungibleToken",
+                                            "pin_contract_address": "0xf233dcee88fe0abe",
+                                            "imports": []
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "network": "testnet",
+                                "address": "0x7e60df042a9c0868",
+                                "dependency_pin_block_height": 146201102,
+                                "dependency_pin": {
+                                    "pin": "9cc21a34a01486ebd6f044e99dbcdd58671850f81fcc345d071181c19f61aaa4",
+                                    "pin_self": "6f01c7001e2d6635b667a170d3ccbc13659c40d01bb35e56979fcc7fa2d18646",
+                                    "pin_contract_name": "FlowToken",
+                                    "pin_contract_address": "0x7e60df042a9c0868",
+                                    "imports": [
+                                        {
+                                            "pin": "ac0208f93d07829ec96584d618ddbec6af3cf4e2866bd5071249e8ec93c7e0dc",
+                                            "pin_self": "cdadd5b5897f2dfe35d8b25f4e41fea9f8fca8f40f8a8b506b33701ef5033076",
+                                            "pin_contract_name": "FungibleToken",
+                                            "pin_contract_address": "0x9a0766d93b6608b7",
+                                            "imports": []
+                                        }
+                                    ]
+                                }
+                            },
+                            {
+                                "network": "emulator",
+                                "address": "0x0ae53cb6e3f42a79",
+                                "dependency_pin_block_height": 0
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "parameters": [
+            {
+                "label": "address",
+                "index": 0,
+                "type": "Address",
+                "messages": []
+            }
+        ]
+    }
+}
+`
+
+func TestBindingReadTokenBalance(t *testing.T) {
+	generator := NewFclTSGenerator()
+	assert := assert.New(t)
+
+	out, err := generator.Generate(ReadTokenScript, "./read-token-balance.template.json")
+	assert.NoError(err, "ParseTemplate should not return an error")
+	autogold.ExpectFile(t, out)
+}

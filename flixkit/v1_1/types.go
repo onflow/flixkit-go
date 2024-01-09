@@ -354,6 +354,12 @@ func (template *InteractionTemplate) ProcessParameters(program *ast.Program) err
 	for _, d := range functionDeclaration {
 		if d.Identifier.String() == "main" {
 			parameterList = d.ParameterList.Parameters
+			r := d.ReturnTypeAnnotation.Type.String()
+			template.Data.Output = &Parameter{
+				Label:    "result",
+				Type:     r,
+				Messages: make([]Message, 0),
+			}
 		}
 	}
 

@@ -128,18 +128,28 @@ func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string
 	title := msgs.GetTitle("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := msgs.GetDescription("")
-	result := simpleParameter{}
-	if flix.Data.Output != nil {
-		o := transformParameters([]v1_1.Parameter{*flix.Data.Output})
+	var sp simpleParameter
+
+	if flix.Data.Type == "script" {
+		oTemp := flix.Data.Output
+		if flix.Data.Output == nil {
+			// if output is not defined, add default output
+			oTemp = &v1_1.Parameter{
+				Label:    "result",
+				Type:     "String",
+				Messages: v1_1.InteractionTemplateMessages{},
+			}
+		}
+		o := transformParameters([]v1_1.Parameter{*oTemp})
 		if len(o) > 0 {
-			result = o[0]
+			sp = o[0]
 		}
 	}
 	data := templateData{
 		Version:              flix.FVersion,
 		Parameters:           transformParameters(flix.Data.Parameters),
 		ParametersPrefixName: strcase.UpperCamelCase(title),
-		Output:               result,
+		Output:               sp,
 		Title:                methodName,
 		Description:          description,
 		Location:             templateLocation,
@@ -153,7 +163,14 @@ func getTemplateDataV1_0(flix *v1.FlowInteractionTemplate, templateLocation stri
 	title := flix.Data.Messages.GetTitleValue("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := flix.GetDescription()
-
+	var sp simpleParameter
+	// version 1.0 does not support output parameters, add default output
+	if flix.Data.Type == "script" {
+		sp = simpleParameter{
+			Name:   "result",
+			JsType: "string",
+		}
+	}
 	data := templateData{
 		Version:              flix.FVersion,
 		Parameters:           transformArguments(flix.Data.Arguments),
@@ -163,6 +180,7 @@ func getTemplateDataV1_0(flix *v1.FlowInteractionTemplate, templateLocation stri
 		Location:             templateLocation,
 		IsScript:             flix.IsScript(),
 		IsLocalTemplate:      isLocal,
+		Output:               sp,
 	}
 	return data
 }

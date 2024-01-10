@@ -12,7 +12,7 @@ import (
 	"github.com/stoewer/go-strcase"
 )
 
-func NewFclTSGenerator() *FclGenerator {
+func NewFclTSGenerator() GenerateBinding {
 	t := []string{
 		templates.GetTsFclMainTemplate(),
 		templates.GetTsFclScriptTemplate(),
@@ -26,7 +26,7 @@ func NewFclTSGenerator() *FclGenerator {
 	}
 }
 
-func NewFclJSGenerator() *FclGenerator {
+func NewFclJSGenerator() GenerateBinding {
 	t := []string{
 		templates.GetJsFclMainTemplate(),
 		templates.GetJsFclScriptTemplate(),
@@ -103,6 +103,8 @@ type templateData struct {
 type FclGenerator struct {
 	Templates []string
 }
+
+var _ GenerateBinding = (*FclGenerator)(nil)
 
 type FlixParameter struct {
 	Name string

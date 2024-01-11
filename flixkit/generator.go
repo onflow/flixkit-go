@@ -38,6 +38,8 @@ type Generator struct {
 	template          *v1_1.InteractionTemplate
 }
 
+var _ FlixTemplater = (*Generator)(nil)
+
 func NewGenerator(contractInfos ContractInfos, logger output.Logger) (FlixTemplater, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 

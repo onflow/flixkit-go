@@ -26,11 +26,11 @@ type FlowInteractionTemplateVersion struct {
 	FVersion string `json:"f_version"`
 }
 
-type GenerateTemplate interface {
+type FlixTemplater interface {
 	Generate(ctx context.Context, code string, preFill string) (string, error)
 }
 
-type GenerateBinding interface {
+type Binder interface {
 	Generate(flixString string, templateLocation string) (string, error)
 }
 

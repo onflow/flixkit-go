@@ -38,7 +38,7 @@ type Generator struct {
 	template          *v1_1.InteractionTemplate
 }
 
-func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
+func NewGenerator(contractInfos ContractInfos, logger output.Logger) (FlixTemplater, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)

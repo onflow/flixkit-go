@@ -12,7 +12,7 @@ import (
 	"github.com/stoewer/go-strcase"
 )
 
-func NewFclTSGenerator() *FclGenerator {
+func NewFclTSGenerator() Binder {
 	t := []string{
 		templates.GetTsFclMainTemplate(),
 		templates.GetTsFclScriptTemplate(),
@@ -26,7 +26,7 @@ func NewFclTSGenerator() *FclGenerator {
 	}
 }
 
-func NewFclJSGenerator() *FclGenerator {
+func NewFclJSGenerator() Binder {
 	t := []string{
 		templates.GetJsFclMainTemplate(),
 		templates.GetJsFclScriptTemplate(),
@@ -48,7 +48,7 @@ func (g *FclGenerator) Generate(flixString string, templateLocation string) (str
 		return "", fmt.Errorf("no flix template provided")
 	}
 
-	ver, err := GetTemplateVersion(flixString)
+	ver, err := getTemplateVersion(flixString)
 	if err != nil {
 		return "", fmt.Errorf("invalid flix template version, %w", err)
 	}
@@ -103,6 +103,8 @@ type templateData struct {
 type FclGenerator struct {
 	Templates []string
 }
+
+var _ Binder = (*FclGenerator)(nil)
 
 type FlixParameter struct {
 	Name string

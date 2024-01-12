@@ -247,7 +247,7 @@ func TestFetchFlix(t *testing.T) {
 	defer server.Close()
 
 	ctx := context.Background()
-	body, err := FetchFlixWithContext(ctx, server.URL)
+	body, err := fetchFlixWithContext(ctx, server.URL)
 	assert.NoError(err, "GetFlix should not return an error")
 	assert.Equal("Hello World", body, "GetFlix should return the correct body")
 }
@@ -355,7 +355,7 @@ func TestTemplateVersion(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.templateStr, func(t *testing.T) {
-			ver, err := GetTemplateVersion(tt.templateStr)
+			ver, err := getTemplateVersion(tt.templateStr)
 			if tt.wantErr {
 				assert.Error(err, "TemplateVersion should return an error")
 			} else {

@@ -48,7 +48,7 @@ func (g *FclGenerator) Generate(flixString string, templateLocation string) (str
 		return "", fmt.Errorf("no flix template provided")
 	}
 
-	ver, err := GetTemplateVersion(flixString)
+	ver, err := getTemplateVersion(flixString)
 	if err != nil {
 		return "", fmt.Errorf("invalid flix template version, %w", err)
 	}

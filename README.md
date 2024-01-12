@@ -104,7 +104,7 @@ fmt.Println(prettyJSON)
 ```
 ### Cadence docs pragma
 
-> Using Cadence pragma the metadata can live with the Cadence code. Therefore a prefilled template isn't necessary
+> Using Cadence pragma the metadata can live with the Cadence code. Therefore a prefilled template isn't necessary. More information [Cadence Doc FLIP](https://github.com/onflow/flips/blob/main/application/20230406-interaction-template-cadence-doc.md)
 
 ### Example
 
@@ -113,21 +113,18 @@ fmt.Println(prettyJSON)
 		version: "1.1.0",
 		title: "Transfer Flow",
 		description: "Transfer Flow to account",
-		language: "en-US",
-		parameters: [
-			Parameter(
-				name: "amount", 
-				title: "Amount", 
-				description: "Amount of Flow to transfer"
-			),
-			Parameter(
-				name: "to", 
-				title: "Reciever", 
-				description: "Destination address to receive Flow Tokens"
-			)
-		],
+		language: "en-US",	
 	)
-	
+#interaction-param-amount(
+        title: "Amount", 
+        description: "Amount of Flow to transfer",
+		language: "en-US",
+)	
+#interaction-param-to(
+		title: "Reciever", 
+		description: "Destination address to receive Flow Tokens",
+		language: "en-US",
+)
 	import "FlowToken"
 	transaction(amount: UFix64, to: Address) {
 		let vault: @FlowToken.Vault

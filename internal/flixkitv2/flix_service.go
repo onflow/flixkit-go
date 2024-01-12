@@ -21,12 +21,10 @@ func NewFlixService(config *FlixServiceConfig) flixService {
 
 type flixService struct {
 	generator v1_1.Generator
+	bindingCreator FclCreator
+
 }
 
-// GetTemplateAndReplaceImports implements flixkitv2.FlixService.
-func (flixService) GetTemplateAndReplaceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error) {
-	panic("unimplemented")
-}
 
 type FlowInteractionTemplateExecution struct {
 	Network       string
@@ -39,12 +37,13 @@ func (s flixService) GetTemplate(ctx context.Context, templateName string) (stri
 	panic("unimplemented")
 }
 
-func (s flixService) GetAndReplaceCadenceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error) {
+func (flixService) GetTemplateAndReplaceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error) {
 	panic("unimplemented")
 }
 
+
 func (s flixService) GenerateBinding(ctx context.Context, flixString string, templateLocation string, lang string) (string, error) {
-	panic("unimplemented")
+	return s.bindingCreator.Generate(flixString, templateLocation)
 }
 
 func (s flixService) GenerateTemplate(ctx context.Context, code string, preFill string) (string, error) {

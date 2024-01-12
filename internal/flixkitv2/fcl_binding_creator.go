@@ -12,7 +12,7 @@ import (
 	"github.com/stoewer/go-strcase"
 )
 
-func NewFclTSGenerator() *FclGenerator{
+func NewFclTSCreator() *FclCreator{
 	t := []string{
 		templates.GetTsFclMainTemplate(),
 		templates.GetTsFclScriptTemplate(),
@@ -21,12 +21,12 @@ func NewFclTSGenerator() *FclGenerator{
 		templates.GetTsFclInterfaceTemplate(),
 	}
 
-	return &FclGenerator{
-		Templates: t,
+	return &FclCreator{
+		templates: t,
 	}
 }
 
-func NewFclJSGenerator() *FclGenerator{
+func NewFclJSCreator() *FclCreator{
 	t := []string{
 		templates.GetJsFclMainTemplate(),
 		templates.GetJsFclScriptTemplate(),
@@ -34,13 +34,13 @@ func NewFclJSGenerator() *FclGenerator{
 		templates.GetJsFclParamsTemplate(),
 	}
 
-	return &FclGenerator{
-		Templates: t,
+	return &FclCreator{
+		templates: t,
 	}
 }
 
-func (g *FclGenerator) Generate(flixString string, templateLocation string) (string, error) {
-	tmpl, err := parseTemplates(g.Templates)
+func (g *FclCreator) Generate(flixString string, templateLocation string) (string, error) {
+	tmpl, err := parseTemplates(g.templates)
 	if err != nil {
 		return "", err
 	}
@@ -100,8 +100,8 @@ type templateData struct {
 	IsLocalTemplate      bool
 }
 
-type FclGenerator struct {
-	Templates []string
+type FclCreator struct {
+	templates []string
 }
 
 

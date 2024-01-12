@@ -1,0 +1,16 @@
+`{
+    "f_type": "",
+    "f_version": "1.1.0",
+    "id": "",
+    "data": {
+        "type": "",
+        "interface": "",
+        "messages": null,
+        "cadence": {
+            "body": "",
+            "network_pins": null
+        },
+        "dependencies": null,
+        "parameters": null
+    }
+}`

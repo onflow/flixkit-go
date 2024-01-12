@@ -1,0 +1,67 @@
+`{
+    "f_type": "InteractionTemplate",
+    "f_version": "1.1.0",
+    "id": "",
+    "data": {
+        "type": "script",
+        "interface": "",
+        "messages": [
+            {
+                "key": "title",
+                "i18n": [
+                    {
+                        "tag": "en-US",
+                        "translation": "User Balance"
+                    }
+                ]
+            },
+            {
+                "key": "description",
+                "i18n": [
+                    {
+                        "tag": "en-US",
+                        "translation": "Get User Balance"
+                    }
+                ]
+            }
+        ],
+        "cadence": {
+            "body": "",
+            "network_pins": null
+        },
+        "dependencies": [],
+        "parameters": [
+            {
+                "label": "address",
+                "index": 0,
+                "type": "Address",
+                "messages": [
+                    {
+                        "key": "title",
+                        "i18n": [
+                            {
+                                "tag": "en-US",
+                                "translation": "User Address"
+                            }
+                        ]
+                    },
+                    {
+                        "key": "description",
+                        "i18n": [
+                            {
+                                "tag": "en-US",
+                                "translation": "Get user balance"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "output": {
+            "label": "result",
+            "index": 0,
+            "type": "UFix64",
+            "messages": []
+        }
+    }
+}`

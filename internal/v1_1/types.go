@@ -1,4 +1,4 @@
-package flixkit
+package v1_1
 
 import (
 	"bytes"
@@ -154,7 +154,7 @@ func replaceImport(code string, from string, to string) string {
 	return code
 }
 
-func (t *InteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
+func (t *InteractionTemplate) ReplaceCadenceImports(networkName string) (string, error) {
 	cadence := t.Data.Cadence.Body
 	// Compile regular expression to match and capture contract names
 	re := regexp.MustCompile(`import\s*"([^"]+)"`)

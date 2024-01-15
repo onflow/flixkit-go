@@ -1,4 +1,4 @@
-package flixkit
+package internal
 
 import (
 	"bytes"
@@ -6,13 +6,13 @@ import (
 	"sort"
 	"text/template"
 
-	v1 "github.com/onflow/flixkit-go/flixkit/v1"
-	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 	"github.com/onflow/flixkit-go/internal/templates"
+	v1 "github.com/onflow/flixkit-go/internal/v1"
+	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
 	"github.com/stoewer/go-strcase"
 )
 
-func NewFclTSGenerator() Binder {
+func NewFclTSCreator() *FclCreator {
 	t := []string{
 		templates.GetTsFclMainTemplate(),
 		templates.GetTsFclScriptTemplate(),
@@ -21,12 +21,12 @@ func NewFclTSGenerator() Binder {
 		templates.GetTsFclInterfaceTemplate(),
 	}
 
-	return &FclGenerator{
-		Templates: t,
+	return &FclCreator{
+		templates: t,
 	}
 }
 
-func NewFclJSGenerator() Binder {
+func NewFclJSCreator() *FclCreator {
 	t := []string{
 		templates.GetJsFclMainTemplate(),
 		templates.GetJsFclScriptTemplate(),
@@ -34,13 +34,13 @@ func NewFclJSGenerator() Binder {
 		templates.GetJsFclParamsTemplate(),
 	}
 
-	return &FclGenerator{
-		Templates: t,
+	return &FclCreator{
+		templates: t,
 	}
 }
 
-func (g *FclGenerator) Generate(flixString string, templateLocation string) (string, error) {
-	tmpl, err := parseTemplates(g.Templates)
+func (g *FclCreator) Generate(flixString string, templateLocation string) (string, error) {
+	tmpl, err := parseTemplates(g.templates)
 	if err != nil {
 		return "", err
 	}
@@ -100,11 +100,9 @@ type templateData struct {
 	IsLocalTemplate      bool
 }
 
-type FclGenerator struct {
-	Templates []string
+type FclCreator struct {
+	templates []string
 }
-
-var _ Binder = (*FclGenerator)(nil)
 
 type FlixParameter struct {
 	Name string
@@ -266,13 +264,4 @@ func transformArguments(args v1.Arguments) []simpleParameter {
 		}
 	}
 	return simpleArgs
-}
-
-func isArrayParameter(arg FlixParameter) (isArray bool, cType string, jsType string) {
-	if arg.Type == "" || arg.Type[0] != '[' {
-		return false, "", ""
-	}
-	cadenceType := arg.Type[1 : len(arg.Type)-1]
-	javascriptType := "Array<" + convertCadenceTypeToJS(cadenceType) + ">"
-	return true, cadenceType, javascriptType
 }

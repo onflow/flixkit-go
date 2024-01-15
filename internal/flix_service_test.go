@@ -1,4 +1,4 @@
-package flixkit
+package internal
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	v1 "github.com/onflow/flixkit-go/flixkit/v1"
+	v1 "github.com/onflow/flixkit-go/internal/v1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -189,7 +189,7 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cadence, err := parsedTemplate.GetAndReplaceCadenceImports(tt.network)
+			cadence, err := parsedTemplate.ReplaceCadenceImports(tt.network)
 			if tt.wantErr {
 				assert.Error(err, "GetCadenceWithReplacedImports should return an error")
 			} else {
@@ -267,7 +267,7 @@ func TestGetFlixRaw(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: DefaultReader{}})
+	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL, FileReader: DefaultReader{}})
 	ctx := context.Background()
 	body, err := flixService.GetTemplate(ctx, "templateName")
 	assert.NoError(err, "GetFlixByName should not return an error")
@@ -282,7 +282,7 @@ func TestGetFlixFilename(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL, FileReader: DefaultReader{}})
+	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL, FileReader: DefaultReader{}})
 	ctx := context.Background()
 	flix, err := flixService.GetTemplate(ctx, "./templateFileName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
@@ -299,7 +299,7 @@ func TestGetFlixByIDRaw(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL})
 	ctx := context.Background()
 	body, err := flixService.GetTemplate(ctx, "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF")
 	assert.NoError(err, "GetFlixByID should not return an error")
@@ -314,7 +314,7 @@ func TestGetFlixByID(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&Config{FlixServerURL: server.URL})
+	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL})
 	ctx := context.Background()
 	flix, err := flixService.GetTemplate(ctx, "templateID")
 	assert.NoError(err, "GetParsedFlixByID should not return an error")

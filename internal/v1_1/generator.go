@@ -1,4 +1,4 @@
-package flixkit
+package v1_1
 
 import (
 	"context"
@@ -37,7 +37,7 @@ type Generator struct {
 	template          *InteractionTemplate
 }
 
-func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
+func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
@@ -94,7 +94,7 @@ func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator
 	}, nil
 }
 
-func (g Generator) GenerateTemplate(ctx context.Context, code string, preFill string) (string, error) {
+func (g Generator) CreateTemplate(ctx context.Context, code string, preFill string) (string, error) {
 	g.template = &InteractionTemplate{}
 	g.template.Init()
 	if preFill != "" {
@@ -149,7 +149,7 @@ func (g Generator) calculateNetworkPins(program *ast.Program) error {
 	}
 	networkPins := make([]NetworkPin, 0)
 	for _, netName := range networksOfInterest {
-		cad, err := g.template.GetAndReplaceCadenceImports(netName)
+		cad, err := g.template.ReplaceCadenceImports(netName)
 		if err != nil {
 			continue
 		}

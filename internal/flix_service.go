@@ -20,7 +20,7 @@ type FileReader interface {
 type FlixServiceConfig struct {
 	FlixServerURL string
 	FileReader    FileReader
-	logger        output.Logger
+	Logger        output.Logger
 }
 
 func NewFlixService(config *FlixServiceConfig) flixService {
@@ -62,8 +62,12 @@ type FlowInteractionTemplateCadence interface {
 
 func (s flixService) GetTemplate(ctx context.Context, flixQuery string) (string, string, error) {
 	var template string
-	var source string
+	source := flixQuery
 	var err error
+
+	if flixQuery == "" {
+		return "", source, fmt.Errorf("flix query cannot be empty")
+	}
 
 	switch getType(flixQuery, s.config.FileReader) {
 	case flixId:
@@ -183,13 +187,10 @@ func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateNa
 }
 
 func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string) (string, error) {
-	template, _, err := s.GetTemplate(ctx, preFill)
-	if err != nil {
-		return "", err
-	}
+	template, _, _ := s.GetTemplate(ctx, preFill)
 	var gen *v1_1.Generator
 	var err2 error
-	gen, err2 = v1_1.NewTemplateGenerator(deployedContracts, s.config.logger)
+	gen, err2 = v1_1.NewTemplateGenerator(deployedContracts, s.config.Logger)
 	if err2 != nil {
 		return "", err2
 	}

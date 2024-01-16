@@ -10,6 +10,7 @@ import (
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
+	"github.com/onflow/flow-cli/flowkit/output"
 )
 
 type FileReader interface {
@@ -19,6 +20,7 @@ type FileReader interface {
 type FlixServiceConfig struct {
 	FlixServerURL string
 	FileReader    FileReader
+	logger        output.Logger
 }
 
 func NewFlixService(config *FlixServiceConfig) flixService {
@@ -41,6 +43,16 @@ type FlowInteractionTemplateExecution struct {
 	IsTransaciton bool
 	IsScript      bool
 }
+
+/*
+Deployed contracts to network addresses
+*/
+type NetworkAddressMap = v1_1.NetworkAddressMap
+
+/*
+contract name associated with network information
+*/
+type ContractInfos = v1_1.ContractInfos
 
 type FlowInteractionTemplateCadence interface {
 	ReplaceCadenceImports(templateName string) (string, error)
@@ -168,6 +180,20 @@ func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateNa
 	}
 
 	return gen.Create(template, relativeTemplateLocation)
+}
+
+func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string) (string, error) {
+	template, _, err := s.GetTemplate(ctx, preFill)
+	if err != nil {
+		return "", err
+	}
+	var gen *v1_1.Generator
+	var err2 error
+	gen, err2 = v1_1.NewTemplateGenerator(deployedContracts, s.config.logger)
+	if err2 != nil {
+		return "", err2
+	}
+	return gen.CreateTemplate(ctx, code, template)
 }
 
 func (s flixService) getFlixRaw(ctx context.Context, templateName string) (string, string, error) {

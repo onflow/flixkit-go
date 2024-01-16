@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
@@ -31,8 +32,7 @@ func NewFlixService(config *FlixServiceConfig) flixService {
 }
 
 type flixService struct {
-	config         *FlixServiceConfig
-	bindingCreator FclCreator
+	config *FlixServiceConfig
 }
 
 type FlowInteractionTemplateExecution struct {
@@ -48,51 +48,53 @@ type FlowInteractionTemplateCadence interface {
 	IsScript() bool
 }
 
-func (s flixService) GetTemplate(ctx context.Context, flixQuery string) (string, error) {
+func (s flixService) GetTemplate(ctx context.Context, flixQuery string) (string, string, error) {
 	var template string
+	var source string
 	var err error
 
-	switch getType(flixQuery) {
+	switch getType(flixQuery, s.config.FileReader) {
 	case flixId:
-		template, err = s.getFlixByID(ctx, flixQuery)
+		template, source, err = s.getFlixByID(ctx, flixQuery)
 		if err != nil {
-			return "", fmt.Errorf("could not find flix with id %s: %w", flixQuery, err)
+			return "", source, fmt.Errorf("could not find flix with id %s: %w", flixQuery, err)
 		}
 
 	case flixName:
-		template, err = s.getFlix(ctx, flixQuery)
+		template, source, err = s.getFlix(ctx, flixQuery)
 		if err != nil {
-			return "", fmt.Errorf("could not find flix with name %s: %w", flixQuery, err)
+			return "", source, fmt.Errorf("could not find flix with name %s: %w", flixQuery, err)
 		}
 
 	case flixPath:
+		source = flixQuery
 		if s.config.FileReader == nil {
-			return "", fmt.Errorf("file reader not provided")
+			return "", source, fmt.Errorf("file reader not provided")
 		}
 		file, err := s.config.FileReader.ReadFile(flixQuery)
 		if err != nil {
-			return "", fmt.Errorf("could not read flix file %s: %w", flixQuery, err)
+			return "", source, fmt.Errorf("could not read flix file %s: %w", flixQuery, err)
 		}
 		template = string(file)
 		if err != nil {
-			return "", fmt.Errorf("could not parse flix from file %s: %w", flixQuery, err)
+			return "", source, fmt.Errorf("could not parse flix from file %s: %w", flixQuery, err)
 		}
 
 	case flixUrl:
-		template, err = fetchFlixWithContext(ctx, flixQuery)
+		template, source, err = fetchFlixWithContext(ctx, flixQuery)
 		if err != nil {
-			return "", fmt.Errorf("could not parse flix from url %s: %w", flixQuery, err)
+			return "", source, fmt.Errorf("could not parse flix from url %s: %w", flixQuery, err)
 		}
 
 	default:
-		return "", fmt.Errorf("invalid flix query type: %s", flixQuery)
+		return "", source, fmt.Errorf("invalid flix query type: %s", flixQuery)
 	}
 
-	return template, nil
+	return template, source, nil
 }
 
 func (s flixService) GetTemplateAndReplaceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error) {
-	template, err := s.GetTemplate(ctx, templateName)
+	template, _, err := s.GetTemplate(ctx, templateName)
 	if err != nil {
 		return nil, err
 	}
@@ -139,55 +141,71 @@ func (s flixService) GetTemplateAndReplaceImports(ctx context.Context, templateN
 	return &execution, nil
 }
 
-func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string) (string, error) {
-	template, err := s.GetTemplate(ctx, templateName)
+func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFileLocation string) (string, error) {
+	template, source, err := s.GetTemplate(ctx, templateName)
 	if err != nil {
 		return "", err
 	}
+	language := strings.ToLower(lang)
+	var gen *FclCreator
 
-	return s.bindingCreator.Generate(template, templateName)
+	switch language {
+	case "js", "javascript":
+		gen = NewFclJSCreator()
+	case "ts", "typescript":
+		gen = NewFclTSCreator()
+	default:
+		return "", fmt.Errorf("language %s not supported", lang)
+	}
+
+	relativeTemplateLocation := source
+	flixType := getType(source, s.config.FileReader)
+	if flixType == flixPath && destFileLocation != "" {
+		relativeTemplateLocation, err = GetRelativePath(templateName, destFileLocation)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return gen.Create(template, relativeTemplateLocation)
 }
 
-func (s flixService) GenerateBinding(ctx context.Context, flixString string, templateLocation string, lang string) (string, error) {
-	return s.bindingCreator.Generate(flixString, templateLocation)
-}
-
-func (s flixService) getFlixRaw(ctx context.Context, templateName string) (string, error) {
+func (s flixService) getFlixRaw(ctx context.Context, templateName string) (string, string, error) {
 	url := fmt.Sprintf("%s?name=%s", s.config.FlixServerURL, templateName)
 	return fetchFlixWithContext(ctx, url)
 }
 
-func (s flixService) getFlix(ctx context.Context, templateName string) (string, error) {
-	template, err := s.getFlixRaw(ctx, templateName)
+func (s flixService) getFlix(ctx context.Context, templateName string) (string, string, error) {
+	template, url, err := s.getFlixRaw(ctx, templateName)
 	if err != nil {
-		return "", err
+		return "", url, err
 	}
 
-	return template, nil
+	return template, url, nil
 }
 
-func (s flixService) getFlixByIDRaw(ctx context.Context, templateID string) (string, error) {
+func (s flixService) getFlixByIDRaw(ctx context.Context, templateID string) (string, string, error) {
 	url := fmt.Sprintf("%s/%s", s.config.FlixServerURL, templateID)
 	return fetchFlixWithContext(ctx, url)
 }
 
-func (s flixService) getFlixByID(ctx context.Context, templateID string) (string, error) {
-	template, err := s.getFlixByIDRaw(ctx, templateID)
+func (s flixService) getFlixByID(ctx context.Context, templateID string) (string, string, error) {
+	template, url, err := s.getFlixByIDRaw(ctx, templateID)
 	if err != nil {
-		return "", err
+		return "", url, err
 	}
-	return template, nil
+	return template, url, nil
 }
 
-func fetchFlixWithContext(ctx context.Context, url string) (string, error) {
+func fetchFlixWithContext(ctx context.Context, url string) (template string, templateUrl string, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return "", err
+		return "", url, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", err
+		return "", url, err
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
@@ -197,8 +215,8 @@ func fetchFlixWithContext(ctx context.Context, url string) (string, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", url, err
 	}
-
-	return string(body), nil
+	template = string(body)
+	return template, url, err
 }

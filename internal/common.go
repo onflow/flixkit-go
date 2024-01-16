@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"os"
+	"path/filepath"
 )
 
 func getTemplateVersion(template string) (string, error) {
@@ -58,8 +58,11 @@ func isHex(str string) bool {
 	return err == nil
 }
 
-func isPath(path string) bool {
-	_, err := os.Stat(path)
+func isPath(path string, f FileReader) bool {
+	if f == nil {
+		return false
+	}
+	_, err := f.ReadFile(path)
 	return err == nil
 }
 
@@ -68,9 +71,9 @@ func isJson(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
-func getType(s string) flixQueryTypes {
+func getType(s string, f FileReader) flixQueryTypes {
 	switch {
-	case isPath(s):
+	case isPath(s, f):
 		return flixPath
 	case isHex(s):
 		return flixId
@@ -81,4 +84,21 @@ func getType(s string) flixQueryTypes {
 	default:
 		return flixName
 	}
+}
+
+// GetRelativePath computes the relative path from generated file to flix json file.
+// This path is used in the binding file to reference the flix json file.
+func GetRelativePath(configFile, bindingFile string) (string, error) {
+	relPath, err := filepath.Rel(filepath.Dir(bindingFile), configFile)
+	if err != nil {
+		return "", err
+	}
+
+	// If the file is in the same directory and doesn't start with "./", prepend it.
+	if !filepath.IsAbs(relPath) && relPath[0] != '.' {
+		relPath = "./" + relPath
+	}
+
+	// Currently binding files are js, we need to convert the path to unix style
+	return filepath.ToSlash(relPath), nil
 }

@@ -39,7 +39,7 @@ func NewFclJSCreator() *FclCreator {
 	}
 }
 
-func (g *FclCreator) Generate(flixString string, templateLocation string) (string, error) {
+func (g *FclCreator) Create(flixString string, templateLocation string) (string, error) {
 	tmpl, err := parseTemplates(g.templates)
 	if err != nil {
 		return "", err

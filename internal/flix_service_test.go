@@ -247,9 +247,10 @@ func TestFetchFlix(t *testing.T) {
 	defer server.Close()
 
 	ctx := context.Background()
-	body, err := fetchFlixWithContext(ctx, server.URL)
+	body, source, err := fetchFlixWithContext(ctx, server.URL)
 	assert.NoError(err, "GetFlix should not return an error")
 	assert.Equal("Hello World", body, "GetFlix should return the correct body")
+	assert.Equal(server.URL, source, "GetFlix should return the correct source")
 }
 
 type DefaultReader struct{}
@@ -267,11 +268,12 @@ func TestGetFlixRaw(t *testing.T) {
 	}))
 	defer server.Close()
 
-	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL, FileReader: DefaultReader{}})
+	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL, FileReader: nil})
 	ctx := context.Background()
-	body, err := flixService.GetTemplate(ctx, "templateName")
+	body, source, err := flixService.GetTemplate(ctx, "templateName")
 	assert.NoError(err, "GetFlixByName should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByName should return the correct body")
+	assert.Equal(server.URL+"?name=templateName", source, "GetFlixByName should return the correct source")
 }
 
 func TestGetFlixFilename(t *testing.T) {
@@ -281,13 +283,13 @@ func TestGetFlixFilename(t *testing.T) {
 		rw.Write([]byte(flix_template))
 	}))
 	defer server.Close()
-
 	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL, FileReader: DefaultReader{}})
 	ctx := context.Background()
-	flix, err := flixService.GetTemplate(ctx, "./templateFileName")
+	flix, source, err := flixService.GetTemplate(ctx, "./templateFileName")
 	assert.NoError(err, "GetParsedFlixByName should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByName should not return a nil Flix")
 	assert.Equal(flix_template, flix, "GetParsedFlixByName should return the correct Flix")
+	assert.Equal("./templateFileName", source, "GetParsedFlixByName should return the correct source")
 }
 
 func TestGetFlixByIDRaw(t *testing.T) {
@@ -301,9 +303,10 @@ func TestGetFlixByIDRaw(t *testing.T) {
 
 	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL})
 	ctx := context.Background()
-	body, err := flixService.GetTemplate(ctx, "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF")
+	body, source, err := flixService.GetTemplate(ctx, "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF")
 	assert.NoError(err, "GetFlixByID should not return an error")
 	assert.Equal("Hello World", body, "GetFlixByID should return the correct body")
+	assert.Equal(server.URL+"/1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF", source, "GetFlixByID should return the correct source")
 }
 
 func TestGetFlixByID(t *testing.T) {
@@ -316,10 +319,11 @@ func TestGetFlixByID(t *testing.T) {
 
 	flixService := NewFlixService(&FlixServiceConfig{FlixServerURL: server.URL})
 	ctx := context.Background()
-	flix, err := flixService.GetTemplate(ctx, "templateID")
+	flix, source, err := flixService.GetTemplate(ctx, "templateID")
 	assert.NoError(err, "GetParsedFlixByID should not return an error")
 	assert.NotNil(flix, "GetParsedFlixByID should not return a nil Flix")
 	assert.Equal(flix_template, flix, "GetParsedFlixByID should return the correct Flix")
+	assert.Equal(server.URL+"?name=templateID", source, "GetParsedFlixByID should return the correct source")
 }
 
 func TestTemplateVersion(t *testing.T) {

@@ -86,9 +86,9 @@ func getType(s string, f FileReader) flixQueryTypes {
 	}
 }
 
-// GetRelativePath computes the relative path from generated file to flix json file.
+// getRelativePath computes the relative path from generated file to flix json file.
 // This path is used in the binding file to reference the flix json file.
-func GetRelativePath(configFile, bindingFile string) (string, error) {
+func getRelativePath(configFile, bindingFile string) (string, error) {
 	relPath, err := filepath.Rel(filepath.Dir(bindingFile), configFile)
 	if err != nil {
 		return "", err

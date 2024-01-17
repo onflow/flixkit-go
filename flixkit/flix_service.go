@@ -17,11 +17,17 @@ type FlixService interface {
 	CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
 }
 
+// FlowInteractionTemplateCadence is the interface returned from Replacing imports, it provides helper methods to assist in executing the resulting Cadence.
 type FlowInteractionTemplateExecution = internal.FlowInteractionTemplateExecution
+
+// ContractInfos is an input into generating a template, it is a map of contract name to network information of deployed contracts of the source Cadence code.
 type ContractInfos = internal.ContractInfos
 type NetworkAddressMap = internal.NetworkAddressMap
+
+// FlixServiceConfig is the configuration for the FlixService that provides a override for FlixServerURL and default values for FileReader and Logger.
 type FlixServiceConfig = internal.FlixServiceConfig
 
+// NewFlixService returns a new FlixService given a FlixServiceConfig
 func NewFlixService(config *FlixServiceConfig) FlixService {
 	return internal.NewFlixService(config)
 }

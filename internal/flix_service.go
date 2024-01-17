@@ -54,7 +54,7 @@ contract name associated with network information
 */
 type ContractInfos = v1_1.ContractInfos
 
-type FlowInteractionTemplateCadence interface {
+type flowInteractionTemplateCadence interface {
 	ReplaceCadenceImports(templateName string) (string, error)
 	IsTransaction() bool
 	IsScript() bool
@@ -101,7 +101,9 @@ func (s flixService) GetTemplate(ctx context.Context, flixQuery string) (string,
 		if err != nil {
 			return "", source, fmt.Errorf("could not parse flix from url %s: %w", flixQuery, err)
 		}
-
+	case flixJson:
+		template = flixQuery
+		source = "json"
 	default:
 		return "", source, fmt.Errorf("invalid flix query type: %s", flixQuery)
 	}
@@ -120,7 +122,7 @@ func (s flixService) GetTemplateAndReplaceImports(ctx context.Context, templateN
 	if err != nil {
 		return nil, fmt.Errorf("invalid flix template version, %w", err)
 	}
-	var replaceableCadence FlowInteractionTemplateCadence
+	var replaceableCadence flowInteractionTemplateCadence
 	switch ver {
 	case "1.1.0":
 		replaceableCadence, err = v1_1.ParseFlix(template)
@@ -177,7 +179,7 @@ func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateNa
 	relativeTemplateLocation := source
 	flixType := getType(source, s.config.FileReader)
 	if flixType == flixPath && destFileLocation != "" {
-		relativeTemplateLocation, err = GetRelativePath(templateName, destFileLocation)
+		relativeTemplateLocation, err = getRelativePath(templateName, destFileLocation)
 		if err != nil {
 			return "", err
 		}

@@ -1,12 +1,12 @@
 # FlixKit
 
-> FlixKit is a Go package that provides functionalities for interacting with Flow Interaction Templates (aka FLIX). Please note that this package is currently in alpha and may undergo significant changes.
+> FlixKit is a Go package that provides functionalities for interacting with Flow Interaction Templates (aka FLIX). This package supports generating v1.1 FLIX template json, creating binding files for v1.0 and v1.1 and replacing import for v1.0 and v1.1. More information about FLIX [FLIX FLIP](https://github.com/onflow/flips/blob/main/application/20230330-interaction-templates-1.1.0.md)
 
 The `flixkit` package is a Go module designed to interact with Flow Interaction Templates (FLIX). It allows users to fetch, parse, generate and create binding files for Flow interaction templates aka FLIX, aka Verified Interactions. 
 
 ## Structures
 
-See FLIP that descibes json structure, [Here](https://github.com/onflow/flips/blob/main/application/20230330-interaction-templates-1.1.0.md) current version is v1.1.0
+See FLIP that describes json structure, [Here](https://github.com/onflow/flips/blob/main/application/20230330-interaction-templates-1.1.0.md) current version is v1.1.0
 
 This package provides three functionalities. 
  - Getting network specific Cadence from FLIX
@@ -15,28 +15,41 @@ This package provides three functionalities.
 
 The package also defines the following interfaces:
 
-- `FlixService`: This interface defines methods to interact with the FLIX service such as fetching raw data or parsed data by template name or template ID.
-- `Generator`: This interface generates FLIX json given Cadence, metadata can be provided in two ways:
-   - prefilled out json 
-   - Cadence docs in the form of a pragma
-- `Bindings`: This interface has two implementations for javascript and typescript using fcl
+- `FlixService`: This interface defines methods to fetch templates using template name or template id (from flix service), URL or local file path. 
+
+### Methods
+```go
+// GetTemplate returns the raw flix template
+GetTemplate(ctx context.Context, templateName string) (string, string, error)
+// GetAndReplaceImports returns the raw flix template with cadence imports replaced
+GetTemplateAndReplaceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error)
+// GenerateBinding returns the generated binding given the language
+GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFile string) (string, error)
+// GenerateTemplate returns the generated raw template
+CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
+```
 
 ## Usage
 
-The package provides a `FlixService` interface with a constructor function `NewFlixService(config *Config)`. `Config` contains `FlixServerURL` which should be provided. If no URL is provided, it defaults to `"https://flix.flow.com/v1/templates"`.
+The package provides a `FlixService` interface with a constructor function `NewFlixService(config *FlixServiceConfig)`. `FlixServiceConfig`
+contains 
+ - `FlixServerURL` which is defaulted to `"https://flix.flow.com/v1/templates"`. User can provide their own service url endpoint
+ - `FileReader` which is used to read local FLIX json template files
+ - `Logger` which is used in creating `flowkit.NewFlowkit` for FLIX template generation
 
 The `FlixService` interface provides the following methods:
 
-- `GetTemplate(ctx context.Context, templateName string) (string, error)`: Fetches template and returns as a string.
-- `GetAndReplaceCadenceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error)`: Fetches and parses a Flix template and provides the cadence for the network provided.
+- `GetTemplate`: Fetches template and returns as a string.
+- `GetTemplateAndReplaceImports` returns `FlowInteractionTemplateExecution`: Fetches and parses a Flix template and provides the cadence for the network provided. There are two helper methods to assist in determining if the Cadence is a transaction or a script.
 
-- Note: `templateName` parameter can be the id or name of a template from the interactive template service. A local file or url to the FLIX json file.
+- Note: `templateName` parameter can be the id or name of a template from the interactive template service. A local file or url to the FLIX json file or the template string itself.
 
 Result form GetAndReplaceCadenceImports is a `FlowInteractionTemplateExecution` instance also provides the following methods:
 
 - `IsScript() bool`: Checks if the template is of type "script".
 - `IsTransaction() bool`: Checks if the template is of type "transaction".
-- `GetAndReplaceCadenceImports(networkName string) (string, error)`: Replaces cadence import statements in the cadence script or transaction with their respective network addresses.
+- `Cadence`: Replaced cadence with respective network addresses.
+- `Network`: Name of network used to get import addresses
 
 ## Examples
 
@@ -58,57 +71,88 @@ Note: Remember to replace "transfer-flow" with the actual name of the template y
 To read more about Flow Interaction Templates, [see the docs](https://developers.flow.com/tooling/fcl-js/interaction-templates).
 
 
-## Bindings
+## Binding Files
 
-> Binding files are code files that bind consuming code with FLIX. The `bindings` module in Flixkit generates code that calls the FLIX cadence code. FLIX cadence is primarily transactions and scripts. 
+> Binding files are client code files used to call Cadence contracts using the scripts or transactions in a FLIX. These client files can be created given a FLIX, currently TypeScript and JavaScript are supported.
 
 ### Usage
 
 The `bindings` module has two public methods `Generate` and `NewFclJSGenerator`. `FclJSGenerator` takes a template directory. `bindings` has fcl-js templates.
 
-
- - `NewFclJSGenerator() *FclJSGenerator` // uses default fcl-js vanilla javascript
- - `Generate(template string, templateLocation string) (string, error)` // flix is the hydrated template struct, templateLocation is the file location of the flix json file, isLocal is a flag that indicates if the template is local or on remote server
-
-### Example
-
 ```go
+flixService := flixkit.NewFlixService(&flixkit.Config{
+	FileReader: myFileReader
+})
 
-// uses default fcl-js templates
-fclJsGen := flixkit.NewFclJSGenerator() 
-
-output, err := fclJsGen.Generate(template, flixQuery, isLocal)
+binding, err := flixService.GetTemplateAndCreateBinding(context.Background(), "transfer-flow", "js", "./bindingFiles/transferFlow.js")
 if err != nil {
     log.Fatal(err)
 }
 
-// output is the javascript binding code
-fmt.Println(output])
-
+fmt.Println(binding)
 ```
 
-## Generate
-
-> Generate creates the newest ratified version of FLIX, as of this update, v1.1 has been passed. Version 1.0.0 will be supported with `FlixService` and `bindings`. 
-
-- `deployedContracts` is an array of v1_1.Contract structs of the contract dependencies the Cadence code depends on, Core contracts are already configured, look in `internal/contracts/core.go` for details
-
-### Example
 ```go
-generator, err := flixkit.NewGenerator(deployedContracts, logger output.Logger)
-// preFilledTemplate is a partially populated flix template with human readable messages
-// see FLIX flip for details
-prettyJSON, err := generator.Generate(ctx, string(code), preFilledTemplate)
+GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFile string) (string, error)
+```
+
+ - `templateName` value can be template name, template id, url or local file. 
+ - `lang` values supported are "js", "javascript", "ts", "typescript" 
+ - `destFile` is the location of the destination binding file, this is used to create the relative path if the template is local. If the template is a template name, template id or url `destFile` isn't used
+
+## Generate Templates
+
+> CreateTemplate creates the newest ratified version of FLIX, as of this update, see link to FLIP Flip above for more information. 
+```go
+	CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
+```
+
+### Usage
+```go
+flixService := flixkit.NewFlixService(&flixkit.Config{
+	FileReader: myFileReader,
+	Logger: myLogger,
+})
+
+prettyJSON, err := flixService.CreateTemplate(ctx, depContracts, string(code), preFilled)
 
 fmt.Println(prettyJSON)
 ```
+- `contractInfos` is an array of v1_1.Contract struct. This provides the network information about the deployed contracts that are dependencies in the FLIX Cadence code.
+- `code` is the actual Cadence code the template is based on
+- `preFilled` is a partially filled out FLIX template. This can be a template name, template id, url or local file. Alternatively to using a prefilled template, the Cadence itself can provide metadata using a FLIX specific Cadence pragma, more on that below, [See Cadence Doc Flip](https://github.com/onflow/flips/blob/main/application/20230406-interaction-template-cadence-doc.md)
+
+
 ### Cadence docs pragma
 
-> Using Cadence pragma the metadata can live with the Cadence code. Therefore a prefilled template isn't necessary
+> Using Cadence pragma the metadata can exist along with the Cadence code. Therefore a prefilled template isn't necessary
 
 ### Example
 
 ```go
+#interaction(
+		version: "1.1.0",
+		title: "Transfer Flow",
+		description: "Transfer Flow to account",
+		language: "en-US",
+	)
+	
+	import "FlowToken"
+	transaction(amount: UFix64, to: Address) {
+		let vault: @FlowToken.Vault
+		prepare(signer: AuthAccount) {
+		...
+		}
+	}
+`
+
+```
+
+A `pragma` gives special instruction or processors, in this case FLIX specific information that describes the transaction or script.
+
+Notice: Nested structures in Cadence pragma will be supported in future, this will allow describing parameters
+```go
+...
 #interaction(
 		version: "1.1.0",
 		title: "Transfer Flow",
@@ -127,16 +171,5 @@ fmt.Println(prettyJSON)
 			)
 		],
 	)
-	
-	import "FlowToken"
-	transaction(amount: UFix64, to: Address) {
-		let vault: @FlowToken.Vault
-		prepare(signer: AuthAccount) {
-		...
-		}
-	}
-`
-
+...		
 ```
-
-The pragma describes the transaction parameters and reason for the transaction.

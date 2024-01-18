@@ -1,13 +1,13 @@
-package flixkit
+package internal
 
 import (
 	"encoding/json"
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	v1 "github.com/onflow/flixkit-go/flixkit/v1"
-	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 	"github.com/onflow/flixkit-go/internal/templates"
+	v1 "github.com/onflow/flixkit-go/internal/v1"
+	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -197,15 +197,15 @@ var minimumNoParamTemplate = &v1.FlowInteractionTemplate{
 func TestJSGenTransaction(t *testing.T) {
 	ttemp, err := json.Marshal(parsedTemplateTX)
 	assert.NoError(t, err, "marshal template to json should not return an error")
-	generator := FclGenerator{
-		Templates: []string{
+	generator := FclCreator{
+		templates: []string{
 			templates.GetJsFclMainTemplate(),
 			templates.GetJsFclScriptTemplate(),
 			templates.GetJsFclTxTemplate(),
 			templates.GetJsFclParamsTemplate(),
 		},
 	}
-	got, _ := generator.Generate(string(ttemp), "./transfer_token.json")
+	got, _ := generator.Create(string(ttemp), "./transfer_token.json")
 	autogold.ExpectFile(t, got)
 }
 
@@ -213,8 +213,8 @@ func TestJSGenScript(t *testing.T) {
 	ttemp, err := json.Marshal(parsedTemplateScript)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := FclGenerator{
-		Templates: []string{
+	generator := FclCreator{
+		templates: []string{
 			templates.GetJsFclMainTemplate(),
 			templates.GetJsFclScriptTemplate(),
 			templates.GetJsFclTxTemplate(),
@@ -222,7 +222,7 @@ func TestJSGenScript(t *testing.T) {
 		},
 	}
 	assert := assert.New(t)
-	got, err := generator.Generate(string(ttemp), "./multiply_two_integers.template.json")
+	got, err := generator.Create(string(ttemp), "./multiply_two_integers.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, got)
 }
@@ -231,8 +231,8 @@ func TestJSGenArrayScript(t *testing.T) {
 	ttemp, err := json.Marshal(ArrayTypeScript)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := FclGenerator{
-		Templates: []string{
+	generator := FclCreator{
+		templates: []string{
 			templates.GetJsFclMainTemplate(),
 			templates.GetJsFclScriptTemplate(),
 			templates.GetJsFclTxTemplate(),
@@ -241,7 +241,7 @@ func TestJSGenArrayScript(t *testing.T) {
 	}
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./multiply-numbers.template.json")
+	out, err := generator.Create(string(ttemp), "./multiply-numbers.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -250,10 +250,10 @@ func TestJSGenMinScript(t *testing.T) {
 	ttemp, err := json.Marshal(minimumTemplate)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := NewFclJSGenerator()
+	generator := NewFclJSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./min.template.json")
+	out, err := generator.Create(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -261,10 +261,10 @@ func TestJSGenNoParamsScript(t *testing.T) {
 	ttemp, err := json.Marshal(minimumNoParamTemplate)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := NewFclJSGenerator()
+	generator := NewFclJSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./min.template.json")
+	out, err := generator.Create(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -415,10 +415,10 @@ func TestTSGenNoParamsScript(t *testing.T) {
 	ttemp, err := json.Marshal(minimumNoParamTemplateTS_SCRIPT)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := NewFclTSGenerator()
+	generator := NewFclTSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./min.template.json")
+	out, err := generator.Create(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -427,10 +427,10 @@ func TestTSGenNoParamsTx(t *testing.T) {
 	ttemp, err := json.Marshal(minimumNoParamTemplateTS_TX)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := NewFclTSGenerator()
+	generator := NewFclTSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./min.template.json")
+	out, err := generator.Create(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -439,10 +439,10 @@ func TestTSGenParamsScript(t *testing.T) {
 	ttemp, err := json.Marshal(minimumParamTemplateTS_SCRIPT)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := NewFclTSGenerator()
+	generator := NewFclTSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./min.template.json")
+	out, err := generator.Create(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -451,10 +451,10 @@ func TestTSGenParamsTx(t *testing.T) {
 	ttemp, err := json.Marshal(minimumParamTemplateTS_TX)
 	assert.NoError(t, err, "marshal template to json should not return an error")
 
-	generator := NewFclTSGenerator()
+	generator := NewFclTSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(string(ttemp), "./min.template.json")
+	out, err := generator.Create(string(ttemp), "./min.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }
@@ -588,10 +588,10 @@ const ReadTokenScript = `
 `
 
 func TestBindingReadTokenBalance(t *testing.T) {
-	generator := NewFclTSGenerator()
+	generator := NewFclTSCreator()
 	assert := assert.New(t)
 
-	out, err := generator.Generate(ReadTokenScript, "./read-token-balance.template.json")
+	out, err := generator.Create(ReadTokenScript, "./read-token-balance.template.json")
 	assert.NoError(err, "ParseTemplate should not return an error")
 	autogold.ExpectFile(t, out)
 }

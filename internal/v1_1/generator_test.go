@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/flixkit-go/internal/contracts"
+	"github.com/onflow/flixkit-go/v2/internal/contracts"
 	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/stretchr/testify/assert"
 )

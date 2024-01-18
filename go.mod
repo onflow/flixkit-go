@@ -1,4 +1,4 @@
-module github.com/onflow/flixkit-go
+module github.com/onflow/flixkit-go/v2
 
 go 1.20
 

@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/flixkit-go/internal/templates"
-	v1 "github.com/onflow/flixkit-go/internal/v1"
-	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
+	"github.com/onflow/flixkit-go/v2/internal/templates"
+	v1 "github.com/onflow/flixkit-go/v2/internal/v1"
+	v1_1 "github.com/onflow/flixkit-go/v2/internal/v1_1"
 	"github.com/stretchr/testify/assert"
 )
 

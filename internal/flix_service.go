@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	v1 "github.com/onflow/flixkit-go/internal/v1"
-	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
+	v1 "github.com/onflow/flixkit-go/v2/internal/v1"
+	v1_1 "github.com/onflow/flixkit-go/v2/internal/v1_1"
 	"github.com/onflow/flow-cli/flowkit/output"
 )
 

@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	v1 "github.com/onflow/flixkit-go/internal/v1"
+	v1 "github.com/onflow/flixkit-go/v2/internal/v1"
 	"github.com/stretchr/testify/assert"
 )
 

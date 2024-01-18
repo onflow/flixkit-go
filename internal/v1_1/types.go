@@ -12,7 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/onflow/cadence/runtime/ast"
-	"github.com/onflow/flixkit-go/internal/contracts"
+	"github.com/onflow/flixkit-go/v2/internal/contracts"
 	"golang.org/x/crypto/sha3"
 )
 

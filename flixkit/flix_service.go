@@ -27,6 +27,7 @@ type NetworkAddressMap = internal.NetworkAddressMap
 // FlixServiceConfig is the configuration for the FlixService that provides a override for FlixServerURL and default values for FileReader and Logger.
 type FlixServiceConfig = internal.FlixServiceConfig
 
+// InteractionTemplate is the struct that FLIX json files can be parsed into.
 type InteractiveTemplate = internal.InteractionTemplate
 
 // NewFlixService returns a new FlixService given a FlixServiceConfig

@@ -27,6 +27,8 @@ type NetworkAddressMap = internal.NetworkAddressMap
 // FlixServiceConfig is the configuration for the FlixService that provides a override for FlixServerURL and default values for FileReader and Logger.
 type FlixServiceConfig = internal.FlixServiceConfig
 
+type InteractiveTemplate = internal.InteractionTemplate
+
 // NewFlixService returns a new FlixService given a FlixServiceConfig
 func NewFlixService(config *FlixServiceConfig) FlixService {
 	return internal.NewFlixService(config)

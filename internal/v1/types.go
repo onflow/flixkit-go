@@ -1,4 +1,4 @@
-package flixkit
+package v1
 
 import (
 	"encoding/json"
@@ -76,7 +76,7 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 	return &flowTemplate, nil
 }
 
-func (t *FlowInteractionTemplate) GetAndReplaceCadenceImports(networkName string) (string, error) {
+func (t *FlowInteractionTemplate) ReplaceCadenceImports(networkName string) (string, error) {
 	var cadence string
 
 	for dependencyAddress, c := range t.Data.Dependencies {

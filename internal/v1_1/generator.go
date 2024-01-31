@@ -1,4 +1,4 @@
-package flixkit
+package v1_1
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 	"github.com/onflow/cadence/runtime/cmd"
 	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/cadence/runtime/parser"
-	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-cli/flowkit"
 	"github.com/onflow/flow-cli/flowkit/config"
@@ -32,13 +31,13 @@ Same structure as core contracts, keyed by contract name
 type ContractInfos map[string]NetworkAddressMap
 
 type Generator struct {
-	deployedContracts []v1_1.Contract
+	deployedContracts []Contract
 	testnetClient     *flowkit.Flowkit
 	mainnetClient     *flowkit.Flowkit
-	template          *v1_1.InteractionTemplate
+	template          *InteractionTemplate
 }
 
-func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
+func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
 	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
@@ -59,11 +58,11 @@ func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 	// add core contracts to deployed contracts
 	cc := contracts.GetCoreContracts()
-	deployedContracts := make([]v1_1.Contract, 0)
+	deployedContracts := make([]Contract, 0)
 	for contractName, c := range cc {
-		contract := v1_1.Contract{
+		contract := Contract{
 			Contract: contractName,
-			Networks: []v1_1.Network{
+			Networks: []Network{
 				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
 				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
 				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
@@ -73,14 +72,15 @@ func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator
 	}
 	// allow user contracts to override core contracts
 	for contractInfo, networks := range contractInfos {
-		contract := v1_1.Contract{
+		contract := Contract{
 			Contract: contractInfo,
-			Networks: make([]v1_1.Network, 0),
+			Networks: make([]Network, 0),
 		}
 		for network, address := range networks {
-			contract.Networks = append(contract.Networks, v1_1.Network{
+			addr := flow.HexToAddress(address)
+			contract.Networks = append(contract.Networks, Network{
 				Network: network,
-				Address: address,
+				Address: "0x" + addr.Hex(),
 			})
 		}
 		deployedContracts = append(deployedContracts, contract)
@@ -90,15 +90,15 @@ func NewGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator
 		deployedContracts: deployedContracts,
 		testnetClient:     testnetClient,
 		mainnetClient:     mainnetClient,
-		template:          &v1_1.InteractionTemplate{},
+		template:          &InteractionTemplate{},
 	}, nil
 }
 
-func (g Generator) Generate(ctx context.Context, code string, preFill string) (string, error) {
-	g.template = &v1_1.InteractionTemplate{}
+func (g Generator) CreateTemplate(ctx context.Context, code string, preFill string) (string, error) {
+	g.template = &InteractionTemplate{}
 	g.template.Init()
 	if preFill != "" {
-		t, err := v1_1.ParseFlix(preFill)
+		t, err := ParseFlix(preFill)
 		if err != nil {
 			return "", err
 		}
@@ -134,7 +134,7 @@ func (g Generator) Generate(ctx context.Context, code string, preFill string) (s
 
 	// need to process dependencies before calculating network pins
 	_ = g.calculateNetworkPins(program)
-	id, _ := v1_1.GenerateFlixID(g.template)
+	id, _ := GenerateFlixID(g.template)
 	g.template.ID = id
 	templateJson, err := json.MarshalIndent(g.template, "", "    ")
 
@@ -147,15 +147,15 @@ func (g Generator) calculateNetworkPins(program *ast.Program) error {
 		config.MainnetNetwork.Name,
 		config.TestnetNetwork.Name,
 	}
-	networkPins := make([]v1_1.NetworkPin, 0)
+	networkPins := make([]NetworkPin, 0)
 	for _, netName := range networksOfInterest {
-		cad, err := g.template.GetAndReplaceCadenceImports(netName)
+		cad, err := g.template.ReplaceCadenceImports(netName)
 		if err != nil {
 			continue
 		}
-		networkPins = append(networkPins, v1_1.NetworkPin{
+		networkPins = append(networkPins, NetworkPin{
 			Network: netName,
-			PinSelf: v1_1.ShaHex(cad, ""),
+			PinSelf: ShaHex(cad, ""),
 		})
 	}
 	g.template.Data.Cadence.NetworkPins = networkPins
@@ -170,9 +170,9 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	}
 
 	// fill in dependence information
-	g.template.Data.Dependencies = make([]v1_1.Dependency, 0)
+	g.template.Data.Dependencies = make([]Dependency, 0)
 	for _, imp := range imports {
-		contractName, err := v1_1.ExtractContractName(imp.String())
+		contractName, err := ExtractContractName(imp.String())
 		if err != nil {
 			return err
 		}
@@ -180,12 +180,12 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 		if err != nil {
 			return err
 		}
-		c := v1_1.Contract{
+		c := Contract{
 			Contract: contractName,
 			Networks: networks,
 		}
-		dep := v1_1.Dependency{
-			Contracts: []v1_1.Contract{c},
+		dep := Dependency{
+			Contracts: []Contract{c},
 		}
 		g.template.Data.Dependencies = append(g.template.Data.Dependencies, dep)
 	}
@@ -193,15 +193,15 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	return nil
 }
 
-func (g *Generator) generateDependenceInfo(ctx context.Context, contractName string) ([]v1_1.Network, error) {
+func (g *Generator) generateDependenceInfo(ctx context.Context, contractName string) ([]Network, error) {
 	// only support string import syntax
 	contractNetworks := g.LookupImportContractInfo(contractName)
 	if len(contractNetworks) == 0 {
 		return nil, fmt.Errorf("could not find contract dependency %s", contractName)
 	}
-	var networks []v1_1.Network
+	var networks []Network
 	for _, n := range contractNetworks {
-		network := v1_1.Network{
+		network := Network{
 			Network: n.Network,
 			Address: n.Address,
 		}
@@ -228,7 +228,7 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 	return networks, nil
 }
 
-func (g *Generator) LookupImportContractInfo(contractName string) []v1_1.Network {
+func (g *Generator) LookupImportContractInfo(contractName string) []Network {
 	for _, contract := range g.deployedContracts {
 		if contractName == contract.Contract {
 			return contract.Networks
@@ -237,8 +237,8 @@ func (g *Generator) LookupImportContractInfo(contractName string) []v1_1.Network
 	return nil
 }
 
-func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, height uint64) (details *v1_1.PinDetail, err error) {
-	memoize := make(map[string]v1_1.PinDetail)
+func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, height uint64) (details *PinDetail, err error) {
+	memoize := make(map[string]PinDetail)
 	networkPinDetail, err := generateDependencyNetworks(ctx, flowkit, address, name, memoize, height)
 	if err != nil {
 		return nil, err
@@ -247,30 +247,28 @@ func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowk
 	return networkPinDetail, nil
 }
 
-func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, cache map[string]v1_1.PinDetail, height uint64) (*v1_1.PinDetail, error) {
-	identifier := fmt.Sprintf("A.%s.%s", strings.ReplaceAll(address, "0x", ""), name)
+func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, cache map[string]PinDetail, height uint64) (*PinDetail, error) {
+	addr := flow.HexToAddress(address)
+	identifier := fmt.Sprintf("A.%s.%s", addr.Hex(), name)
 	pinDetail, ok := cache[identifier]
 	if ok {
 		return &pinDetail, nil
 	}
 
-	account, err := flowkit.GetAccount(ctx, flow.HexToAddress(address))
+	account, err := flowkit.GetAccount(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
 	code := account.Contracts[name]
-	if !strings.HasPrefix(address, "0x") {
-		address = "0x" + address
-	}
-	depend := v1_1.PinDetail{
+	depend := PinDetail{
 		PinContractName:    name,
-		PinContractAddress: address,
-		PinSelf:            v1_1.ShaHex(code, ""),
+		PinContractAddress: "0x" + addr.Hex(),
+		PinSelf:            ShaHex(code, ""),
 	}
 	depend.CalculatePin(height)
 	pins := []string{depend.PinSelf}
 	imports := getAddressImports(code, name)
-	detailImports := make([]v1_1.PinDetail, 0)
+	detailImports := make([]PinDetail, 0)
 	for _, imp := range imports {
 		split := strings.Split(imp, ".")
 		address, name := split[0], split[1]
@@ -285,7 +283,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 		pins = append(pins, dep.PinSelf)
 	}
 	depend.Imports = detailImports
-	depend.Pin = v1_1.ShaHex(strings.Join(pins, ""), "")
+	depend.Pin = ShaHex(strings.Join(pins, ""), "")
 	return &depend, nil
 }
 

@@ -1,4 +1,4 @@
-package flixkit
+package v1_1
 
 import (
 	"context"
@@ -8,15 +8,14 @@ import (
 	"github.com/onflow/flow-cli/flowkit/config"
 	"github.com/stretchr/testify/assert"
 
-	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 	"github.com/onflow/flixkit-go/internal/contracts"
 )
 
 func TestHelloScript(t *testing.T) {
-	contracts := []v1_1.Contract{
+	contracts := []Contract{
 		{
 			Contract: "HelloWorld",
-			Networks: []v1_1.Network{
+			Networks: []Network{
 				{
 					Network: "testnet",
 					Address: "0xee82856bf20e2aa6",
@@ -38,6 +37,7 @@ func TestHelloScript(t *testing.T) {
 		testnetClient:     nil,
 		mainnetClient:     nil,
 	}
+
 	assert := assert.New(t)
 	code := `
 	#interaction(
@@ -56,17 +56,17 @@ func TestHelloScript(t *testing.T) {
 	}
 `
 	ctx := context.Background()
-	template, err := generator.Generate(ctx, code, "")
+	template, err := generator.CreateTemplate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
 	autogold.ExpectFile(t, template)
 
 }
 
 func TestTransactionValue(t *testing.T) {
-	contracts := []v1_1.Contract{
+	contracts := []Contract{
 		{
 			Contract: "HelloWorld",
-			Networks: []v1_1.Network{
+			Networks: []Network{
 				{
 					Network: "testnet",
 					Address: "0xee82856bf20e2aa6",
@@ -118,19 +118,19 @@ func TestTransactionValue(t *testing.T) {
 	}
 `
 	ctx := context.Background()
-	template, err := generator.Generate(ctx, code, "")
+	template, err := generator.CreateTemplate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
 	autogold.ExpectFile(t, template)
 
 }
 
 func TestTransferFlowTransaction(t *testing.T) {
-	cs := []v1_1.Contract{}
+	cs := []Contract{}
 	cc := contracts.GetCoreContracts()
 	for contractName, c := range cc {
-		contract := v1_1.Contract{
+		contract := Contract{
 			Contract: contractName,
-			Networks: []v1_1.Network{
+			Networks: []Network{
 				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
 				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
 				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
@@ -174,7 +174,7 @@ func TestTransferFlowTransaction(t *testing.T) {
 	}
 `
 	ctx := context.Background()
-	template, err := generator.Generate(ctx, code, "")
+	template, err := generator.CreateTemplate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
 	autogold.ExpectFile(t, template)
 

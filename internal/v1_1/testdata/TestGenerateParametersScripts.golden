@@ -56,6 +56,12 @@
                     }
                 ]
             }
-        ]
+        ],
+        "output": {
+            "label": "result",
+            "index": 0,
+            "type": "UFix64",
+            "messages": []
+        }
     }
 }`

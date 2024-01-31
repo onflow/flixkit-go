@@ -1,4 +1,4 @@
-package flixkit
+package v1_1
 
 import (
 	"encoding/json"
@@ -814,7 +814,7 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			cadenceCode, err := parsedTemplate.GetAndReplaceCadenceImports(tt.network)
+			cadenceCode, err := parsedTemplate.ReplaceCadenceImports(tt.network)
 			if tt.wantErr {
 				assert.Error(err, tt.name, "GetCadenceWithReplacedImports should return an error")
 			} else {
@@ -832,7 +832,7 @@ func TestGetAndReplaceCadenceImportsMultipleImports(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cadenceCode, err := template.GetAndReplaceCadenceImports("mainnet")
+	cadenceCode, err := template.ReplaceCadenceImports("mainnet")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -846,7 +846,7 @@ func TestGetAndReplaceCadenceImportsMultipleCoreImports(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	cadenceCode, err := template.GetAndReplaceCadenceImports("mainnet")
+	cadenceCode, err := template.ReplaceCadenceImports("mainnet")
 	if err != nil {
 		t.Fatal(err)
 	}

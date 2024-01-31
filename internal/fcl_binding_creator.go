@@ -1,4 +1,4 @@
-package flixkit
+package internal
 
 import (
 	"bytes"
@@ -6,13 +6,13 @@ import (
 	"sort"
 	"text/template"
 
-	v1 "github.com/onflow/flixkit-go/flixkit/v1"
-	v1_1 "github.com/onflow/flixkit-go/flixkit/v1_1"
 	"github.com/onflow/flixkit-go/internal/templates"
+	v1 "github.com/onflow/flixkit-go/internal/v1"
+	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
 	"github.com/stoewer/go-strcase"
 )
 
-func NewFclTSGenerator() *FclGenerator {
+func NewFclTSCreator() *FclCreator {
 	t := []string{
 		templates.GetTsFclMainTemplate(),
 		templates.GetTsFclScriptTemplate(),
@@ -21,12 +21,12 @@ func NewFclTSGenerator() *FclGenerator {
 		templates.GetTsFclInterfaceTemplate(),
 	}
 
-	return &FclGenerator{
-		Templates: t,
+	return &FclCreator{
+		templates: t,
 	}
 }
 
-func NewFclJSGenerator() *FclGenerator {
+func NewFclJSCreator() *FclCreator {
 	t := []string{
 		templates.GetJsFclMainTemplate(),
 		templates.GetJsFclScriptTemplate(),
@@ -34,13 +34,13 @@ func NewFclJSGenerator() *FclGenerator {
 		templates.GetJsFclParamsTemplate(),
 	}
 
-	return &FclGenerator{
-		Templates: t,
+	return &FclCreator{
+		templates: t,
 	}
 }
 
-func (g *FclGenerator) Generate(flixString string, templateLocation string) (string, error) {
-	tmpl, err := parseTemplates(g.Templates)
+func (g *FclCreator) Create(flixString string, templateLocation string) (string, error) {
+	tmpl, err := parseTemplates(g.templates)
 	if err != nil {
 		return "", err
 	}
@@ -48,7 +48,7 @@ func (g *FclGenerator) Generate(flixString string, templateLocation string) (str
 		return "", fmt.Errorf("no flix template provided")
 	}
 
-	ver, err := GetTemplateVersion(flixString)
+	ver, err := getTemplateVersion(flixString)
 	if err != nil {
 		return "", fmt.Errorf("invalid flix template version, %w", err)
 	}
@@ -100,8 +100,8 @@ type templateData struct {
 	IsLocalTemplate      bool
 }
 
-type FclGenerator struct {
-	Templates []string
+type FclCreator struct {
+	templates []string
 }
 
 type FlixParameter struct {
@@ -128,18 +128,28 @@ func getTemplateDataV1_1(flix *v1_1.InteractionTemplate, templateLocation string
 	title := msgs.GetTitle("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := msgs.GetDescription("")
-	result := simpleParameter{}
-	if flix.Data.Output != nil {
-		o := transformParameters([]v1_1.Parameter{*flix.Data.Output})
+	var sp simpleParameter
+
+	if flix.Data.Type == "script" {
+		oTemp := flix.Data.Output
+		if flix.Data.Output == nil {
+			// if output is not defined, add default output
+			oTemp = &v1_1.Parameter{
+				Label:    "result",
+				Type:     "String",
+				Messages: v1_1.InteractionTemplateMessages{},
+			}
+		}
+		o := transformParameters([]v1_1.Parameter{*oTemp})
 		if len(o) > 0 {
-			result = o[0]
+			sp = o[0]
 		}
 	}
 	data := templateData{
 		Version:              flix.FVersion,
 		Parameters:           transformParameters(flix.Data.Parameters),
 		ParametersPrefixName: strcase.UpperCamelCase(title),
-		Output:               result,
+		Output:               sp,
 		Title:                methodName,
 		Description:          description,
 		Location:             templateLocation,
@@ -153,7 +163,14 @@ func getTemplateDataV1_0(flix *v1.FlowInteractionTemplate, templateLocation stri
 	title := flix.Data.Messages.GetTitleValue("Request")
 	methodName := strcase.LowerCamelCase(title)
 	description := flix.GetDescription()
-
+	var sp simpleParameter
+	// version 1.0 does not support output parameters, add default output
+	if flix.Data.Type == "script" {
+		sp = simpleParameter{
+			Name:   "result",
+			JsType: "string",
+		}
+	}
 	data := templateData{
 		Version:              flix.FVersion,
 		Parameters:           transformArguments(flix.Data.Arguments),
@@ -163,6 +180,7 @@ func getTemplateDataV1_0(flix *v1.FlowInteractionTemplate, templateLocation stri
 		Location:             templateLocation,
 		IsScript:             flix.IsScript(),
 		IsLocalTemplate:      isLocal,
+		Output:               sp,
 	}
 	return data
 }
@@ -246,13 +264,4 @@ func transformArguments(args v1.Arguments) []simpleParameter {
 		}
 	}
 	return simpleArgs
-}
-
-func isArrayParameter(arg FlixParameter) (isArray bool, cType string, jsType string) {
-	if arg.Type == "" || arg.Type[0] != '[' {
-		return false, "", ""
-	}
-	cadenceType := arg.Type[1 : len(arg.Type)-1]
-	javascriptType := "Array<" + convertCadenceTypeToJS(cadenceType) + ">"
-	return true, cadenceType, javascriptType
 }

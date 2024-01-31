@@ -13,7 +13,6 @@ import (
 	"github.com/onflow/flow-cli/flowkit/output"
 )
 
-type InteractionTemplate = v1_1.InteractionTemplate
 type FileReader interface {
 	ReadFile(path string) ([]byte, error)
 }

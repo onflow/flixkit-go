@@ -1,0 +1,33 @@
+`/**
+    This binding file was auto generated based on FLIX template v1.1.0.
+    Changes to this file might get overwritten.
+    Note fcl version 1.9.0 or higher is required to use templates.
+**/
+
+import * as fcl from "@onflow/fcl"
+import flixTemplate from "./read-token-balance.template.json"
+
+interface RequestParams {
+  address: string;
+}
+
+/**
+* request:
+* @param string address -
+* @returns {Promise<string>} -
+*/
+export async function request({address}: RequestParams): Promise<string> {
+  const info = await fcl.query({
+    cadence: "",
+    template: flixTemplate,
+    args: (arg, t) => [arg(address, t.Address)]
+  });
+
+  return info
+}
+
+
+
+
+
+`

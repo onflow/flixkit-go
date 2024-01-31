@@ -64,6 +64,12 @@
                 ]
             }
         ],
-        "parameters": null
+        "parameters": null,
+        "output": {
+            "label": "result",
+            "index": 0,
+            "type": "String",
+            "messages": []
+        }
     }
 }`

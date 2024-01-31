@@ -194,7 +194,7 @@ var templateHashedTester = `
 	{
 		"f_type": "InteractionTemplate",
 		"f_version": "1.1.0",
-		"id": "3a99af243b85f3f6af28304af2ed53a37fb913782b3efc483e6f0162a47720a0",
+		"id": "3accd8c0bf4c7b543a80287d6c158043b4c2e737c2205dba6e009abbbf1328a4",
 		"data": {
 		  "type": "transaction",
 		  "interface": "",
@@ -336,6 +336,7 @@ func TestGenerateTemplateIdTransaction(t *testing.T) {
 	//	program, err := parser.ParseProgram(nil, []byte(flix.Data.Cadence.Body), parser.Config{})
 	assert.NoError(t, err)
 	prlp := parametersToRlp(flix.Data.Parameters)
+
 	fullyHashed := getHashedValue(prlp)
 	assert.Equal(t, "b5838adae6019bef5455241281621d45543fc27f48815476cddc9b1939de0d76", fullyHashed)
 
@@ -343,6 +344,28 @@ func TestGenerateTemplateIdTransaction(t *testing.T) {
 	hashed := getHashedValue(m)
 	assert.Equal(t, "064d5a1903b9ebb4224c3345432cae5aa01650b71408f2518a6458e744afaf6d", hashed)
 
+}
+
+func TestGenerateFlixNetworkRLP(t *testing.T) {
+
+	flix, err := ParseFlix(templateHashedTester)
+	assert.NoError(t, err)
+	assert.Equal(t, "1.1.0", flix.FVersion)
+
+	//	program, err := parser.ParseProgram(nil, []byte(flix.Data.Cadence.Body), parser.Config{})
+	assert.NoError(t, err)
+	networkHahes := networksToRlp(flix.Data.Dependencies[0].Contracts[0].Networks)
+
+	fullyHashed := getHashedValue(networkHahes)
+	assert.Equal(t, "2d4a4c4f90aab978e297d14ebd9713e37173cefd84ba55fd4d4a6c5bb018ec63", fullyHashed)
+
+	contractHahes := contractsToRlp(flix.Data.Dependencies[0].Contracts)
+	contractCollectionHashed := getHashedValue(contractHahes)
+	assert.Equal(t, "e12a2186edfc2e0ea06c29195576371591fc09d2c05bdea2048f5a3d674f17c2", contractCollectionHashed)
+
+	idValue, err := flix.EncodeRLP()
+	assert.NoError(t, err)
+	assert.Equal(t, "3accd8c0bf4c7b543a80287d6c158043b4c2e737c2205dba6e009abbbf1328a4", idValue)
 }
 
 //go:embed FungibleToken.cdc
@@ -377,6 +400,7 @@ func TestNetworkHashingIds(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "ac0208f93d07829ec96584d618ddbec6af3cf4e2866bd5071249e8ec93c7e0dc", details.Pin)
 	assert.NotNil(t, details)
+
 }
 
 func bobMainnet() *accounts.Account {

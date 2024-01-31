@@ -283,6 +283,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 		}
 		pins = append(pins, dep.PinSelf)
 	}
+
 	depend.Imports = detailImports
 	depend.Pin = ShaHex(strings.Join(pins, ""), "")
 	return &depend, nil

@@ -484,6 +484,7 @@ func networksToRlp(Networks []Network) []interface{} {
 		}
 		values = append(values, networks)
 	}
+
 	return values
 }
 
@@ -517,14 +518,14 @@ func (flix InteractionTemplate) EncodeRLP() (result string, err error) {
 		ShaHex(flix.Data.Type, ""),
 		ShaHex(flix.Data.Interface, ""),
 		messagesToRlp(flix.Data.Messages),
-		ShaHex(flix.Data.Cadence, ""),
+		ShaHex(flix.Data.Cadence.Body, ""),
 		dependenciesToRlp(flix.Data.Dependencies),
 		parametersToRlp(flix.Data.Parameters),
 	}
 
 	//	msg := dependenciesToRlp(flix.Data.Dependencies)
-	//prettyJSON, _ := json.MarshalIndent(input, "", "    ")
-	//fmt.Println(string(prettyJSON))
+	// prettyJSON, _ := json.MarshalIndent(input, "", "    ")
+	// fmt.Println(string(prettyJSON))
 
 	err = rlp.Encode(&buffer, input)
 	if err != nil {

@@ -77,7 +77,7 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 }
 
 func (t *FlowInteractionTemplate) ReplaceCadenceImports(networkName string) (string, error) {
-	var cadence string
+	var cadence = t.Data.Cadence
 
 	for dependencyAddress, c := range t.Data.Dependencies {
 		for contractName, networks := range c {

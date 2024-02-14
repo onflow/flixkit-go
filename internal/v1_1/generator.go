@@ -10,14 +10,15 @@ import (
 	"github.com/onflow/cadence/runtime/cmd"
 	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/cadence/runtime/parser"
-	"github.com/onflow/flixkit-go/internal/contracts"
-	"github.com/onflow/flow-cli/flowkit"
-	"github.com/onflow/flow-cli/flowkit/config"
-	"github.com/onflow/flow-cli/flowkit/gateway"
-	"github.com/onflow/flow-cli/flowkit/output"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
+	"github.com/onflow/flowkit/v2"
+	"github.com/onflow/flowkit/v2/config"
+	"github.com/onflow/flowkit/v2/gateway"
+	"github.com/onflow/flowkit/v2/output"
 	"github.com/spf13/afero"
+
+	"github.com/onflow/flixkit-go/internal/contracts"
 )
 
 /*

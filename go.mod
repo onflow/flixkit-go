@@ -6,8 +6,8 @@ require (
 	github.com/ethereum/go-ethereum v1.13.5
 	github.com/hexops/autogold/v2 v2.2.1
 	github.com/onflow/cadence v1.0.0-M7
-	github.com/onflow/flow-cli/flowkit v1.11.1-0.20240130210637-a22f7c578d37
 	github.com/onflow/flow-go-sdk v1.0.0-M4
+	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.2.0.20240214213743-ee40994a815f
 	github.com/spf13/afero v1.10.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.8.4

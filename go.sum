@@ -1855,8 +1855,6 @@ github.com/onflow/cadence v1.0.0-M7 h1:hb4LK9lUbFdnDdfU8oqJGSVJtmkOzxwKomhmDcP/F
 github.com/onflow/cadence v1.0.0-M7/go.mod h1:a4mccDU90hmuxCLUFzs9J/ANG/rYbFa36h4Z0bBAqNU=
 github.com/onflow/crypto v0.25.0 h1:BeWbLsh3ZD13Ej+Uky6kg1PL1ZIVBDVX+2MVBNwqddg=
 github.com/onflow/crypto v0.25.0/go.mod h1:C8FbaX0x8y+FxWjbkHy0Q4EASCDR9bSPWZqlpCLYyVI=
-github.com/onflow/flow-cli/flowkit v1.11.1-0.20240130210637-a22f7c578d37 h1:WTg5PAhuvVRd3izYGtqSElnFd65jjit99zih5kPMb0I=
-github.com/onflow/flow-cli/flowkit v1.11.1-0.20240130210637-a22f7c578d37/go.mod h1:aJ850vu0mX9HIr/KTTlGfeLxSZ+sn4Knc6Njp5vIeIA=
 github.com/onflow/flow-core-contracts/lib/go/contracts v0.15.2-0.20240206003101-928bf99024d7 h1:OI/4F2NK/X/4x3dTUFFDGtuOsSa9pX+jjBeSEcBrY/M=
 github.com/onflow/flow-core-contracts/lib/go/contracts v0.15.2-0.20240206003101-928bf99024d7/go.mod h1:GK+Ik1K3L3v8xmHmRQv5yxJz81lYhdYSNm0PQ63Xrws=
 github.com/onflow/flow-core-contracts/lib/go/templates v0.15.2-0.20240206003101-928bf99024d7 h1:WAx8ftVz1BeXiKvQ9gLKEf1J3NBWK26Pbczd0iH4C6I=
@@ -1875,6 +1873,8 @@ github.com/onflow/flow-nft/lib/go/contracts v1.1.1-0.20240205233530-86ee8c352fa6
 github.com/onflow/flow/protobuf/go/flow v0.3.2-0.20231121210617-52ee94b830c2/go.mod h1:NA2pX2nw8zuaxfKphhKsk00kWLwfd+tv8mS23YXO4Sk=
 github.com/onflow/flow/protobuf/go/flow v0.3.7 h1:+6sBdlE/u4ZMTVB9U1lA6Xn2Bd48lOOX96Bv9dNubsk=
 github.com/onflow/flow/protobuf/go/flow v0.3.7/go.mod h1:NA2pX2nw8zuaxfKphhKsk00kWLwfd+tv8mS23YXO4Sk=
+github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.2.0.20240214213743-ee40994a815f h1:GjStQGlfhxbZiOZy8vFRSNUrNoD1u3Q8f5mhfyZ1vhc=
+github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.2.0.20240214213743-ee40994a815f/go.mod h1:Ck+iZGJYerviTQ3SyqoUNLNXdRUJiI5iMxfM9YugtK0=
 github.com/onflow/sdks v0.5.1-0.20230912225508-b35402f12bba h1:rIehuhO6bj4FkwE4VzwEjX7MoAlOhUJENBJLqDqVxAo=
 github.com/onflow/sdks v0.5.1-0.20230912225508-b35402f12bba/go.mod h1:F0dj0EyHC55kknLkeD10js4mo14yTdMotnWMslPirrU=
 github.com/onflow/wal v0.0.0-20230529184820-bc9f8244608d h1:gAEqYPn3DS83rHIKEpsajnppVD1+zwuYPFyeDVFaQvg=

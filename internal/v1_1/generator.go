@@ -260,6 +260,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 	if err != nil {
 		return nil, err
 	}
+
 	code := account.Contracts[name]
 	depend := PinDetail{
 		PinContractName:    name,
@@ -283,6 +284,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 		}
 		pins = append(pins, dep.PinSelf)
 	}
+
 	depend.Imports = detailImports
 	depend.Pin = ShaHex(strings.Join(pins, ""), "")
 	return &depend, nil

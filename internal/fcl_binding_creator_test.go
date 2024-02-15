@@ -471,7 +471,7 @@ const ReadTokenScript = `
         "interface": "",
         "messages": null,
         "cadence": {
-            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\npub fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
+            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\naccess(all) fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
             "network_pins": [
                 {
                     "network": "mainnet",

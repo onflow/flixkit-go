@@ -2,6 +2,7 @@ package v1_1
 
 import (
 	"context"
+	_ "embed"
 	"testing"
 
 	"github.com/hexops/autogold/v2"

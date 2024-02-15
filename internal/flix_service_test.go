@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
+	"github.com/onflow/flixkit-go/internal/v1_1"
 )
 
 var flix_template = `{
@@ -203,6 +204,134 @@ func TestGetAndReplaceCadenceImports(t *testing.T) {
 	}
 }
 
+func TestGetAndReplaceCadenceSimpleImportsV1(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		name    string
+		network string
+		wantErr bool
+		source  *v1.FlowInteractionTemplate
+		result  string
+	}{
+		{
+			name:    "Mainnet",
+			network: "mainnet",
+			wantErr: false,
+			source: &v1.FlowInteractionTemplate{
+				Data: v1.Data{
+					Cadence: "access(all) fun main(x: Int, y: Int): Int { return x * y }",
+				},
+			},
+			result: "access(all) fun main(x: Int, y: Int): Int { return x * y }",
+		},
+		{
+			name:    "Testnet",
+			network: "testnet",
+			wantErr: false,
+			source: &v1.FlowInteractionTemplate{
+				Data: v1.Data{
+					Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS",
+					Dependencies: v1.Dependencies{
+						"0xFUNGIBLETOKENADDRESS": v1.Contracts{
+							"FungibleToken": v1.Networks{
+								"testnet": v1.Network{
+									Address: "0x9a0766d93b6608b7",
+								},
+							},
+						},
+					},
+				},
+			},
+			result: "import FungibleToken from 0x9a0766d93b6608b7",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cadence, err := tt.source.ReplaceCadenceImports(tt.network)
+			if tt.wantErr {
+				assert.Error(err, "GetCadenceWithReplacedImports should return an error")
+			} else {
+				assert.NoError(err, "GetCadenceWithReplacedImports should not return an error")
+				assert.NotEmpty(cadence, "Cadence should not be empty")
+
+				assert.Contains(cadence, tt.result, "Cadence should contain the expected import")
+			}
+		})
+	}
+}
+
+func TestGetAndReplaceCadenceSimpleImportsV11(t *testing.T) {
+	assert := assert.New(t)
+
+	tests := []struct {
+		name    string
+		network string
+		wantErr bool
+		source  *v1_1.InteractionTemplate
+		result  string
+	}{
+		{
+			name:    "Mainnet",
+			network: "mainnet",
+			wantErr: false,
+			source: &v1_1.InteractionTemplate{
+				FType:    "InteractionTemplate",
+				FVersion: "1.1.0",
+				Data: v1_1.Data{
+					Cadence: v1_1.Cadence{
+						Body: "access(all) fun main(x: Int, y: Int): Int { return x * y }",
+					},
+				},
+			},
+			result: "access(all) fun main(x: Int, y: Int): Int { return x * y }",
+		},
+		{
+			name:    "Testnet",
+			network: "testnet",
+			wantErr: false,
+			source: &v1_1.InteractionTemplate{
+				Data: v1_1.Data{
+					Cadence: v1_1.Cadence{
+						Body: "import \"FungibleToken\"",
+					},
+					Dependencies: []v1_1.Dependency{
+						{
+							Contracts: []v1_1.Contract{
+								{
+									Contract: "FungibleToken",
+									Networks: []v1_1.Network{
+										{
+											Network: "testnet",
+											Address: "0x9a0766d93b6608b7",
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			result: "import FungibleToken from 0x9a0766d93b6608b7",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cadence, err := tt.source.ReplaceCadenceImports(tt.network)
+			if tt.wantErr {
+				assert.Error(err, "GetCadenceWithReplacedImports should return an error")
+			} else {
+				assert.NoError(err, "GetCadenceWithReplacedImports should not return an error")
+				assert.NotEmpty(cadence, "Cadence should not be empty")
+
+				assert.Contains(cadence, tt.result, "Cadence should contain the expected import")
+			}
+		})
+	}
+}
+
 func TestIsScript(t *testing.T) {
 	assert := assert.New(t)
 
@@ -369,4 +498,65 @@ func TestTemplateVersion(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParseFlixV1(t *testing.T) {
+	temp := `{
+		"f_type": "InteractionTemplate",
+		"f_version": "1.0.0",
+		"id": "bd10ab0bf472e6b58ecc0398e9b3d1bd58a4205f14a7099c52c0640d9589295f",
+		"data": {
+		  "type": "script",
+		  "interface": "",
+		  "messages": {
+			"title": {
+			  "i18n": {
+				"en-US": "Multiply Two Integers"
+			  }
+			},
+			"description": {
+			  "i18n": {
+				"en-US": "Multiplies two integer arguments together and returns the result."
+			  }
+			}
+		  },
+		  "cadence": "access(all) fun main(x: Int, y: Int): Int { return x * y }",
+		  "dependencies": {},
+		  "arguments": {
+			"x": {
+			  "index": 0,
+			  "type": "Int",
+			  "messages": {
+				"title": {
+				  "i18n": {
+					"en-US": "Int 1"
+				  }
+				}
+			  }
+			},
+			"y": {
+			  "index": 1,
+			  "type": "Int",
+			  "messages": {
+				"title": {
+				  "i18n": {
+					"en-US": "Int 2"
+				  }
+				}
+			  }
+			}
+		  }
+		}
+	  }`
+	assert := assert.New(t)
+
+	parsedTemplate, err := v1.ParseFlix(temp)
+	assert.NoError(err, "ParseTemplate should not return an error")
+	assert.NotNil(parsedTemplate, "Parsed template should not be nil")
+
+	expectedType := "script"
+	assert.Equal(expectedType, parsedTemplate.Data.Type, "Parsed template should have the correct type")
+	v, err := parsedTemplate.ReplaceCadenceImports("mainnet")
+	assert.NoError(err, "ReplaceCadenceImports should not return an error")
+	assert.Equal("access(all) fun main(x: Int, y: Int): Int { return x * y }", v, "ReplaceCadenceImports should return the correct cadence")
 }

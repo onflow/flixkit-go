@@ -254,7 +254,7 @@ func TestGenerateParametersScripts(t *testing.T) {
 }
 
 func TestGenerateTemplateIdWithDeps(t *testing.T) {
-	templateId := "fcada4d7a654a0386a4bb048ac4c851ad7de3945e6e835dc4593581b8c8113da"
+	templateId := "2ced1d914c5ffdcfb6e772e57e2c19d9ce467e0aa1f1c56fe4302f722896f22b"
 	code := `
 	{
 		"f_type": "InteractionTemplate",

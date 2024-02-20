@@ -342,7 +342,7 @@ fun testShouldLookupFlixAfterPublished() {
     Test.assertEqual(TEMPLATE_ID, flix.id)
     Test.assertEqual("transaction", flix.getData().type)
     Test.assertEqual(CADENCE_BODY_HASH, flix.cadenceBodyHash)
-    Test.assertEqual(FLIXRegistry.FLIXStatus.active, flix.status)
+    Test.assertEqual("active", flix.status)
     Test.assertEqual(SCHEMA_VERSION, flix.getVersion())
 }
 
@@ -361,5 +361,5 @@ fun testShouldResolveFlixAfterPublished() {
     Test.assertEqual(TEMPLATE_ID, resolvedFlix.id)
     Test.assertEqual("transaction", resolvedFlix.getData().type)
     Test.assertEqual(CADENCE_BODY_HASH, resolvedFlix.cadenceBodyHash)
-    Test.assertEqual(FLIXRegistry.FLIXStatus.active, resolvedFlix.status)
+    Test.assertEqual("active", resolvedFlix.status)
 }

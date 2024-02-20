@@ -25,16 +25,6 @@ contract FLIXRegistry: FLIXRegistryInterface {
     event AliasUnlinked(registryOwner: Address, registryName: String, registryUuid: UInt64, alias: String)
 
     access(all)
-    enum FLIXStatus: UInt8 {
-
-        access(all)
-        case active
-
-        access(all)
-        case deprecated
-    }
-
-    access(all)
     resource Registry: FLIXRegistryInterface.Queryable, FLIXRegistryInterface.Removable, FLIXRegistryInterface.Admin {
 
         access(account) var flixes: {String: {FLIXRegistryInterface.InteractionTemplate}}
@@ -83,7 +73,7 @@ contract FLIXRegistry: FLIXRegistryInterface {
         access(all)
         fun deprecate(idOrAlias: String) {
             var flix = self.lookup(idOrAlias: idOrAlias) ?? panic("FLIX does not exist with the given id or alias: ".concat(idOrAlias))
-            flix.status = FLIXStatus.deprecated
+            flix.status = "deprecated"
             self.flixes[flix.getId()] = flix
             emit Deprecated(registryOwner: self.owner!.address, registryName: self.name, registryUuid: self.uuid, id: flix.getId())
         }

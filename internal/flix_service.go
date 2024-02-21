@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/onflow/flowkit/v2/config"
 	"github.com/onflow/flowkit/v2/output"
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
@@ -189,11 +190,11 @@ func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateNa
 	return gen.Create(template, relativeTemplateLocation)
 }
 
-func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string) (string, error) {
+func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string, networks []config.Network) (string, error) {
 	template, _, _ := s.GetTemplate(ctx, preFill)
 	var gen *v1_1.Generator
 	var err2 error
-	gen, err2 = v1_1.NewTemplateGenerator(deployedContracts, s.config.Logger)
+	gen, err2 = v1_1.NewTemplateGenerator(deployedContracts, s.config.Logger, networks)
 	if err2 != nil {
 		return "", err2
 	}

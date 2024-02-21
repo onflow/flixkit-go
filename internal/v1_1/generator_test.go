@@ -35,8 +35,6 @@ func TestHelloScript(t *testing.T) {
 
 	generator := Generator{
 		deployedContracts: contracts,
-		testnetClient:     nil,
-		mainnetClient:     nil,
 	}
 
 	assert := assert.New(t)
@@ -86,8 +84,6 @@ func TestTransactionValue(t *testing.T) {
 
 	generator := Generator{
 		deployedContracts: contracts,
-		testnetClient:     nil,
-		mainnetClient:     nil,
 	}
 	assert := assert.New(t)
 	code := `
@@ -142,8 +138,6 @@ func TestTransferFlowTransaction(t *testing.T) {
 	// fill in top level dependencies for the generator
 	generator := &Generator{
 		deployedContracts: cs,
-		testnetClient:     nil,
-		mainnetClient:     nil,
 	}
 	assert := assert.New(t)
 	code := `

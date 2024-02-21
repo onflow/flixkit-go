@@ -2,12 +2,15 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 
+	"github.com/bjartek/underflow"
+	"github.com/onflow/cadence"
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
 	"github.com/onflow/flow-cli/flowkit/output"
@@ -42,6 +45,10 @@ type FlowInteractionTemplateExecution struct {
 	Cadence       string
 	IsTransaciton bool
 	IsScript      bool
+}
+
+type VerCheck struct {
+	FVersion string `json:"f_version"`
 }
 
 /*
@@ -188,6 +195,31 @@ func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateNa
 	return gen.Create(template, relativeTemplateLocation)
 }
 
+func (s flixService) GetTemplateAsCadanceValue(ctx context.Context, templateName string, network string) (cadence.Value, error) {
+	tmplString, _, err := s.GetTemplate(ctx, templateName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check FLIX version
+	var ver VerCheck
+	err = json.Unmarshal([]byte(tmplString), &ver)
+	if err != nil {
+		return nil, err
+	}
+
+	switch ver.FVersion {
+	case "1.0.0":
+		var v1Template v1.FlowInteractionTemplate
+		return unmarshalToCadenceValue(tmplString, v1Template, network)
+	case "1.1.0":
+		var v1_1Template v1_1.InteractionTemplate
+		return unmarshalToCadenceValue(tmplString, v1_1Template, network)
+	}
+
+	return nil, nil
+}
+
 func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string) (string, error) {
 	template, _, _ := s.GetTemplate(ctx, preFill)
 	var gen *v1_1.Generator
@@ -248,4 +280,26 @@ func fetchFlixWithContext(ctx context.Context, url string) (template string, tem
 	}
 	template = string(body)
 	return template, url, err
+}
+
+func unmarshalToCadenceValue(template string, v interface{}, network string) (cadence.Value, error) {
+	err := json.Unmarshal([]byte(template), &v)
+	if err != nil {
+		return nil, err
+	}
+
+	switch v.(type) {
+	case v1.FlowInteractionTemplate:
+		return underflow.InputToCadence(v, func(s string) (string, error) {
+			fmt.Println(s)
+			return "A.123.Foo.Bar", nil
+		})
+	case v1_1.InteractionTemplate:
+		return underflow.InputToCadence(v, func(s string) (string, error) {
+			fmt.Println(s)
+			return "A.123.Foo.Bar", nil
+		})
+	}
+
+	return nil, nil
 }

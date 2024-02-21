@@ -13,6 +13,8 @@ type FlixService interface {
 	GetTemplateAndReplaceImports(ctx context.Context, templateName string, network string) (*FlowInteractionTemplateExecution, error)
 	// GenerateBinding returns the generated binding given the language
 	GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFile string) (string, error)
+	// GetTemplateAsCadanceValue returns the raw flix template as a cadance struct
+	// GetTemplateAsCadanceValue(ctx context.Context, templateName string, network string) (cadence.Value, error)
 	// GenerateTemplate returns the generated raw template
 	CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
 }

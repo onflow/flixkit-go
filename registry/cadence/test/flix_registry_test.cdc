@@ -135,7 +135,7 @@ fun testShouldLookupFlixAfterPublished() {
     Test.assertEqual(TEMPLATE_ID, flix.id)
     Test.assertEqual(FLIX_DATA, flix.getData())
     Test.assertEqual(CADENCE_BODY_HASH, flix.cadenceBodyHash)
-    Test.assertEqual(FLIXRegistry.FLIXStatus.active, flix.status)
+    Test.assertEqual("active", flix.status)
     Test.assertEqual("draft", flix.getVersion())
 }
 
@@ -154,7 +154,7 @@ fun testShouldResolveFlixAfterPublished() {
     Test.assertEqual(TEMPLATE_ID, resolvedFlix.id)
     Test.assertEqual(FLIX_DATA, resolvedFlix.getData())
     Test.assertEqual(CADENCE_BODY_HASH, resolvedFlix.cadenceBodyHash)
-    Test.assertEqual(FLIXRegistry.FLIXStatus.active, resolvedFlix.status)
+    Test.assertEqual("active", resolvedFlix.status)
 }
 
 access(all)
@@ -229,7 +229,7 @@ fun testShouldDeprecateFlixWithTemplateId() {
         [REGISTRY_OWNER.address, TEMPLATE_ID, REGISTRY_NAME]
     )
     let flixBefore = lookupScriptResultBefore.returnValue! as! FLIXSchema_draft.FLIX
-    Test.assertEqual(FLIXRegistry.FLIXStatus.active, flixBefore.status)
+    Test.assertEqual("active", flixBefore.status)
 
     let txResult = executeTransaction(
         "../transactions/deprecate_flix.cdc",
@@ -254,7 +254,7 @@ fun testShouldDeprecateFlixWithTemplateId() {
     Test.expect(lookupScriptResultAfter, Test.beSucceeded())
 
     let flixAfter = lookupScriptResultAfter.returnValue! as! FLIXSchema_draft.FLIX
-    Test.assertEqual(FLIXRegistry.FLIXStatus.deprecated, flixAfter.status)
+    Test.assertEqual("deprecated", flixAfter.status)
 }
 
 access(all)

@@ -36,13 +36,13 @@ contract FLIXSchema_draft {
         }
 
         pub(set)
-        var status: FLIXRegistryInterface.FLIXStatus
+        var status: String
 
         init(id: String, data: AnyStruct, cadenceBodyHash: String) {
             self.id = id
             self.data = data
             self.cadenceBodyHash = cadenceBodyHash
-            self.status = FLIXRegistry.FLIXStatus.active
+            self.status = "active"
         }
     }
 

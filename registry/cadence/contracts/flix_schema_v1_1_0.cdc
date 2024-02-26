@@ -36,18 +36,18 @@ contract FLIXSchema_v1_1_0 {
         }
 
         access(all)
-        fun getStatus(): FLIXRegistryInterface.FLIXStatus {
+        fun getStatus(): String {
             return self.status
         }
 
         pub(set)
-        var status: FLIXRegistryInterface.FLIXStatus
+        var status: String
 
         init(id: String, data: Data, cadenceBodyHash: String) {
             self.id = id
             self.data = data
             self.cadenceBodyHash = cadenceBodyHash
-            self.status = FLIXRegistry.FLIXStatus.active
+            self.status = "active"
         }
     }
 

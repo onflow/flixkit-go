@@ -23,16 +23,6 @@ contract interface FLIXRegistryInterface {
     event AliasUnlinked(registryOwner: Address, registryName: String, registryUuid: UInt64, alias: String)
 
     access(all)
-    enum FLIXStatus: UInt8 {
-
-        access(all)
-        case active
-
-        access(all)
-        case deprecated
-    }
-
-    access(all)
     struct interface InteractionTemplate {
         access(all)
         fun getId(): String
@@ -44,7 +34,7 @@ contract interface FLIXRegistryInterface {
         fun getCadenceBodyHash(): String
 
         pub(set)
-        var status: FLIXStatus
+        var status: String
 
         access(all)
         fun getData(): AnyStruct

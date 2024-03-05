@@ -3,11 +3,18 @@ package flixkit
 import (
 	"context"
 	"fmt"
+
+	"github.com/onflow/flixkit-go/internal"
+	"github.com/onflow/flixkit-go/types"
 )
 
-func NewFlixService(config *FlixServiceConfig) *FlixService {
+type FlixService struct {
+	config *types.FlixServiceConfig
+}
+
+func NewFlixService(config *types.FlixServiceConfig) *FlixService {
 	if config.FlixServerUrl == "" {
-		config.FlixServerUrl = DefaultFlixServerUrl
+		config.FlixServerUrl = internal.DefaultFlixServerUrl
 	}
 
 	return &FlixService{
@@ -15,33 +22,33 @@ func NewFlixService(config *FlixServiceConfig) *FlixService {
 	}
 }
 
-func (s *FlixService) GetTemplate(ctx context.Context, flixQuery string) (FlixInterface, string, error) {
+func (s *FlixService) GetTemplate(ctx context.Context, flixQuery string) (types.FlixInterface, string, error) {
 	// Determine if the template string is flix id, flix path, url, or file path
-	templateType := getType(flixQuery, s.config.FileReader)
+	templateType := internal.GetType(flixQuery, s.config.FileReader)
 
 	// Get template using proper method for string type above
 	switch templateType {
-	case FlixPath:
+	case internal.FlixPath:
 		// TODO:
-	case FlixFilePath:
+	case internal.FlixFilePath:
 		if s.config.FileReader == nil {
 			return nil, flixQuery, fmt.Errorf("file reader not provided")
 		}
 
-		return getFlixByFilePath(flixQuery, s.config.FileReader)
-	case FlixId:
+		return internal.GetFlixByFilePath(flixQuery, s.config.FileReader)
+	case internal.FlixId:
 		// TODO:
-	case FlixJson:
+	case internal.FlixJson:
 		// TODO:
-	case FlixName:
+	case internal.FlixName:
 		// TODO:
-	case FlixUrl:
+	case internal.FlixUrl:
 		// TODO:
 	}
 
 	return nil, flixQuery, fmt.Errorf("invalid template type: %v", templateType)
 }
 
-func (s *FlixService) CreateTemplate(ctx context.Context) (FlixInterface, error) {
+func (s *FlixService) CreateTemplate(ctx context.Context) (types.FlixInterface, error) {
 	return nil, nil
 }

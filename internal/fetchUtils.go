@@ -1,4 +1,4 @@
-package flixkit
+package internal
 
 import (
 	"encoding/hex"
@@ -8,9 +8,10 @@ import (
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	"github.com/onflow/flixkit-go/internal/v1_1"
+	"github.com/onflow/flixkit-go/types"
 )
 
-func getType(s string, f FileReader) FlixQueryTypes {
+func GetType(s string, f types.FileReader) FlixQueryTypes {
 	switch {
 	case isFlixPath(s):
 		return FlixPath
@@ -44,7 +45,7 @@ func isFlixPath(str string) bool {
 	return false
 }
 
-func isFilePath(path string, f FileReader) bool {
+func isFilePath(path string, f types.FileReader) bool {
 	if f == nil {
 		return false
 	}
@@ -57,7 +58,7 @@ func isJson(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
-func getFlixByFilePath(path string, reader FileReader) (FlixInterface, string, error) {
+func GetFlixByFilePath(path string, reader types.FileReader) (types.FlixInterface, string, error) {
 	rawFlix, err := reader.ReadFile(path)
 	if err != nil {
 		return nil, path, fmt.Errorf("could not read flix file %s: %w", path, err)
@@ -68,7 +69,7 @@ func getFlixByFilePath(path string, reader FileReader) (FlixInterface, string, e
 		return nil, path, fmt.Errorf("unable to determine flix schema version for %s: %w", path, err)
 	}
 
-	var flix FlixInterface
+	var flix types.FlixInterface
 	var parseErr error
 	switch flixVer {
 	case "1.0.0":

@@ -8,12 +8,12 @@ func ParseJSON(flixJSON []byte) (FLIX, error) {
 	return FLIX{}, nil
 }
 
-func (f FLIX) AsCadance() (cadence.Value, error) {
+func (f FLIX) AsCadance(status string, network string) (cadence.Value, error) {
 	return nil, nil
 }
 
-func (f FLIX) AsJSON() string {
-	return ""
+func (f FLIX) AsJSON() ([]byte, error) {
+	return nil, nil
 }
 
 func (f FLIX) ReplaceImports() {

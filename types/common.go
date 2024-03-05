@@ -12,8 +12,8 @@ type FlixServiceConfig struct {
 }
 
 type FlixInterface interface {
-	AsCadance() (cadence.Value, error)
-	AsJSON() string
+	AsCadance(status string, network string) (cadence.Value, error)
+	AsJSON() ([]byte, error)
 	ReplaceImports()
 	CreateBindings() (string, error)
 }

@@ -9,8 +9,9 @@ import (
 
 // TODO: Add Proper Values
 const (
-	DefaultMainnetRegistryId = "A.f8d6e0586b0a20c7.FLIXSchema_v1_1_0"
-	DefaultTestnetRegistryId = "A.f8d6e0586b0a20c7.FLIXSchema_v1_1_0"
+	DefaultMainnetRegistryId  = "A.f8d6e0586b0a20c7.FLIXSchema_v1_1_0"
+	DefaultTestnetRegistryId  = "A.f8d6e0586b0a20c7.FLIXSchema_v1_1_0"
+	DefaultEmulatorRegistryId = "A.f8d6e0586b0a20c7.FLIXSchema_v1_1_0"
 )
 
 type InteractionTemplate struct {
@@ -115,6 +116,8 @@ func (f InteractionTemplate) AsCadance(status string, network string) (cadence.V
 		registryId = DefaultMainnetRegistryId
 	case "testnet":
 		registryId = DefaultTestnetRegistryId
+	case "emulator":
+		registryId = DefaultEmulatorRegistryId
 	default:
 		registryId = network
 	}

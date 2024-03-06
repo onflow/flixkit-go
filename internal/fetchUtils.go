@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strings"
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	"github.com/onflow/flixkit-go/internal/v1_1"
@@ -42,7 +43,10 @@ func isHex(str string) bool {
 }
 
 func isFlixPath(str string) bool {
-	return false
+	if _, err := processFlixPath(str); err != nil {
+		return false
+	}
+	return true
 }
 
 func isFilePath(path string, f types.FileReader) bool {
@@ -58,15 +62,48 @@ func isJson(str string) bool {
 	return json.Unmarshal([]byte(str), &js) == nil
 }
 
-func GetFlixByFilePath(path string, reader types.FileReader) (types.FlixInterface, string, error) {
+func getFlixByFilePath(path string, reader types.FileReader) (types.FlixInterface, string, error) {
 	rawFlix, err := reader.ReadFile(path)
 	if err != nil {
 		return nil, path, fmt.Errorf("could not read flix file %s: %w", path, err)
 	}
 
+	return processRawFlix(rawFlix, path)
+}
+
+// TODO:
+func getFlixByFlixPath(path string) (types.FlixInterface, string, error) {
+	_, err := processFlixPath(path)
+	if err != nil {
+		return nil, path, err
+	}
+
+	return nil, path, fmt.Errorf("this method is not implemented yet")
+}
+
+// TODO:
+func getFlixById(id string) (types.FlixInterface, string, error) {
+	return nil, id, fmt.Errorf("this method is not implemented yet")
+}
+
+// TODO:
+func getFlixByName(name string) (types.FlixInterface, string, error) {
+	return nil, name, fmt.Errorf("this method is not implemented yet")
+}
+
+// TODO:
+func getFlixByUrl(url string) (types.FlixInterface, string, error) {
+	return nil, url, fmt.Errorf("this method is not implemented yet")
+}
+
+func parseFlixJSON(flixJSON string) (types.FlixInterface, string, error) {
+	return processRawFlix([]byte(flixJSON), flixJSON)
+}
+
+func processRawFlix(rawFlix []byte, source string) (types.FlixInterface, string, error) {
 	flixVer, err := getTemplateVersion(rawFlix)
 	if err != nil {
-		return nil, path, fmt.Errorf("unable to determine flix schema version for %s: %w", path, err)
+		return nil, source, fmt.Errorf("unable to determine flix schema version for %s: %w", source, err)
 	}
 
 	var flix types.FlixInterface
@@ -79,10 +116,20 @@ func GetFlixByFilePath(path string, reader types.FileReader) (types.FlixInterfac
 	}
 
 	if parseErr != nil {
-		return nil, path, fmt.Errorf("could not parse flix from file %s: %w", path, err)
+		return nil, source, fmt.Errorf("could not parse flix from file %s: %w", source, err)
 	}
 
-	return flix, path, parseErr
+	return flix, source, parseErr
+}
+
+func processFlixPath(path string) ([]string, error) {
+	sections := strings.Split(path, "\\")
+
+	if len(sections) != 4 {
+		return nil, fmt.Errorf("invalid flix path")
+	}
+
+	return sections, nil
 }
 
 func getTemplateVersion(templateBytes []byte) (string, error) {

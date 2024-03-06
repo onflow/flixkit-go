@@ -24,7 +24,7 @@ type InteractionTemplate struct {
 type FLIX struct {
 	ID              string `json:"id"`
 	Data            Data   `json:"data"`
-	CadenceBodyHash string `json:"cadence_body_hash"`
+	CadenceBodyHash string `json:"cadence_body_hash" cadence:"cadenceBodyHash"`
 	Status          string `json:"status"`
 }
 
@@ -49,12 +49,12 @@ type I18n struct {
 
 type Cadence struct {
 	Body        string       `json:"body"`
-	NetworkPins []NetworkPin `json:"network_pins"`
+	NetworkPins []NetworkPin `json:"network_pins" cadence:"networkPins"`
 }
 
 type NetworkPin struct {
 	Network string `json:"network"`
-	PinSelf string `json:"pin_self"`
+	PinSelf string `json:"pin_self" cadence:"pinSelf"`
 }
 
 type Dependency struct {
@@ -69,24 +69,24 @@ type Contract struct {
 type Network struct {
 	Network                  string        `json:"network"`
 	Address                  string        `json:"address"`
-	DependencyPinBlockHeight uint64        `json:"dependency_pin_block_height"`
-	DependencyPin            DependencyPin `json:"dependency_pin"`
+	DependencyPinBlockHeight uint64        `json:"dependency_pin_block_height" cadence:"dependencyPinBlockHeight"`
+	DependencyPin            DependencyPin `json:"dependency_pin" cadence:"dependencyPin"`
 }
 
 // Updated from PinDetail
 type DependencyPin struct {
 	Pin                string   `json:"pin"`
-	PinSelf            string   `json:"pin_self"`
-	PinContractName    string   `json:"pin_contract_name"`
-	PinContractAddress string   `json:"pin_contract_address"`
+	PinSelf            string   `json:"pin_self" cadence:"pinSelf"`
+	PinContractName    string   `json:"pin_contract_name" cadence:"pinContractName"`
+	PinContractAddress string   `json:"pin_contract_address" cadence:"pinContractAddress"`
 	Imports            []Import `json:"imports"`
 }
 
 type Import struct {
 	Pin                string   `json:"pin"`
-	PinSelf            string   `json:"pin_self"`
-	PinContractName    string   `json:"pin_contract_name"`
-	PinContractAddress string   `json:"pin_contract_address"`
+	PinSelf            string   `json:"pin_self" cadence:"pinSelf"`
+	PinContractName    string   `json:"pin_contract_name" cadence:"pinContractName"`
+	PinContractAddress string   `json:"pin_contract_address" cadence:"pinContractAddress"`
 	Imports            []Import `json:"imports"` // Recursive imports, if any
 }
 
@@ -105,6 +105,10 @@ func ParseJSON(flixJSON []byte) (InteractionTemplate, error) {
 	}
 
 	return flix, nil
+}
+
+func ParseCadence(flixCadence cadence.Value) (InteractionTemplate, error) {
+	return InteractionTemplate{}, nil
 }
 
 // TODO: Fix Cadence Body Hash

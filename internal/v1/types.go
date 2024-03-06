@@ -8,6 +8,10 @@ func ParseJSON(flixJSON []byte) (FLIX, error) {
 	return FLIX{}, nil
 }
 
+func ParseCadence(flixCadence cadence.Value) (FLIX, error) {
+	return FLIX{}, nil
+}
+
 func (f FLIX) AsCadance(status string, network string) (cadence.Value, error) {
 	return nil, nil
 }

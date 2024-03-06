@@ -22,79 +22,79 @@ type InteractionTemplate struct {
 }
 
 type FLIX struct {
-	ID              string `json:"id"`
-	Data            Data   `json:"data"`
+	ID              string `json:"id" cadence:"id"`
+	Data            Data   `json:"data" cadence:"data"`
 	CadenceBodyHash string `json:"cadence_body_hash" cadence:"cadenceBodyHash"`
-	Status          string `json:"status"`
+	Status          string `json:"status" cadence:"status"`
 }
 
 type Data struct {
-	Type         string       `json:"type"`
-	Interface    string       `json:"interface"`
-	Messages     []Message    `json:"messages"`
-	Cadence      Cadence      `json:"cadence"`
-	Dependencies []Dependency `json:"dependencies"`
-	Parameters   []Parameter  `json:"parameters"`
+	Type         string       `json:"type" cadence:"type"`
+	Interface    string       `json:"interface" cadence:"interface"`
+	Messages     []Message    `json:"messages" cadence:"messages"`
+	Cadence      Cadence      `json:"cadence" cadence:"cadence"`
+	Dependencies []Dependency `json:"dependencies" cadence:"dependencies"`
+	Parameters   []Parameter  `json:"parameters" cadence:"parameters"`
 }
 
 type Message struct {
-	Key  string `json:"key"`
-	I18n []I18n `json:"i18n"`
+	Key  string `json:"key" cadence:"key"`
+	I18n []I18n `json:"i18n" cadence:"il8n"`
 }
 
 type I18n struct {
-	Tag         string `json:"tag"`
-	Translation string `json:"translation"`
+	Tag         string `json:"tag" cadence:"tag"`
+	Translation string `json:"translation" cadence:"translation"`
 }
 
 type Cadence struct {
-	Body        string       `json:"body"`
+	Body        string       `json:"body" cadence:"body"`
 	NetworkPins []NetworkPin `json:"network_pins" cadence:"networkPins"`
 }
 
 type NetworkPin struct {
-	Network string `json:"network"`
+	Network string `json:"network" cadence:"network"`
 	PinSelf string `json:"pin_self" cadence:"pinSelf"`
 }
 
 type Dependency struct {
-	Contracts []Contract `json:"contracts"`
+	Contracts []Contract `json:"contracts" cadence:"contracts"`
 }
 
 type Contract struct {
-	Contract string    `json:"contract"`
-	Networks []Network `json:"networks"`
+	Contract string    `json:"contract" cadence:"contract"`
+	Networks []Network `json:"networks" cadence:"networks"`
 }
 
 type Network struct {
-	Network                  string        `json:"network"`
-	Address                  string        `json:"address"`
+	Network                  string        `json:"network" cadence:"network"`
+	Address                  string        `json:"address" cadence:"address"`
 	DependencyPinBlockHeight uint64        `json:"dependency_pin_block_height" cadence:"dependencyPinBlockHeight"`
 	DependencyPin            DependencyPin `json:"dependency_pin" cadence:"dependencyPin"`
 }
 
 // Updated from PinDetail
 type DependencyPin struct {
-	Pin                string   `json:"pin"`
+	Pin                string   `json:"pin" cadence:"pin"`
 	PinSelf            string   `json:"pin_self" cadence:"pinSelf"`
 	PinContractName    string   `json:"pin_contract_name" cadence:"pinContractName"`
 	PinContractAddress string   `json:"pin_contract_address" cadence:"pinContractAddress"`
-	Imports            []Import `json:"imports"`
+	Imports            []Import `json:"imports" cadence:"imports"`
 }
 
 type Import struct {
-	Pin                string   `json:"pin"`
+	Pin                string   `json:"pin" cadence:"pin"`
 	PinSelf            string   `json:"pin_self" cadence:"pinSelf"`
 	PinContractName    string   `json:"pin_contract_name" cadence:"pinContractName"`
 	PinContractAddress string   `json:"pin_contract_address" cadence:"pinContractAddress"`
-	Imports            []Import `json:"imports"` // Recursive imports, if any
+	Imports            []Import `json:"imports" cadence:"imports"`
 }
 
 type Parameter struct {
-	Label    string    `json:"label"`
-	Index    int       `json:"index"`
-	Type     string    `json:"type"`
-	Messages []Message `json:"messages"`
+	Label    string    `json:"label" cadence:"label"`
+	Index    int       `json:"index" cadence:"index"`
+	Type     string    `json:"type" cadence:"type"`
+	Messages []Message `json:"messages" cadence:"messages"`
 }
 
 func ParseJSON(flixJSON []byte) (InteractionTemplate, error) {

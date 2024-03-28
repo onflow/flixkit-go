@@ -6,9 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	"github.com/onflow/flixkit-go/internal/v1_1"
-	"github.com/stretchr/testify/assert"
 )
 
 var flix_template = `{
@@ -30,7 +31,7 @@ var flix_template = `{
 			}
 		  }
 		},
-		"cadence": "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
+		"cadence": "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: auth(Storage) &Account) {\nself.vault <- signer.storage\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to).capabilities\n.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n.deposit(from: <-self.vault)\n}\n}",
 		"dependencies": {
 		  "0xFUNGIBLETOKENADDRESS": {
 			"FungibleToken": {
@@ -99,7 +100,7 @@ var parsedTemplate = &v1.FlowInteractionTemplate{
 				},
 			},
 		},
-		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
+		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: auth(Storage) &Account) {\nself.vault <- signer.storage\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n.deposit(from: <-self.vault)\n}\n}",
 		Dependencies: v1.Dependencies{
 			"0xFUNGIBLETOKENADDRESS": v1.Contracts{
 				"FungibleToken": v1.Networks{
@@ -519,7 +520,7 @@ func TestParseFlixV1(t *testing.T) {
 			  }
 			}
 		  },
-		  "cadence": "pub fun main(x: Int, y: Int): Int { return x * y }",
+		  "cadence": "access(all) fun main(x: Int, y: Int): Int { return x * y }",
 		  "dependencies": {},
 		  "arguments": {
 			"x": {
@@ -557,5 +558,5 @@ func TestParseFlixV1(t *testing.T) {
 	assert.Equal(expectedType, parsedTemplate.Data.Type, "Parsed template should have the correct type")
 	v, err := parsedTemplate.ReplaceCadenceImports("mainnet")
 	assert.NoError(err, "ReplaceCadenceImports should not return an error")
-	assert.Equal("pub fun main(x: Int, y: Int): Int { return x * y }", v, "ReplaceCadenceImports should return the correct cadence")
+	assert.Equal("access(all) fun main(x: Int, y: Int): Int { return x * y }", v, "ReplaceCadenceImports should return the correct cadence")
 }

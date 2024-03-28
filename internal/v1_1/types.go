@@ -599,3 +599,12 @@ func ExtractContractName(importStr string) (string, error) {
 
 	return "", fmt.Errorf("no contract name found in string")
 }
+
+func isItemInArray[T comparable](item T, slice []T) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}

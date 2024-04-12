@@ -7,7 +7,6 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/hexops/autogold/v2"
 	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-cli/flowkit"
@@ -18,6 +17,7 @@ import (
 	"github.com/onflow/flow-cli/flowkit/tests"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
+	"github.com/onflow/go-ethereum/rlp"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

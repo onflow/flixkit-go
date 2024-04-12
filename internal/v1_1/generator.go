@@ -212,7 +212,7 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 			flowkit = g.testnetClient
 		}
 		if n.DependencyPinBlockHeight == 0 && flowkit != nil {
-			block, _ := flowkit.Gateway().GetLatestBlock()
+			block, _ := flowkit.Gateway().GetLatestBlock(ctx)
 			height := block.Height
 
 			details, err := g.GenerateDepPinDepthFirst(ctx, flowkit, n.Address, contractName, height)

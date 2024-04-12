@@ -10,7 +10,7 @@ import (
 
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
-	"github.com/onflow/flow-cli/flowkit/output"
+	"github.com/onflow/flowkit/output"
 )
 
 type FileReader interface {

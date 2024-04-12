@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/hexops/autogold/v2 v2.2.1
 	github.com/onflow/cadence v0.42.10
-	github.com/onflow/flow-cli/flowkit v1.11.0
 	github.com/onflow/flow-go-sdk v0.46.2
+	github.com/onflow/flowkit v1.17.3
 	github.com/onflow/go-ethereum v1.13.4
 	github.com/spf13/afero v1.10.0
 	github.com/stoewer/go-strcase v1.3.0

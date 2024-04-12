@@ -1,7 +1,7 @@
 package contracts
 
 import (
-	"github.com/onflow/flow-cli/flowkit/config"
+	"github.com/onflow/flowkit/config"
 )
 
 func GetCoreContracts() map[string]map[string]string {

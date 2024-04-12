@@ -7,17 +7,17 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/hexops/autogold/v2"
 	"github.com/onflow/flixkit-go/internal/contracts"
-	"github.com/onflow/flow-cli/flowkit"
-	"github.com/onflow/flow-cli/flowkit/accounts"
-	"github.com/onflow/flow-cli/flowkit/config"
-	"github.com/onflow/flow-cli/flowkit/gateway/mocks"
-	"github.com/onflow/flow-cli/flowkit/output"
-	"github.com/onflow/flow-cli/flowkit/tests"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/crypto"
+	"github.com/onflow/flowkit"
+	"github.com/onflow/flowkit/accounts"
+	"github.com/onflow/flowkit/config"
+	"github.com/onflow/flowkit/gateway/mocks"
+	"github.com/onflow/flowkit/output"
+	"github.com/onflow/flowkit/tests"
+	"github.com/onflow/go-ethereum/rlp"
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -384,7 +384,7 @@ func TestNetworkHashingIds(t *testing.T) {
 	a := bobMainnet()
 
 	gw.GetAccount.Run(func(args mock.Arguments) {
-		addr := args.Get(0).(flow.Address)
+		addr := args.Get(1).(flow.Address)
 		racc := tests.NewAccountWithAddress(addr.String())
 		racc.Contracts = map[string][]byte{
 			contractName: []byte(fungibleTokenContract),

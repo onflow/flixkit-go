@@ -384,7 +384,7 @@ func TestNetworkHashingIds(t *testing.T) {
 	a := bobMainnet()
 
 	gw.GetAccount.Run(func(args mock.Arguments) {
-		addr := args.Get(0).(flow.Address)
+		addr := args.Get(1).(flow.Address)
 		racc := tests.NewAccountWithAddress(addr.String())
 		racc.Contracts = map[string][]byte{
 			contractName: []byte(fungibleTokenContract),

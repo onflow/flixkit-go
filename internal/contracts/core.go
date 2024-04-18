@@ -47,6 +47,11 @@ func GetCoreContracts() map[string]map[string]string {
 			config.TestnetNetwork.Name:  "0x294e44e1ec6993c6",
 			config.EmulatorNetwork.Name: "0xf8d6e0586b0a20c7",
 		},
+		"ViewResolver": {
+			config.MainnetNetwork.Name:  "0xd8a7e05a7ac670c0",
+			config.TestnetNetwork.Name:  "0x294e44e1ec6993c6",
+			config.EmulatorNetwork.Name: "0xf8d6e0586b0a20c7",
+		},
 	}
 }
 

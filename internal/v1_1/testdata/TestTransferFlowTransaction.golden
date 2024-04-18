@@ -27,16 +27,7 @@
         ],
         "cadence": {
             "body": "\n\t#interaction(\n\t\tversion: \"1.1.0\",\n\t\ttitle: \"Transfer Flow\",\n\t\tdescription: \"Transfer Flow to account\",\n\t\tlanguage: \"en-US\",\n\t\tparameters: [\n\t\t\tParameter(\n\t\t\t\tname: \"amount\",\n\t\t\t\ttitle: \"Amount\",\n\t\t\t\tdescription: \"Amount of Flow to transfer\"\n\t\t\t),\n\t\t\tParameter(\n\t\t\t\tname: \"to\",\n\t\t\t\ttitle: \"Receiver\",\n\t\t\t\tdescription: \"Destination address to receive Flow Tokens\"\n\t\t\t)\n\t\t],\n\t)\n\n\timport \"FlowToken\"\n\n\ttransaction(amount: UFix64, to: Address) {\n\t\tlet vault: @FlowToken.Vault\n\n\t\tprepare(signer: \u0026Account) {}\n\t}\n",
-            "network_pins": [
-                {
-                    "network": "mainnet",
-                    "pin_self": "8f51a4190c0b607f96eb65cc88e9335079aa659c4af7c858ef2de0a2171f7c4b"
-                },
-                {
-                    "network": "testnet",
-                    "pin_self": "76920dd3758b4ee3ee8a8929d05f3e4067f66a30b272f518a14bba504fefd4b1"
-                }
-            ]
+            "network_pins": []
         },
         "dependencies": [
             {

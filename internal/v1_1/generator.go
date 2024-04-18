@@ -129,7 +129,7 @@ func (g Generator) CreateTemplate(ctx context.Context, code string, preFill stri
 	}
 
 	// need to process dependencies before calculating network pins
-	_ = g.calculateNetworkPins(program)
+	_ = g.calculateNetworkPins()
 	id, _ := GenerateFlixID(g.template)
 	g.template.ID = id
 	templateJson, err := json.MarshalIndent(g.template, "", "    ")
@@ -138,11 +138,13 @@ func (g Generator) CreateTemplate(ctx context.Context, code string, preFill stri
 
 }
 
-func (g Generator) calculateNetworkPins(program *ast.Program) error {
-	networksOfInterest := []string{
-		config.MainnetNetwork.Name,
-		config.TestnetNetwork.Name,
+func (g Generator) calculateNetworkPins() error {
+	networksOfInterest := []string{}
+	// only interested in the client networks
+	for _, client := range g.clients {
+		networksOfInterest = append(networksOfInterest, client.Network().Name)
 	}
+
 	networkPins := make([]NetworkPin, 0)
 	for _, netName := range networksOfInterest {
 		cad, err := g.template.ReplaceCadenceImports(netName)

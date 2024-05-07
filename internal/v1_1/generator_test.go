@@ -418,7 +418,7 @@ func newAccount(name string, address string, seed string) *accounts.Account {
 }
 
 func setup(rw flowkit.ReaderWriter) (*flowkit.State, *flowkit.Flowkit, *mocks.TestGateway) {
-	state, err := flowkit.Init(rw, crypto.ECDSA_P256, crypto.SHA3_256)
+	state, err := flowkit.Init(rw, crypto.ECDSA_P256, crypto.SHA3_256, "")
 	if err != nil {
 		panic(err)
 	}

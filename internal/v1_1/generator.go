@@ -50,7 +50,7 @@ func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger) (*G
 		return nil, fmt.Errorf("could not create grpc gateway for mainnet %w", err)
 	}
 
-	state, err := flowkit.Init(loader, crypto.ECDSA_P256, crypto.SHA3_256)
+	state, err := flowkit.Init(loader, crypto.ECDSA_P256, crypto.SHA3_256, "")
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize flowkit state %w", err)
 	}

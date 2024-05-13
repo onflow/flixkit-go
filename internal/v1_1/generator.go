@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flowkit/accounts"
-	"strings"
 
 	"github.com/onflow/cadence/runtime/ast"
 	"github.com/onflow/cadence/runtime/cmd"

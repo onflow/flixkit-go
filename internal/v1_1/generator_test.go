@@ -418,10 +418,12 @@ func newAccount(name string, address string, seed string) *accounts.Account {
 }
 
 func setup(rw flowkit.ReaderWriter) (*flowkit.State, *flowkit.Flowkit, *mocks.TestGateway) {
-	state, err := flowkit.Init(rw, crypto.ECDSA_P256, crypto.SHA3_256, "")
+	state, err := flowkit.Init(rw)
 	if err != nil {
 		panic(err)
 	}
+	emulatorServiceAccount, err := accounts.NewEmulatorAccount(rw, crypto.ECDSA_P256, crypto.SHA3_256, "")
+	state.Accounts().AddOrUpdate(emulatorServiceAccount)
 	gw := mocks.DefaultMockGateway()
 	logger := output.NewStdoutLogger(output.NoneLog)
 	flowkit := flowkit.NewFlowkit(state, config.TestnetNetwork, gw.Mock, logger)

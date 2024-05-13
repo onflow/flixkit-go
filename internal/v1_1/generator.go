@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/onflow/flow-go-sdk/crypto"
+	"github.com/onflow/flowkit/accounts"
 	"strings"
 
 	"github.com/onflow/cadence/runtime/ast"
@@ -12,7 +14,6 @@ import (
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-go-sdk"
-	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flowkit"
 	"github.com/onflow/flowkit/config"
 	"github.com/onflow/flowkit/gateway"
@@ -50,10 +51,17 @@ func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger) (*G
 		return nil, fmt.Errorf("could not create grpc gateway for mainnet %w", err)
 	}
 
-	state, err := flowkit.Init(loader, crypto.ECDSA_P256, crypto.SHA3_256, "")
+	state, err := flowkit.Init(loader)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize flowkit state %w", err)
 	}
+
+	emulatorAccount, err := accounts.NewEmulatorAccount(loader, crypto.ECDSA_P256, crypto.SHA3_256, "")
+	if err != nil {
+		return nil, fmt.Errorf("could not create emulator account %w", err)
+	}
+	state.Accounts().AddOrUpdate(emulatorAccount)
+
 	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
 	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 	// add core contracts to deployed contracts

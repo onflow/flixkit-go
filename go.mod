@@ -7,7 +7,7 @@ require (
 	github.com/hexops/autogold/v2 v2.2.1
 	github.com/onflow/cadence v1.0.0-preview.25
 	github.com/onflow/flow-go-sdk v1.0.0-preview.25
-	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.18
+	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.19
 	github.com/spf13/afero v1.10.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.9.0

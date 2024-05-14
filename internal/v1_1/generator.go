@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/onflow/flow-go-sdk/crypto"
+	"github.com/onflow/flowkit/v2/accounts"
 	"strings"
 
 	"github.com/onflow/cadence/runtime/ast"
@@ -11,7 +13,6 @@ import (
 	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flow-go-sdk"
-	"github.com/onflow/flow-go-sdk/crypto"
 	"github.com/onflow/flowkit/v2"
 	"github.com/onflow/flowkit/v2/config"
 	"github.com/onflow/flowkit/v2/gateway"
@@ -46,10 +47,17 @@ func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger, net
 		if err != nil {
 			return nil, fmt.Errorf("could not create grpc gateway for %s %w", network.Name, err)
 		}
-		state, err := flowkit.Init(loader, crypto.ECDSA_P256, crypto.SHA3_256)
+		state, err := flowkit.Init(loader)
 		if err != nil {
 			return nil, fmt.Errorf("could not initialize flowkit state %w", err)
 		}
+
+		emulatorAccount, err := accounts.NewEmulatorAccount(loader, crypto.ECDSA_P256, crypto.SHA3_256, "")
+		if err != nil {
+			return nil, fmt.Errorf("could not create emulator account %w", err)
+		}
+		state.Accounts().AddOrUpdate(emulatorAccount)
+
 		client := flowkit.NewFlowkit(state, network, gw, logger)
 		clients = append(clients, client)
 	}

@@ -5,9 +5,9 @@ go 1.20
 require (
 	github.com/ethereum/go-ethereum v1.13.10
 	github.com/hexops/autogold/v2 v2.2.1
-	github.com/onflow/cadence v1.0.0-preview.25
-	github.com/onflow/flow-go-sdk v1.0.0-preview.25
-	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.19
+	github.com/onflow/cadence v1.0.0-preview.29
+	github.com/onflow/flow-go-sdk v1.0.0-preview.30
+	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.20
 	github.com/spf13/afero v1.10.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.9.0
@@ -89,6 +89,8 @@ require (
 	github.com/hexops/valast v1.4.4 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
 	github.com/holiman/uint256 v1.2.4 // indirect
+	github.com/huandu/go-clone v1.6.0 // indirect
+	github.com/huandu/go-clone/generic v1.7.2 // indirect
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/invopop/jsonschema v0.7.0 // indirect
@@ -133,17 +135,17 @@ require (
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/nightlyone/lockfile v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/onflow/atree v0.7.0-rc.1 // indirect
+	github.com/onflow/atree v0.7.0-rc.2 // indirect
 	github.com/onflow/crypto v0.25.1 // indirect
-	github.com/onflow/flow-core-contracts/lib/go/contracts v0.15.2-0.20240429192223-e696a8e439b5 // indirect
-	github.com/onflow/flow-core-contracts/lib/go/templates v0.15.2-0.20240429192223-e696a8e439b5 // indirect
-	github.com/onflow/flow-emulator v1.0.0-preview.22 // indirect
-	github.com/onflow/flow-ft/lib/go/contracts v0.7.1-0.20240424211859-3ff4c0fe2a1e // indirect
-	github.com/onflow/flow-ft/lib/go/templates v0.7.1-0.20240424211859-3ff4c0fe2a1e // indirect
-	github.com/onflow/flow-go v0.34.0-crescendo-preview.18 // indirect
-	github.com/onflow/flow-nft/lib/go/contracts v1.1.1-0.20240429184308-40c3de711140 // indirect
-	github.com/onflow/flow-nft/lib/go/templates v0.0.0-20240429184308-40c3de711140 // indirect
-	github.com/onflow/flow/protobuf/go/flow v0.4.1-0.20240412170550-911321113030 // indirect
+	github.com/onflow/flow-core-contracts/lib/go/contracts v1.1.0 // indirect
+	github.com/onflow/flow-core-contracts/lib/go/templates v1.0.0 // indirect
+	github.com/onflow/flow-emulator v1.0.0-preview.23 // indirect
+	github.com/onflow/flow-ft/lib/go/contracts v1.0.0 // indirect
+	github.com/onflow/flow-ft/lib/go/templates v1.0.0 // indirect
+	github.com/onflow/flow-go v0.35.5-0.20240517202625-55f862b45dfd // indirect
+	github.com/onflow/flow-nft/lib/go/contracts v1.2.1 // indirect
+	github.com/onflow/flow-nft/lib/go/templates v1.2.0 // indirect
+	github.com/onflow/flow/protobuf/go/flow v0.4.3 // indirect
 	github.com/onflow/go-ethereum v1.13.4 // indirect
 	github.com/onflow/sdks v0.5.1-0.20230912225508-b35402f12bba // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect

@@ -7,7 +7,7 @@ require (
 	github.com/hexops/autogold/v2 v2.2.1
 	github.com/onflow/cadence v1.0.0-preview.30
 	github.com/onflow/flow-go-sdk v1.0.0-preview.31
-	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.21
+	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.22
 	github.com/spf13/afero v1.10.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.9.0
@@ -139,7 +139,7 @@ require (
 	github.com/onflow/crypto v0.25.1 // indirect
 	github.com/onflow/flow-core-contracts/lib/go/contracts v1.1.0 // indirect
 	github.com/onflow/flow-core-contracts/lib/go/templates v1.0.0 // indirect
-	github.com/onflow/flow-emulator v1.0.0-preview.25 // indirect
+	github.com/onflow/flow-emulator v1.0.0-preview.26 // indirect
 	github.com/onflow/flow-ft/lib/go/contracts v1.0.0 // indirect
 	github.com/onflow/flow-ft/lib/go/templates v1.0.0 // indirect
 	github.com/onflow/flow-go v0.35.10-crescendo-preview.25.0.20240530124823-b968034713f6 // indirect

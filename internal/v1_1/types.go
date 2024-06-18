@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/onflow/cadence/runtime/ast"
 	"github.com/onflow/flixkit-go/internal/contracts"
-	"github.com/onflow/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -598,4 +598,13 @@ func ExtractContractName(importStr string) (string, error) {
 	}
 
 	return "", fmt.Errorf("no contract name found in string")
+}
+
+func isItemInArray[T comparable](item T, slice []T) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }

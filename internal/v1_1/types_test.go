@@ -17,25 +17,26 @@ var pragmaWithParameters = `
 	language: "en-US",
 	parameters: [
 		Parameter(
-			name: "greeting", 
-			title: "Greeting", 
+			name: "greeting",
+			title: "Greeting",
 			description: "The greeting to set on the HelloWorld contract"
 		),
 		Parameter(
-			name: "amount", 
-			title: "Amount", 
+			name: "amount",
+			title: "Amount",
 			description: "The amount parameter to Test"
 		)
 	],
 )
 
 import "HelloWorld"
+
 transaction(greeting: String, amount: UFix64) {
 
-	prepare(acct: AuthAccount) {
+	prepare(acct: &Account) {
 		log(acct.address)
 	}
-	
+
 	execute {
 		HelloWorld.updateGreeting(newGreeting: greeting)
 	}
@@ -51,12 +52,13 @@ var pragmaWithoutParameters = `
 )
 
 import "HelloWorld"
+
 transaction(greeting: String) {
 
-	prepare(acct: AuthAccount) {
+	prepare(acct: &Account) {
 		log(acct.address)
 	}
-	
+
 	execute {
 		HelloWorld.updateGreeting(newGreeting: greeting)
 	}
@@ -69,12 +71,13 @@ var pragmaMinimum = `
 )
 
 import "HelloWorld"
+
 transaction(greeting: String) {
 
-	prepare(acct: AuthAccount) {
+	prepare(acct: &Account) {
 		log(acct.address)
 	}
-	
+
 	execute {
 		HelloWorld.updateGreeting(newGreeting: greeting)
 	}
@@ -85,10 +88,10 @@ var PragmaEmpty = `
 import "HelloWorld"
 transaction(greeting: String) {
 
-	prepare(acct: AuthAccount) {
+	prepare(acct: &Account) {
 		log(acct.address)
 	}
-	
+
 	execute {
 		HelloWorld.updateGreeting(newGreeting: greeting)
 	}
@@ -214,19 +217,19 @@ func TestGenerateParametersScripts(t *testing.T) {
 	}`
 
 	cadence := `
-	   import "FungibleToken"
-	   import "FlowToken"
+		import "FungibleToken"
+		import "FlowToken"
 
-	   pub fun main(address: Address): UFix64 {
-	   	let account = getAccount(address)
-	   	let vaultRef = account.getCapability(/public/flowTokenBalance)
-	   						.borrow<&FlowToken.Vault{FungibleToken.Balance}>()
-	   						?? panic("Could not borrow balance reference to the Vault")
+		access(all)
+		fun main(address: Address): UFix64 {
+			let account = getAccount(address)
+			let vaultRef = account.capabilities
+				.borrow<&FlowToken.Vault>(/public/flowTokenBalance)
+				?? panic("Could not borrow balance reference to the Vault")
 
-	   	return vaultRef.balance
-	   }
-
-	   `
+			return vaultRef.balance
+		}
+	`
 
 	codeBytes := []byte(cadence)
 	program, err := parser.ParseProgram(nil, codeBytes, parser.Config{})
@@ -251,7 +254,7 @@ func TestGenerateParametersScripts(t *testing.T) {
 }
 
 func TestGenerateTemplateIdWithDeps(t *testing.T) {
-	templateId := "3959702214a6991edba75c4722a5573736b185a6a9c38ca2ae0c28e0dc6e8d9b"
+	templateId := "2ced1d914c5ffdcfb6e772e57e2c19d9ce467e0aa1f1c56fe4302f722896f22b"
 	code := `
 	{
 		"f_type": "InteractionTemplate",
@@ -281,7 +284,7 @@ func TestGenerateTemplateIdWithDeps(t *testing.T) {
 				}
 			],
 			"cadence": {
-				"body": "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n\tparameters: [\n\t\tParameter(\n\t\t\tname: \"greeting\", \n\t\t\ttitle: \"Greeting\", \n\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t)\n\t],\n)\ntransaction(greeting: String) {\n\n  prepare(acct: AuthAccount) {\n    log(acct.address)\n  }\n\n  execute {\n    HelloWorld.updateGreeting(newGreeting: greeting)\n  }\n}\n",
+				"body": "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n\tparameters: [\n\t\tParameter(\n\t\t\tname: \"greeting\", \n\t\t\ttitle: \"Greeting\", \n\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t)\n\t],\n)\ntransaction(greeting: String) {\n\n  prepare(acct: &Account) {\n    log(acct.address)\n  }\n\n  execute {\n    HelloWorld.updateGreeting(newGreeting: greeting)\n  }\n}\n",
 				"network_pins": [
 					{
 						"network": "testnet",
@@ -447,7 +450,7 @@ const template = `
 		}
 	  ],
 	  "cadence": {
-		"body": "import \"FlowToken\"\n        transaction(amount: UFix64, to: Address) {\n            let vault: @FungibleToken.Vault\n            prepare(signer: AuthAccount) {\n                %%self.vault <- signer\n                .borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n                .withdraw(amount: amount)\n                self.vault <- FungibleToken.getVault(signer)\n            }\n            execute {\n                getAccount(to)\n                .getCapability(/public/flowTokenReceiver)!\n                .borrow<&{FungibleToken.Receiver}>()!\n                .deposit(from: <-self.vault)\n            }\n        }",
+		"body": "import \"FlowToken\"\n        transaction(amount: UFix64, to: Address) {\n            let vault: @FungibleToken.Vault\n            prepare(signer: auth(Storage) &Account) {\n                %%self.vault <- signer.storage\n                .borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n                .withdraw(amount: amount)\n                self.vault <- FungibleToken.getVault(signer)\n            }\n            execute {\n                getAccount(to).capabilities\n                .borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n                .deposit(from: <-self.vault)\n            }\n        }",
 		"network_pins": [
 		  {
 			"network": "mainnet",
@@ -607,7 +610,7 @@ const templateMultipleImports = `
         "interface": "",
         "messages": null,
         "cadence": {
-            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\npub fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
+            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\naccess(all)\nfun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account.capabilities\n        .borrow<&FlowToken.Vault>(/public/flowTokenBalance)\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
             "network_pins": [
                 {
                     "network": "mainnet",
@@ -734,7 +737,7 @@ const templateMultipleCoreImports = `
         "interface": "",
         "messages": null,
         "cadence": {
-            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\npub fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
+            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\naccess(all)\nfun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account.capabilities\n        .borrow<&FlowToken.Vault>(/public/flowTokenBalance)\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
             "network_pins": []
         },
         "dependencies": [],
@@ -753,7 +756,7 @@ const templateMissing = `
         "interface": "asadf23234...fas234234",
         "messages": [],
         "cadence": {
-            "body": "import \"FlowTokenAA\"\n        transaction(amount: UFix64, to: Address) {\n            let vault: @FungibleToken.Vault\n            prepare(signer: AuthAccount) {\n                %%self.vault <- signer\n                .borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n                .withdraw(amount: amount)\n                self.vault <- FungibleToken.getVault(signer)\n            }\n            execute {\n                getAccount(to)\n                .getCapability(/public/flowTokenReceiver)!\n                .borrow<&{FungibleToken.Receiver}>()!\n                .deposit(from: <-self.vault)\n            }\n        }",
+            "body": "import \"FlowTokenAA\"\n        transaction(amount: UFix64, to: Address) {\n            let vault: @FungibleToken.Vault\n            prepare(signer: auth(Storage) &Account) {\n                %%self.vault <- signer.storage\n                .borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n                .withdraw(amount: amount)\n                self.vault <- FungibleToken.getVault(signer)\n            }\n            execute {\n                getAccount(to).capabilities\n                .borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n                .deposit(from: <-self.vault)\n            }\n        }",
             "network_pins": []
         },
         "dependencies": [

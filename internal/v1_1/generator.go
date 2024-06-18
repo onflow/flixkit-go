@@ -10,13 +10,14 @@ import (
 	"github.com/onflow/cadence/runtime/cmd"
 	"github.com/onflow/cadence/runtime/common"
 	"github.com/onflow/cadence/runtime/parser"
-	"github.com/onflow/flixkit-go/internal/contracts"
 	"github.com/onflow/flow-go-sdk"
-	"github.com/onflow/flowkit"
-	"github.com/onflow/flowkit/config"
-	"github.com/onflow/flowkit/gateway"
-	"github.com/onflow/flowkit/output"
+	"github.com/onflow/flowkit/v2"
+	"github.com/onflow/flowkit/v2/config"
+	"github.com/onflow/flowkit/v2/gateway"
+	"github.com/onflow/flowkit/v2/output"
 	"github.com/spf13/afero"
+
+	"github.com/onflow/flixkit-go/internal/contracts"
 )
 
 /*
@@ -31,65 +32,60 @@ type ContractInfos map[string]NetworkAddressMap
 
 type Generator struct {
 	deployedContracts []Contract
-	testnetClient     *flowkit.Flowkit
-	mainnetClient     *flowkit.Flowkit
+	clients           []*flowkit.Flowkit
 	template          *InteractionTemplate
 }
 
-func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger) (*Generator, error) {
+func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger, networks []config.Network) (*Generator, error) {
 	loader := afero.Afero{Fs: afero.NewOsFs()}
 
-	gwt, err := gateway.NewGrpcGateway(config.TestnetNetwork)
-	if err != nil {
-		return nil, fmt.Errorf("could not create grpc gateway for testnet %w", err)
-	}
+	var clients []*flowkit.Flowkit
+	for _, network := range networks {
+		gw, err := gateway.NewGrpcGateway(network)
+		if err != nil {
+			return nil, fmt.Errorf("could not create grpc gateway for %s %w", network.Name, err)
+		}
+		state, err := flowkit.Init(loader)
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize flowkit state %w", err)
+		}
 
-	gwm, err := gateway.NewGrpcGateway(config.MainnetNetwork)
-	if err != nil {
-		return nil, fmt.Errorf("could not create grpc gateway for mainnet %w", err)
+		client := flowkit.NewFlowkit(state, network, gw, logger)
+		clients = append(clients, client)
 	}
-
-	state, err := flowkit.Init(loader)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize flowkit state %w", err)
+	networkNames := make([]string, 0)
+	for _, network := range networks {
+		networkNames = append(networkNames, network.Name)
 	}
-
-	testnetClient := flowkit.NewFlowkit(state, config.TestnetNetwork, gwt, logger)
-	mainnetClient := flowkit.NewFlowkit(state, config.MainnetNetwork, gwm, logger)
 	// add core contracts to deployed contracts
 	cc := contracts.GetCoreContracts()
 	deployedContracts := make([]Contract, 0)
 	for contractName, c := range cc {
-		contract := Contract{
-			Contract: contractName,
-			Networks: []Network{
-				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
-				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
-				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
-			},
+		var nets []Network
+		for network, address := range c {
+			// if network is in user defined networks then add to deployed contracts
+			if isItemInArray(network, networkNames) {
+				addr := flow.HexToAddress(address)
+				nets = append(nets, Network{
+					Network: network,
+					Address: addr.HexWithPrefix(),
+				})
+			}
 		}
-		deployedContracts = append(deployedContracts, contract)
+		if len(nets) > 0 {
+			contract := Contract{
+				Contract: contractName,
+				Networks: nets,
+			}
+			deployedContracts = append(deployedContracts, contract)
+		}
 	}
-	// allow user contracts to override core contracts
-	for contractInfo, networks := range contractInfos {
-		contract := Contract{
-			Contract: contractInfo,
-			Networks: make([]Network, 0),
-		}
-		for network, address := range networks {
-			addr := flow.HexToAddress(address)
-			contract.Networks = append(contract.Networks, Network{
-				Network: network,
-				Address: "0x" + addr.Hex(),
-			})
-		}
-		deployedContracts = append(deployedContracts, contract)
-	}
+
+	deployedContracts = mergeContractsAndInfos(deployedContracts, contractInfos)
 
 	return &Generator{
 		deployedContracts: deployedContracts,
-		testnetClient:     testnetClient,
-		mainnetClient:     mainnetClient,
+		clients:           clients,
 		template:          &InteractionTemplate{},
 	}, nil
 }
@@ -133,7 +129,7 @@ func (g Generator) CreateTemplate(ctx context.Context, code string, preFill stri
 	}
 
 	// need to process dependencies before calculating network pins
-	_ = g.calculateNetworkPins(program)
+	_ = g.calculateNetworkPins()
 	id, _ := GenerateFlixID(g.template)
 	g.template.ID = id
 	templateJson, err := json.MarshalIndent(g.template, "", "    ")
@@ -142,11 +138,13 @@ func (g Generator) CreateTemplate(ctx context.Context, code string, preFill stri
 
 }
 
-func (g Generator) calculateNetworkPins(program *ast.Program) error {
-	networksOfInterest := []string{
-		config.MainnetNetwork.Name,
-		config.TestnetNetwork.Name,
+func (g Generator) calculateNetworkPins() error {
+	networksOfInterest := []string{}
+	// only interested in the client networks
+	for _, client := range g.clients {
+		networksOfInterest = append(networksOfInterest, client.Network().Name)
 	}
+
 	networkPins := make([]NetworkPin, 0)
 	for _, netName := range networksOfInterest {
 		cad, err := g.template.ReplaceCadenceImports(netName)
@@ -193,6 +191,15 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	return nil
 }
 
+func getNetworkClient(networkName string, clients []*flowkit.Flowkit) *flowkit.Flowkit {
+	for _, client := range clients {
+		if client.Network().Name == networkName {
+			return client
+		}
+	}
+	return nil
+}
+
 func (g *Generator) generateDependenceInfo(ctx context.Context, contractName string) ([]Network, error) {
 	// only support string import syntax
 	contractNetworks := g.LookupImportContractInfo(contractName)
@@ -205,12 +212,7 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 			Network: n.Network,
 			Address: n.Address,
 		}
-		var flowkit *flowkit.Flowkit
-		if n.Network == config.MainnetNetwork.Name && g.mainnetClient != nil {
-			flowkit = g.mainnetClient
-		} else if n.Network == config.TestnetNetwork.Name && g.testnetClient != nil {
-			flowkit = g.testnetClient
-		}
+		flowkit := getNetworkClient(n.Network, g.clients)
 		if n.DependencyPinBlockHeight == 0 && flowkit != nil {
 			block, _ := flowkit.Gateway().GetLatestBlock(ctx)
 			height := block.Height
@@ -303,4 +305,48 @@ func getAddressImports(code []byte, name string) []string {
 		}
 	}
 	return deps
+}
+
+// Helper function to merge ContractInfos into []Contract and add missing contracts
+func mergeContractsAndInfos(contracts []Contract, infos ContractInfos) []Contract {
+	// Track existing contracts for quick lookup
+	existingContracts := make(map[string]int)
+	for i, contract := range contracts {
+		existingContracts[contract.Contract] = i
+
+		if info, exists := infos[contract.Contract]; exists {
+			// Create a map to track existing networks for duplicate check
+			existingNetworks := make(map[string]bool)
+			for _, network := range contract.Networks {
+				existingNetworks[network.Network] = true
+			}
+
+			// Iterate over the networks in the ContractInfos
+			for network, address := range info {
+				if !existingNetworks[network] {
+					// If the network doesn't exist in the contract, add it
+					contracts[i].Networks = append(contracts[i].Networks, Network{
+						Network: network,
+						Address: address,
+					})
+				}
+			}
+		}
+	}
+
+	// Add contracts from infos that don't exist in the current contracts array
+	for contractName, networks := range infos {
+		if _, exists := existingContracts[contractName]; !exists {
+			newContract := Contract{Contract: contractName}
+			for network, address := range networks {
+				newContract.Networks = append(newContract.Networks, Network{
+					Network: network,
+					Address: address,
+				})
+			}
+			contracts = append(contracts, newContract)
+		}
+	}
+
+	return contracts
 }

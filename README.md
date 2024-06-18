@@ -140,7 +140,7 @@ fmt.Println(prettyJSON)
 	import "FlowToken"
 	transaction(amount: UFix64, to: Address) {
 		let vault: @FlowToken.Vault
-		prepare(signer: AuthAccount) {
+        prepare(signer: &Account) {
 		...
 		}
 	}

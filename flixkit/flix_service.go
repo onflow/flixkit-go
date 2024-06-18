@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/onflow/flixkit-go/internal"
+	"github.com/onflow/flowkit/v2/config"
 )
 
 type FlixService interface {
@@ -14,7 +15,7 @@ type FlixService interface {
 	// GenerateBinding returns the generated binding given the language
 	GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFile string) (string, error)
 	// GenerateTemplate returns the generated raw template
-	CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
+	CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string, networks []config.Network) (string, error)
 }
 
 // FlowInteractionTemplateCadence is the interface returned from Replacing imports, it provides helper methods to assist in executing the resulting Cadence.

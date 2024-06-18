@@ -5,10 +5,12 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
+
+	"github.com/stretchr/testify/assert"
+
 	"github.com/onflow/flixkit-go/internal/templates"
 	v1 "github.com/onflow/flixkit-go/internal/v1"
 	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
-	"github.com/stretchr/testify/assert"
 )
 
 var parsedTemplateTX = &v1.FlowInteractionTemplate{
@@ -30,7 +32,7 @@ var parsedTemplateTX = &v1.FlowInteractionTemplate{
 				},
 			},
 		},
-		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: AuthAccount) {\nself.vault <- signer\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to)\n.getCapability(/public/flowTokenReceiver)!\n.borrow<&{FungibleToken.Receiver}>()!\n.deposit(from: <-self.vault)\n}\n}",
+		Cadence: "import FungibleToken from 0xFUNGIBLETOKENADDRESS\ntransaction(amount: UFix64, to: Address) {\nlet vault: @FungibleToken.Vault\nprepare(signer: auth(Storage) &Account) {\nself.vault <- signer.storage\n.borrow<&{FungibleToken.Provider}>(from: /storage/flowTokenVault)!\n.withdraw(amount: amount)\n}\nexecute {\ngetAccount(to).capabilities\n.borrow<&{FungibleToken.Receiver}>(/public/flowTokenReceiver)!\n.deposit(from: <-self.vault)\n}\n}",
 		Dependencies: v1.Dependencies{
 			"0xFUNGIBLETOKENADDRESS": v1.Contracts{
 				"FungibleToken": v1.Networks{
@@ -99,7 +101,7 @@ var parsedTemplateScript = &v1.FlowInteractionTemplate{
 				},
 			},
 		},
-		Cadence: "pub fun main(x: Int, y: Int): Int { return x * y }",
+		Cadence: "access(all) fun main(x: Int, y: Int): Int { return x * y }",
 		Arguments: v1.Arguments{
 			"x": v1.Argument{
 				Index: 0,
@@ -148,7 +150,7 @@ var ArrayTypeScript = &v1.FlowInteractionTemplate{
 				},
 			},
 		},
-		Cadence: "pub fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
+		Cadence: "access(all) fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
 		Arguments: v1.Arguments{
 			"numbers": v1.Argument{
 				Index: 0,
@@ -173,7 +175,7 @@ var minimumTemplate = &v1.FlowInteractionTemplate{
 	Data: v1.Data{
 		Type:      "script",
 		Interface: "",
-		Cadence:   "pub fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
+		Cadence:   "access(all) fun main(numbers: [Int]): Int { var total = 1; for x in numbers { total = total * x }; return total }",
 		Arguments: v1.Arguments{
 			"numbers": v1.Argument{
 				Index: 0,
@@ -190,7 +192,7 @@ var minimumNoParamTemplate = &v1.FlowInteractionTemplate{
 	Data: v1.Data{
 		Type:      "script",
 		Interface: "",
-		Cadence:   "pub fun main(): Int { return 1 }",
+		Cadence:   "access(all) fun main(): Int { return 1 }",
 	},
 }
 
@@ -277,7 +279,7 @@ var minimumNoParamTemplateTS_SCRIPT = &v1_1.InteractionTemplate{
 		Type:      "script",
 		Interface: "",
 		Cadence: v1_1.Cadence{
-			Body:        "pub fun main(): Int { return 1 }",
+			Body:        "access(all) fun main(): Int { return 1 }",
 			NetworkPins: []v1_1.NetworkPin{},
 		},
 		Output: &v1_1.Parameter{
@@ -306,7 +308,7 @@ var minimumNoParamTemplateTS_TX = &v1_1.InteractionTemplate{
 		Type:      "transaction",
 		Interface: "",
 		Cadence: v1_1.Cadence{
-			Body:        "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n)\ntransaction() {\n\n  prepare(acct: AuthAccount) {\n     }\n\n  execute {\n   \n  }\n}\n",
+			Body:        "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n)\ntransaction() {\n\n  prepare(acct: &Account) {\n     }\n\n  execute {\n   \n  }\n}\n",
 			NetworkPins: []v1_1.NetworkPin{},
 		},
 	},
@@ -320,7 +322,7 @@ var minimumParamTemplateTS_SCRIPT = &v1_1.InteractionTemplate{
 		Type:      "script",
 		Interface: "",
 		Cadence: v1_1.Cadence{
-			Body:        "pub fun main(someNumber Int): Int { return 1 + someNumber }",
+			Body:        "access(all) fun main(someNumber Int): Int { return 1 + someNumber }",
 			NetworkPins: []v1_1.NetworkPin{},
 		},
 		Parameters: []v1_1.Parameter{
@@ -367,7 +369,7 @@ var minimumParamTemplateTS_TX = &v1_1.InteractionTemplate{
 		Type:      "transaction",
 		Interface: "",
 		Cadence: v1_1.Cadence{
-			Body:        "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n\tparameters: [\n\t\tParameter(\n\t\t\tname: \"greeting\", \n\t\t\ttitle: \"Greeting\", \n\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t)\n\t],\n)\ntransaction(greeting: String) {\n\n  prepare(acct: AuthAccount) {\n    log(acct.address)\n  }\n\n  execute {\n    HelloWorld.updateGreeting(newGreeting: greeting)\n  }\n}\n",
+			Body:        "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n\tparameters: [\n\t\tParameter(\n\t\t\tname: \"greeting\", \n\t\t\ttitle: \"Greeting\", \n\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t)\n\t],\n)\ntransaction(greeting: String) {\n\n  prepare(acct: &Account) {\n    log(acct.address)\n  }\n\n  execute {\n    HelloWorld.updateGreeting(newGreeting: greeting)\n  }\n}\n",
 			NetworkPins: []v1_1.NetworkPin{},
 		},
 		Messages: []v1_1.Message{
@@ -469,7 +471,7 @@ const ReadTokenScript = `
         "interface": "",
         "messages": null,
         "cadence": {
-            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\npub fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
+            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\naccess(all) fun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account\n        .getCapability(/public/flowTokenBalance)\n        .borrow\u003c\u0026FlowToken.Vault{FungibleToken.Balance}\u003e()\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
             "network_pins": [
                 {
                     "network": "mainnet",

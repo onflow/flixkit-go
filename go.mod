@@ -7,9 +7,9 @@ toolchain go1.22.3
 require (
 	github.com/ethereum/go-ethereum v1.13.10
 	github.com/hexops/autogold/v2 v2.2.1
-	github.com/onflow/cadence v1.0.0-preview.49
-	github.com/onflow/flow-go-sdk v1.0.0-preview.51
-	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.31
+	github.com/onflow/cadence v1.0.0-preview.50
+	github.com/onflow/flow-go-sdk v1.0.0-preview.53
+	github.com/onflow/flowkit/v2 v2.0.0-stable-cadence-alpha.32
 	github.com/spf13/afero v1.10.0
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.9.0
@@ -154,10 +154,10 @@ require (
 	github.com/onflow/crypto v0.25.2 // indirect
 	github.com/onflow/flow-core-contracts/lib/go/contracts v1.3.1 // indirect
 	github.com/onflow/flow-core-contracts/lib/go/templates v1.3.1 // indirect
-	github.com/onflow/flow-emulator v1.0.0-preview.40 // indirect
+	github.com/onflow/flow-emulator v1.0.0-preview.41 // indirect
 	github.com/onflow/flow-ft/lib/go/contracts v1.0.0 // indirect
 	github.com/onflow/flow-ft/lib/go/templates v1.0.0 // indirect
-	github.com/onflow/flow-go v0.37.7-0.20240822174309-8b4fff2114d4 // indirect
+	github.com/onflow/flow-go v0.37.7-0.20240826193109-e211841b59f5 // indirect
 	github.com/onflow/flow-nft/lib/go/contracts v1.2.1 // indirect
 	github.com/onflow/flow-nft/lib/go/templates v1.2.0 // indirect
 	github.com/onflow/flow/protobuf/go/flow v0.4.5 // indirect

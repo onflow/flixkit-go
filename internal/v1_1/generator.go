@@ -170,6 +170,13 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	// fill in dependence information
 	g.template.Data.Dependencies = make([]Dependency, 0)
 	for _, imp := range imports {
+
+		// Built-in contracts imports are represented with identifier location
+		_, isBuiltInContract := imp.Location.(common.IdentifierLocation)
+		if isBuiltInContract {
+			continue
+		}
+
 		contractName := imp.Location.String()
 		networks, err := g.generateDependenceInfo(ctx, contractName)
 		if err != nil {

@@ -97,23 +97,6 @@ func TestValidImports(t *testing.T) {
 				},
 			},
 		},
-		{
-			Contract: "Joe",
-			Networks: []Network{
-				{
-					Network: "testnet",
-					Address: "0x0000000000000003",
-				},
-				{
-					Network: "mainnet",
-					Address: "0x0000000000000003",
-				},
-				{
-					Network: "emulator",
-					Address: "0x0000000000000003",
-				},
-			},
-		},
 	}
 
 	generator := Generator{
@@ -122,9 +105,9 @@ func TestValidImports(t *testing.T) {
 
 	assert := assert.New(t)
 	code := `
-	import Alice
-	import "Bob"
-	import Joe from 0x0000000000000003
+	import "Alice"
+	import Bob from 0x0000000000000002
+	import Joe
 
 	access(all)
 	fun main(): Void {}

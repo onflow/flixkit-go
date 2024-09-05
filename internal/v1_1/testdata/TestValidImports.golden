@@ -1,13 +1,13 @@
-{
+`{
     "f_type": "InteractionTemplate",
     "f_version": "1.1.0",
-    "id": "7a7046a0687195fa5a5dd3838fbb9a707e2b9f699e56eac9999b5cfea02b3d09",
+    "id": "585d2dd4fc3523ba140fbe0f798c07f1d4c3792aaed72a3b0d7c32c23a6457e7",
     "data": {
         "type": "script",
         "interface": "",
         "messages": null,
         "cadence": {
-            "body": "\n\timport Alice\n\timport \"Bob\"\n\timport \"Joe\"\n\n\taccess(all)\n\tfun main(): Void {}\n",
+            "body": "\n\timport \"Alice\"\n\timport \"Bob\"\n\timport Joe\n\n\taccess(all)\n\tfun main(): Void {}\n",
             "network_pins": []
         },
         "dependencies": [
@@ -58,30 +58,6 @@
                         ]
                     }
                 ]
-            },
-            {
-                "contracts": [
-                    {
-                        "contract": "Joe",
-                        "networks": [
-                            {
-                                "network": "testnet",
-                                "address": "0x0000000000000003",
-                                "dependency_pin_block_height": 0
-                            },
-                            {
-                                "network": "mainnet",
-                                "address": "0x0000000000000003",
-                                "dependency_pin_block_height": 0
-                            },
-                            {
-                                "network": "emulator",
-                                "address": "0x0000000000000003",
-                                "dependency_pin_block_height": 0
-                            }
-                        ]
-                    }
-                ]
             }
         ],
         "parameters": null,
@@ -92,4 +68,4 @@
             "messages": []
         }
     }
-}
+}`

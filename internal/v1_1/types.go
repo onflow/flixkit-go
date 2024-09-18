@@ -588,18 +588,6 @@ func convertToBytes(value interface{}) ([]byte, error) {
 	}
 }
 
-func ExtractContractName(importStr string) (string, error) {
-	// Create a regex pattern to find the contract name inside the quotes
-	pattern := regexp.MustCompile(`import "([^"]+)"`)
-	matches := pattern.FindStringSubmatch(importStr)
-
-	if len(matches) >= 2 {
-		return matches[1], nil
-	}
-
-	return "", fmt.Errorf("no contract name found in string")
-}
-
 func isItemInArray[T comparable](item T, slice []T) bool {
 	for _, s := range slice {
 		if s == item {

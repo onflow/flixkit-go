@@ -3,7 +3,7 @@ package flixkit
 import (
 	"context"
 
-	"github.com/onflow/flixkit-go/internal"
+	"github.com/onflow/flixkit-go/v2/internal"
 	"github.com/onflow/flowkit/v2/config"
 )
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/onflow/flixkit-go/internal/contracts"
+	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 type Network struct {

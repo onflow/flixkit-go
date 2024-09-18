@@ -11,8 +11,8 @@ import (
 	"github.com/onflow/flowkit/v2/config"
 	"github.com/onflow/flowkit/v2/output"
 
-	v1 "github.com/onflow/flixkit-go/internal/v1"
-	v1_1 "github.com/onflow/flixkit-go/internal/v1_1"
+	v1 "github.com/onflow/flixkit-go/v2/internal/v1"
+	v1_1 "github.com/onflow/flixkit-go/v2/internal/v1_1"
 )
 
 type FileReader interface {

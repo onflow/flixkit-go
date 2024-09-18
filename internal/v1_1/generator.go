@@ -17,7 +17,7 @@ import (
 	"github.com/onflow/flowkit/v2/output"
 	"github.com/spf13/afero"
 
-	"github.com/onflow/flixkit-go/internal/contracts"
+	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 /*

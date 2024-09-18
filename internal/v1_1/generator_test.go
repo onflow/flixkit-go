@@ -9,7 +9,7 @@ import (
 	"github.com/onflow/flowkit/v2/config"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/onflow/flixkit-go/internal/contracts"
+	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 func TestHelloScript(t *testing.T) {

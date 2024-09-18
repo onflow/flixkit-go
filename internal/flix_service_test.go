@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	v1 "github.com/onflow/flixkit-go/internal/v1"
-	"github.com/onflow/flixkit-go/internal/v1_1"
+	v1 "github.com/onflow/flixkit-go/v2/internal/v1"
+	"github.com/onflow/flixkit-go/v2/internal/v1_1"
 )
 
 var flix_template = `{

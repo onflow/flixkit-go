@@ -11,9 +11,10 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/onflow/cadence/runtime/ast"
-	"github.com/onflow/flixkit-go/v2/internal/contracts"
+	"github.com/onflow/cadence/ast"
 	"golang.org/x/crypto/sha3"
+
+	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 type InteractionTemplate struct {

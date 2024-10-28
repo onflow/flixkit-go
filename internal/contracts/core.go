@@ -17,6 +17,11 @@ func GetCoreContracts() map[string]map[string]string {
 			config.TestnetNetwork.Name:  "0x631e88ae7f1d7c20",
 			config.EmulatorNetwork.Name: "0xf8d6e0586b0a20c7",
 		},
+		"FungibleTokenMetadataViews": {
+			config.MainnetNetwork.Name:  "0xf233dcee88fe0abe",
+			config.TestnetNetwork.Name:  "0x9a0766d93b6608b7",
+			config.EmulatorNetwork.Name: "0xee82856bf20e2aa6",
+		},
 		"MetadataViews": {
 			config.MainnetNetwork.Name:  "0x1d7e57aa55817448",
 			config.TestnetNetwork.Name:  "0x631e88ae7f1d7c20",
@@ -50,6 +55,16 @@ func GetCoreContracts() map[string]map[string]string {
 		"ViewResolver": {
 			config.MainnetNetwork.Name:  "0xd8a7e05a7ac670c0",
 			config.TestnetNetwork.Name:  "0x294e44e1ec6993c6",
+			config.EmulatorNetwork.Name: "0xf8d6e0586b0a20c7",
+		},
+		"EVM": {
+			config.MainnetNetwork.Name:  "0x1e4aa0b87d10b141",
+			config.TestnetNetwork.Name:  "0xdfc20aee650fcbdf",
+			config.EmulatorNetwork.Name: "0xf8d6e0586b0a20c7",
+		},
+		"Burner": {
+			config.MainnetNetwork.Name:  "0xf233dcee88fe0abe",
+			config.TestnetNetwork.Name:  "0x9a0766d93b6608b7",
 			config.EmulatorNetwork.Name: "0xf8d6e0586b0a20c7",
 		},
 	}

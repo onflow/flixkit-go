@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/onflow/cadence/ast"
-	"github.com/onflow/cadence/cmd"
-	cadenceCommon "github.com/onflow/cadence/common"
-	"github.com/onflow/cadence/parser"
+	"github.com/onflow/cadence/runtime/ast"
+	"github.com/onflow/cadence/runtime/cmd"
+	cadenceCommon "github.com/onflow/cadence/runtime/common"
+	"github.com/onflow/cadence/runtime/parser"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/access/grpc"
 
@@ -103,7 +103,10 @@ func (g Generator) calculateNetworkPins() error {
 	networksOfInterest := []string{}
 	// only interested in the client networks
 	for _, c := range g.clients {
-		params, _ := c.GetLatestBlockHeader(context.Background(), true)
+		params, err := c.GetNetworkParameters(context.Background())
+		if err != nil {
+			continue
+		}
 		networksOfInterest = append(networksOfInterest, params.ChainID.String())
 	}
 
@@ -273,7 +276,7 @@ func getAddressImports(code []byte, name string) []string {
 	for _, imp := range program.ImportDeclarations() {
 		address, isAddressImport := imp.Location.(cadenceCommon.AddressLocation)
 		if isAddressImport {
-			adr := address.Address.Hex()
+			adr := address.Address.HexWithPrefix()
 			impName := imp.Identifiers[0].Identifier
 			deps = append(deps, fmt.Sprintf("%s.%s", adr, impName))
 		}

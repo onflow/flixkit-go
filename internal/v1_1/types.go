@@ -10,7 +10,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/onflow/cadence/ast"
+	"github.com/onflow/cadence/runtime/ast"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"

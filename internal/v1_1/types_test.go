@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/cadence/parser"
+	"github.com/onflow/cadence/runtime/parser"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -14,7 +14,6 @@ import (
 	"github.com/onflow/flow-go-sdk/access/grpc"
 
 	"github.com/onflow/flixkit-go/v2/internal/common"
-	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 /*
@@ -42,35 +41,8 @@ func NewTemplateGenerator(contractInfos ContractInfos, logger common.Logger, net
 		}
 		clients = append(clients, client)
 	}
-	networkNames := make([]string, 0)
-	for _, network := range networks {
-		networkNames = append(networkNames, network.Name)
-	}
-	// add core contracts to deployed contracts
-	cc := contracts.GetCoreContracts()
-	deployedContracts := make([]Contract, 0)
-	for contractName, c := range cc {
-		var nets []Network
-		for network, address := range c {
-			// if network is in user defined networks then add to deployed contracts
-			if isItemInArray(network, networkNames) {
-				addr := flow.HexToAddress(address)
-				nets = append(nets, Network{
-					Network: network,
-					Address: addr.HexWithPrefix(),
-				})
-			}
-		}
-		if len(nets) > 0 {
-			contract := Contract{
-				Contract: contractName,
-				Networks: nets,
-			}
-			deployedContracts = append(deployedContracts, contract)
-		}
-	}
 
-	deployedContracts = mergeContractsAndInfos(deployedContracts, contractInfos)
+	deployedContracts := contractInfosToContracts(contractInfos)
 
 	return &Generator{
 		deployedContracts: deployedContracts,
@@ -309,46 +281,26 @@ func getAddressImports(code []byte, name string) []string {
 	return deps
 }
 
-// Helper function to merge ContractInfos into []Contract and add missing contracts
-func mergeContractsAndInfos(contracts []Contract, infos ContractInfos) []Contract {
-	// Track existing contracts for quick lookup
-	existingContracts := make(map[string]int)
-	for i, contract := range contracts {
-		existingContracts[contract.Contract] = i
+// Add this helper function
+func contractInfosToContracts(infos ContractInfos) []Contract {
+	contracts := make([]Contract, 0)
 
-		if info, exists := infos[contract.Contract]; exists {
-			// Create a map to track existing networks for duplicate check
-			existingNetworks := make(map[string]bool)
-			for _, network := range contract.Networks {
-				existingNetworks[network.Network] = true
-			}
-
-			// Iterate over the networks in the ContractInfos
-			for network, address := range info {
-				if !existingNetworks[network] {
-					addr := flow.HexToAddress(address)
-					// If the network doesn't exist in the contract, add it
-					contracts[i].Networks = append(contracts[i].Networks, Network{
-						Network: network,
-						Address: addr.HexWithPrefix(),
-					})
-				}
-			}
-		}
-	}
-
-	// Add contracts from infos that don't exist in the current contracts array
 	for contractName, networks := range infos {
-		if _, exists := existingContracts[contractName]; !exists {
-			newContract := Contract{Contract: contractName}
-			for network, address := range networks {
-				newContract.Networks = append(newContract.Networks, Network{
-					Network: network,
-					Address: address,
-				})
-			}
-			contracts = append(contracts, newContract)
+		contract := Contract{
+			Contract: contractName,
+			Networks: make([]Network, 0),
 		}
+
+		for networkName, address := range networks {
+			addr := flow.HexToAddress(address)
+			network := Network{
+				Network: networkName,
+				Address: addr.HexWithPrefix(),
+			}
+			contract.Networks = append(contract.Networks, network)
+		}
+
+		contracts = append(contracts, contract)
 	}
 
 	return contracts

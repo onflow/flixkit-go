@@ -8,15 +8,12 @@ import (
 
 	"github.com/onflow/cadence/ast"
 	"github.com/onflow/cadence/cmd"
-	"github.com/onflow/cadence/common"
+	cadenceCommon "github.com/onflow/cadence/common"
 	"github.com/onflow/cadence/parser"
 	"github.com/onflow/flow-go-sdk"
-	"github.com/onflow/flowkit/v2"
-	"github.com/onflow/flowkit/v2/config"
-	"github.com/onflow/flowkit/v2/gateway"
-	"github.com/onflow/flowkit/v2/output"
-	"github.com/spf13/afero"
+	"github.com/onflow/flow-go-sdk/access/grpc"
 
+	"github.com/onflow/flixkit-go/v2/internal/common"
 	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
@@ -32,25 +29,17 @@ type ContractInfos map[string]NetworkAddressMap
 
 type Generator struct {
 	deployedContracts []Contract
-	clients           []*flowkit.Flowkit
+	clients           []*grpc.Client
 	template          *InteractionTemplate
 }
 
-func NewTemplateGenerator(contractInfos ContractInfos, logger output.Logger, networks []config.Network) (*Generator, error) {
-	loader := afero.Afero{Fs: afero.NewOsFs()}
-
-	var clients []*flowkit.Flowkit
+func NewTemplateGenerator(contractInfos ContractInfos, logger common.Logger, networks []common.NetworkConfig) (*Generator, error) {
+	var clients []*grpc.Client
 	for _, network := range networks {
-		gw, err := gateway.NewGrpcGateway(network)
+		client, err := grpc.NewClient(network.Host)
 		if err != nil {
-			return nil, fmt.Errorf("could not create grpc gateway for %s %w", network.Name, err)
+			return nil, fmt.Errorf("could not create client for %s: %w", network.Name, err)
 		}
-		state, err := flowkit.Init(loader)
-		if err != nil {
-			return nil, fmt.Errorf("could not initialize flowkit state %w", err)
-		}
-
-		client := flowkit.NewFlowkit(state, network, gw, logger)
 		clients = append(clients, client)
 	}
 	networkNames := make([]string, 0)
@@ -141,8 +130,9 @@ func (g Generator) CreateTemplate(ctx context.Context, code string, preFill stri
 func (g Generator) calculateNetworkPins() error {
 	networksOfInterest := []string{}
 	// only interested in the client networks
-	for _, client := range g.clients {
-		networksOfInterest = append(networksOfInterest, client.Network().Name)
+	for _, c := range g.clients {
+		params, _ := c.GetLatestBlockHeader(context.Background(), true)
+		networksOfInterest = append(networksOfInterest, params.ChainID.String())
 	}
 
 	networkPins := make([]NetworkPin, 0)
@@ -172,7 +162,7 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	for _, imp := range imports {
 
 		// Built-in contracts imports are represented with identifier location
-		_, isBuiltInContract := imp.Location.(common.IdentifierLocation)
+		_, isBuiltInContract := imp.Location.(cadenceCommon.IdentifierLocation)
 		if isBuiltInContract {
 			continue
 		}
@@ -195,10 +185,15 @@ func (g Generator) processDependencies(ctx context.Context, program *ast.Program
 	return nil
 }
 
-func getNetworkClient(networkName string, clients []*flowkit.Flowkit) *flowkit.Flowkit {
-	for _, client := range clients {
-		if client.Network().Name == networkName {
-			return client
+func getNetworkClient(networkName string, clients []*grpc.Client) *grpc.Client {
+	for _, c := range clients {
+		netParams, err := c.GetNetworkParameters(context.Background())
+		if err != nil {
+			continue
+		}
+		// TODO handle case where network name is not a chain id
+		if netParams.ChainID.String() == networkName {
+			return c
 		}
 	}
 	return nil
@@ -216,15 +211,15 @@ func (g *Generator) generateDependenceInfo(ctx context.Context, contractName str
 			Network: n.Network,
 			Address: n.Address,
 		}
-		flowkit := getNetworkClient(n.Network, g.clients)
-		if n.DependencyPinBlockHeight == 0 && flowkit != nil {
-			block, err := flowkit.Gateway().GetLatestBlock(ctx)
+		c := getNetworkClient(n.Network, g.clients)
+		if n.DependencyPinBlockHeight == 0 && c != nil {
+			block, err := c.GetLatestBlockHeader(ctx, true)
 			if err != nil {
 				return nil, err
 			}
 			height := block.Height
 
-			details, err := g.GenerateDepPinDepthFirst(ctx, flowkit, n.Address, contractName, height)
+			details, err := g.GenerateDepPinDepthFirst(ctx, c, n.Address, contractName, height)
 			if err != nil {
 				return nil, err
 			}
@@ -246,7 +241,7 @@ func (g *Generator) LookupImportContractInfo(contractName string) []Network {
 	return nil
 }
 
-func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, height uint64) (details *PinDetail, err error) {
+func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *grpc.Client, address string, name string, height uint64) (details *PinDetail, err error) {
 	memoize := make(map[string]PinDetail)
 	networkPinDetail, err := generateDependencyNetworks(ctx, flowkit, address, name, memoize, height)
 	if err != nil {
@@ -256,7 +251,7 @@ func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *flowk
 	return networkPinDetail, nil
 }
 
-func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, address string, name string, cache map[string]PinDetail, height uint64) (*PinDetail, error) {
+func generateDependencyNetworks(ctx context.Context, c *grpc.Client, address string, name string, cache map[string]PinDetail, height uint64) (*PinDetail, error) {
 	addr := flow.HexToAddress(address)
 	identifier := fmt.Sprintf("A.%s.%s", addr.Hex(), name)
 	pinDetail, ok := cache[identifier]
@@ -264,7 +259,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 		return &pinDetail, nil
 	}
 
-	account, err := flowkit.GetAccount(ctx, addr)
+	account, err := c.GetAccount(ctx, addr)
 	if err != nil {
 		return nil, err
 	}
@@ -282,7 +277,7 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 	for _, imp := range imports {
 		split := strings.Split(imp, ".")
 		address, name := split[0], split[1]
-		dep, err := generateDependencyNetworks(ctx, flowkit, address, name, cache, height)
+		dep, err := generateDependencyNetworks(ctx, c, address, name, cache, height)
 		if err != nil {
 			return nil, err
 		}
@@ -300,11 +295,11 @@ func generateDependencyNetworks(ctx context.Context, flowkit *flowkit.Flowkit, a
 
 func getAddressImports(code []byte, name string) []string {
 	deps := []string{}
-	codes := map[common.Location][]byte{}
-	location := common.StringLocation(name)
+	codes := map[cadenceCommon.Location][]byte{}
+	location := cadenceCommon.StringLocation(name)
 	program, _ := cmd.PrepareProgram(code, location, codes)
 	for _, imp := range program.ImportDeclarations() {
-		address, isAddressImport := imp.Location.(common.AddressLocation)
+		address, isAddressImport := imp.Location.(cadenceCommon.AddressLocation)
 		if isAddressImport {
 			adr := address.Address.Hex()
 			impName := imp.Identifiers[0].Identifier
@@ -331,10 +326,11 @@ func mergeContractsAndInfos(contracts []Contract, infos ContractInfos) []Contrac
 			// Iterate over the networks in the ContractInfos
 			for network, address := range info {
 				if !existingNetworks[network] {
+					addr := flow.HexToAddress(address)
 					// If the network doesn't exist in the contract, add it
 					contracts[i].Networks = append(contracts[i].Networks, Network{
 						Network: network,
-						Address: address,
+						Address: addr.HexWithPrefix(),
 					})
 				}
 			}

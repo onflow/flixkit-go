@@ -6,10 +6,7 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/flowkit/v2/config"
 	"github.com/stretchr/testify/assert"
-
-	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 func TestHelloScript(t *testing.T) {
@@ -180,18 +177,15 @@ func TestTransactionValue(t *testing.T) {
 }
 
 func TestTransferFlowTransaction(t *testing.T) {
-	cs := []Contract{}
-	cc := contracts.GetCoreContracts()
-	for contractName, c := range cc {
-		contract := Contract{
-			Contract: contractName,
+	cs := []Contract{
+		{
+			Contract: "FlowToken",
 			Networks: []Network{
-				{Network: config.MainnetNetwork.Name, Address: c[config.MainnetNetwork.Name]},
-				{Network: config.TestnetNetwork.Name, Address: c[config.TestnetNetwork.Name]},
-				{Network: config.EmulatorNetwork.Name, Address: c[config.EmulatorNetwork.Name]},
+				{Network: "mainnet", Address: "0x1654653399040a61"},
+				{Network: "testnet", Address: "0x7e60df042a9c0868"},
+				{Network: "emulator", Address: "0x0ae53cb6e3f42a79"},
 			},
-		}
-		cs = append(cs, contract)
+		},
 	}
 	// fill in top level dependencies for the generator
 	generator := &Generator{

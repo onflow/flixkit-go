@@ -8,9 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/onflow/flowkit/v2/config"
-	"github.com/onflow/flowkit/v2/output"
-
+	"github.com/onflow/flixkit-go/v2/internal/common"
 	v1 "github.com/onflow/flixkit-go/v2/internal/v1"
 	v1_1 "github.com/onflow/flixkit-go/v2/internal/v1_1"
 )
@@ -22,7 +20,7 @@ type FileReader interface {
 type FlixServiceConfig struct {
 	FlixServerURL string
 	FileReader    FileReader
-	Logger        output.Logger
+	Logger        common.Logger
 }
 
 func NewFlixService(config *FlixServiceConfig) flixService {
@@ -50,6 +48,7 @@ type FlowInteractionTemplateExecution struct {
 Deployed contracts to network addresses
 */
 type NetworkAddressMap = v1_1.NetworkAddressMap
+type NetworkConfig = common.NetworkConfig
 
 /*
 contract name associated with network information
@@ -190,7 +189,7 @@ func (s flixService) GetTemplateAndCreateBinding(ctx context.Context, templateNa
 	return gen.Create(template, relativeTemplateLocation)
 }
 
-func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string, networks []config.Network) (string, error) {
+func (s flixService) CreateTemplate(ctx context.Context, deployedContracts ContractInfos, code string, preFill string, networks []common.NetworkConfig) (string, error) {
 	template, _, _ := s.GetTemplate(ctx, preFill)
 	var gen *v1_1.Generator
 	var err2 error

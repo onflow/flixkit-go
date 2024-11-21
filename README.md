@@ -26,7 +26,7 @@ GetTemplateAndReplaceImports(ctx context.Context, templateName string, network s
 // GenerateBinding returns the generated binding given the language
 GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFile string) (string, error)
 // GenerateTemplate returns the generated raw template
-CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
+CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string, networks) (string, error)
 ```
 
 ## Usage

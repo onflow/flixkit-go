@@ -216,9 +216,9 @@ func (g *Generator) LookupImportContractInfo(contractName string) []Network {
 	return nil
 }
 
-func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, flowkit *grpc.Client, address string, name string, height uint64) (details *PinDetail, err error) {
+func (g *Generator) GenerateDepPinDepthFirst(ctx context.Context, clnt *grpc.Client, address string, name string, height uint64) (details *PinDetail, err error) {
 	memoize := make(map[string]PinDetail)
-	networkPinDetail, err := generateDependencyNetworks(ctx, flowkit, address, name, memoize, height)
+	networkPinDetail, err := generateDependencyNetworks(ctx, clnt, address, name, memoize, height)
 	if err != nil {
 		return nil, err
 	}

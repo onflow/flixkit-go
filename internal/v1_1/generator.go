@@ -166,8 +166,8 @@ func getNetworkClient(networkName string, clients []*grpc.Client) *grpc.Client {
 		if err != nil {
 			continue
 		}
-		// TODO handle case where network name is not a chain id
-		if netParams.ChainID.String() == networkName {
+		// chain id contains network name like "flow-testnet" contains "testnet"
+		if strings.Contains(netParams.ChainID.String(), networkName) {
 			return c
 		}
 	}

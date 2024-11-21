@@ -2,9 +2,9 @@ package common
 
 // Logger interface for consistent logging across packages
 type Logger interface {
-	Debug(args ...interface{})
-	Info(args ...interface{})
-	Error(args ...interface{})
+	Debug(string)
+	Info(string)
+	Error(string)
 }
 
 // NetworkConfig holds network connection configuration

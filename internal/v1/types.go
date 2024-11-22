@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
-
-	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 type Network struct {
@@ -79,28 +77,43 @@ func ParseFlix(template string) (*FlowInteractionTemplate, error) {
 func (t *FlowInteractionTemplate) ReplaceCadenceImports(networkName string) (string, error) {
 	var cadence = t.Data.Cadence
 
-	for dependencyAddress, c := range t.Data.Dependencies {
-		for contractName, networks := range c {
-			var networkAddress string
-			network, ok := networks[networkName]
-			networkAddress = network.Address
-			if !ok {
-				coreContractAddress := contracts.GetCoreContractForNetwork(contractName, networkName)
-				if coreContractAddress == "" {
-					return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
-				}
-				networkAddress = coreContractAddress
-			}
+	// Compile regular expression to match imports
+	re := regexp.MustCompile(`import\s*(\w+)\s*from\s*(0x\w+)`)
+	matches := re.FindAllStringSubmatch(cadence, -1)
 
-			pattern := fmt.Sprintf(`import\s*%s\s*from\s*%s`, contractName, dependencyAddress)
-			re, err := regexp.Compile(pattern)
-			if err != nil {
-				return "", fmt.Errorf("invalid regex pattern: %v", err)
-			}
-
-			replacement := fmt.Sprintf("import %s from %s", contractName, networkAddress)
-			cadence = re.ReplaceAllString(t.Data.Cadence, replacement)
+	for _, match := range matches {
+		if len(match) != 3 {
+			continue
 		}
+		contractName := match[1]
+		dependencyAddress := match[2]
+
+		// Check if dependency exists
+		contracts, ok := t.Data.Dependencies[dependencyAddress]
+		if !ok {
+			return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+		}
+
+		// Check if contract exists in dependency
+		networks, ok := contracts[contractName]
+		if !ok {
+			return "", fmt.Errorf("contract %s not found in dependencies", contractName)
+		}
+
+		// Check if network exists for contract
+		network, ok := networks[networkName]
+		if !ok {
+			return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
+		}
+
+		pattern := fmt.Sprintf(`import\s*%s\s*from\s*%s`, contractName, dependencyAddress)
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			return "", fmt.Errorf("invalid regex pattern: %v", err)
+		}
+
+		replacement := fmt.Sprintf("import %s from %s", contractName, network.Address)
+		cadence = re.ReplaceAllString(cadence, replacement)
 	}
 
 	return cadence, nil

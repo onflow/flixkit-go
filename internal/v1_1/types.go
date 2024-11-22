@@ -10,11 +10,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/onflow/cadence/ast"
+	"github.com/onflow/cadence/runtime/ast"
+	"github.com/onflow/flow-go-sdk"
+	"github.com/onflow/go-ethereum/rlp"
 	"golang.org/x/crypto/sha3"
-
-	"github.com/onflow/flixkit-go/v2/internal/contracts"
 )
 
 type InteractionTemplate struct {
@@ -183,12 +182,10 @@ func (t *InteractionTemplate) ReplaceCadenceImports(networkName string) (string,
 		}
 
 		if dependencyAddress == "" {
-			dependencyAddress = contracts.GetCoreContractForNetwork(contractName, networkName)
-			if dependencyAddress == "" {
-				return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
-			}
+			return "", fmt.Errorf("network %s not found for contract %s in dependencies", networkName, contractName)
 		}
-		cadence = replaceImport(cadence, contractName, dependencyAddress)
+		dAddress := flow.HexToAddress(dependencyAddress)
+		cadence = replaceImport(cadence, contractName, dAddress.HexWithPrefix())
 	}
 
 	return cadence, nil

@@ -26,7 +26,7 @@ GetTemplateAndReplaceImports(ctx context.Context, templateName string, network s
 // GenerateBinding returns the generated binding given the language
 GetTemplateAndCreateBinding(ctx context.Context, templateName string, lang string, destFile string) (string, error)
 // GenerateTemplate returns the generated raw template
-CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string) (string, error)
+CreateTemplate(ctx context.Context, contractInfos ContractInfos, code string, preFill string, networks) (string, error)
 ```
 
 ## Usage
@@ -118,7 +118,7 @@ prettyJSON, err := flixService.CreateTemplate(ctx, depContracts, string(code), p
 
 fmt.Println(prettyJSON)
 ```
-- `contractInfos` is an array of v1_1.Contract struct. This provides the network information about the deployed contracts that are dependencies in the FLIX Cadence code.
+- `contractInfos` is an array of v1_1.Contract struct. This provides the network information about the deployed contracts that are dependencies in the FLIX Cadence code. This is used to replace the import statements in the Cadence code with the actual deployed contract addresses. These must include core contracts like FlowToken, FungibleToken, NonFungibleToken, etc.
 - `code` is the actual Cadence code the template is based on
 - `preFilled` is a partially filled out FLIX template. This can be a template name, template id, url or local file. Alternatively to using a prefilled template, the Cadence itself can provide metadata using a FLIX specific Cadence pragma, more on that below, [See Cadence Doc Flip](https://github.com/onflow/flips/blob/main/application/20230406-interaction-template-cadence-doc.md)
 

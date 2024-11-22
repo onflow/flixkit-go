@@ -5,9 +5,42 @@ import (
 	"testing"
 
 	"github.com/hexops/autogold/v2"
-	"github.com/onflow/cadence/parser"
+	"github.com/onflow/cadence/runtime/parser"
 	"github.com/stretchr/testify/assert"
 )
+
+var templateWithDepsMissingLeading0x = `
+{
+	"f_type": "InteractionTemplate",
+	"f_version": "1.1.0",
+	"id": "",
+	"data": {
+		"type": "transaction",
+		"interface": "",
+		"messages": [],
+		"cadence": {
+			"body": "import \"HelloWorld\"\n\n#interaction (\n  version: \"1.1.0\",\n\ttitle: \"Update Greeting\",\n\tdescription: \"Update the greeting on the HelloWorld contract\",\n\tlanguage: \"en-US\",\n\tparameters: [\n\t\tParameter(\n\t\t\tname: \"greeting\", \n\t\t\ttitle: \"Greeting\", \n\t\t\tdescription: \"The greeting to set on the HelloWorld contract\"\n\t\t)\n\t],\n)\ntransaction(greeting: String) {\n\n  prepare(acct: &Account) {\n    log(acct.address)\n  }\n\n  execute {\n    HelloWorld.updateGreeting(newGreeting: greeting)\n  }\n}\n",
+			"network_pins": []
+		},
+		"dependencies": [
+			{
+				"contracts": [
+					{
+						"contract": "HelloWorld",
+						"networks": [
+							{
+								"network": "mainnet",
+								"address": "e15193734357cf5c"
+							}
+						]
+					}
+				]
+			}
+		],
+		"parameters": []
+	}
+}
+`
 
 var pragmaWithParameters = `
 #interaction(
@@ -727,25 +760,6 @@ const templateMultipleImports = `
     }
 }
 `
-const templateMultipleCoreImports = `
-{
-    "f_type": "InteractionTemplate",
-    "f_version": "1.1.0",
-    "id": "29d03aafbbb5a02e0d5f4ffee685c12494915410812305c2858008d3e2902b72",
-    "data": {
-        "type": "script",
-        "interface": "",
-        "messages": null,
-        "cadence": {
-            "body": "import \"FungibleToken\"\nimport \"FlowToken\"\n\naccess(all)\nfun main(address: Address): UFix64 {\n    let account = getAccount(address)\n\n    let vaultRef = account.capabilities\n        .borrow<&FlowToken.Vault>(/public/flowTokenBalance)\n        ?? panic(\"Could not borrow balance reference to the Vault\")\n\n    return vaultRef.balance\n}\n",
-            "network_pins": []
-        },
-        "dependencies": [],
-        "parameters": []
-    }
-}
-`
-
 const templateMissing = `
 {
     "f_type": "InteractionTemplate",
@@ -841,8 +855,9 @@ func TestGetAndReplaceCadenceImportsMultipleImports(t *testing.T) {
 
 }
 
-func TestGetAndReplaceCadenceImportsMultipleCoreImports(t *testing.T) {
-	template, err := ParseFlix(templateMultipleCoreImports)
+func TestReplaceCadenceImports(t *testing.T) {
+	// test replacing import with address missing leading 0x
+	template, err := ParseFlix(templateWithDepsMissingLeading0x)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -850,7 +865,5 @@ func TestGetAndReplaceCadenceImportsMultipleCoreImports(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Contains(t, cadenceCode, "import FungibleToken from 0xf233dcee88fe0abe", "Cadence should contain the expected FungibleToken import")
-	assert.Contains(t, cadenceCode, "import FlowToken from 0x1654653399040a61", "Cadence should contain the expected FlowTokenimport")
-
+	assert.Contains(t, cadenceCode, "import HelloWorld from 0xe15193734357cf5c", "Cadence should contain the expected HelloWorld import with address missing leading 0x")
 }

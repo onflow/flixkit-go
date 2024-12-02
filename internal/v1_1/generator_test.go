@@ -104,7 +104,6 @@ func TestValidImports(t *testing.T) {
 	code := `
 	import "Alice"
 	import Bob from 0x0000000000000002
-	import Joe
 
 	access(all)
 	fun main(): Void {}
@@ -113,6 +112,62 @@ func TestValidImports(t *testing.T) {
 	template, err := generator.CreateTemplate(ctx, code, "")
 	assert.NoError(err, "Generate should not return an error")
 	autogold.ExpectFile(t, template)
+
+}
+func TestInValidImports(t *testing.T) {
+	contracts := []Contract{
+		{
+			Contract: "Alice",
+			Networks: []Network{
+				{
+					Network: "testnet",
+					Address: "0x0000000000000001",
+				},
+				{
+					Network: "mainnet",
+					Address: "0x0000000000000001",
+				},
+				{
+					Network: "emulator",
+					Address: "0x0000000000000001",
+				},
+			},
+		},
+		{
+			Contract: "Bob",
+			Networks: []Network{
+				{
+					Network: "testnet",
+					Address: "0x0000000000000002",
+				},
+				{
+					Network: "mainnet",
+					Address: "0x0000000000000002",
+				},
+				{
+					Network: "emulator",
+					Address: "0x0000000000000002",
+				},
+			},
+		},
+	}
+
+	generator := Generator{
+		deployedContracts: contracts,
+	}
+
+	assert := assert.New(t)
+	code := `
+	import "Alice"
+	import Bob from 0x0000000000000002
+	import "Joe"
+
+	access(all)
+	fun main(): Void {}
+`
+	ctx := context.Background()
+	_, err := generator.CreateTemplate(ctx, code, "")
+	assert.Error(err, "Generate should not return an error")
 
 }
 

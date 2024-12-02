@@ -1,13 +1,13 @@
 `{
     "f_type": "InteractionTemplate",
     "f_version": "1.1.0",
-    "id": "585d2dd4fc3523ba140fbe0f798c07f1d4c3792aaed72a3b0d7c32c23a6457e7",
+    "id": "057b6191eaec9c20040b8be92758de58f01c74f7f50767e552e60b7bccf4865d",
     "data": {
         "type": "script",
         "interface": "",
         "messages": null,
         "cadence": {
-            "body": "\n\timport \"Alice\"\n\timport \"Bob\"\n\timport Joe\n\n\taccess(all)\n\tfun main(): Void {}\n",
+            "body": "\n\timport \"Alice\"\n\timport \"Bob\"\n\n\taccess(all)\n\tfun main(): Void {}\n",
             "network_pins": []
         },
         "dependencies": [

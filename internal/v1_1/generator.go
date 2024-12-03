@@ -100,27 +100,25 @@ func (g Generator) CreateTemplate(ctx context.Context, code string, preFill stri
 }
 
 func (g Generator) calculateNetworkPins() error {
-	networksOfInterest := []string{}
+	networkPins := make([]NetworkPin, 0)
 	// only interested in the client networks
 	for _, c := range g.clients {
 		params, err := c.GetNetworkParameters(context.Background())
 		if err != nil {
 			continue
 		}
-		networksOfInterest = append(networksOfInterest, params.ChainID.String())
-	}
-
-	networkPins := make([]NetworkPin, 0)
-	for _, netName := range networksOfInterest {
-		cad, err := g.template.ReplaceCadenceImports(netName)
+		// remove flow- prefix
+		networkName := strings.TrimPrefix(params.ChainID.String(), "flow-")
+		cad, err := g.template.ReplaceCadenceImports(networkName)
 		if err != nil {
 			continue
 		}
 		networkPins = append(networkPins, NetworkPin{
-			Network: netName,
+			Network: networkName,
 			PinSelf: ShaHex(cad, ""),
 		})
 	}
+
 	g.template.Data.Cadence.NetworkPins = networkPins
 	return nil
 }

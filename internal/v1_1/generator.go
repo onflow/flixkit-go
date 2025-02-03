@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/onflow/cadence/runtime/ast"
-	"github.com/onflow/cadence/runtime/cmd"
-	cadenceCommon "github.com/onflow/cadence/runtime/common"
-	"github.com/onflow/cadence/runtime/parser"
+	"github.com/onflow/cadence/ast"
+	"github.com/onflow/cadence/cmd"
+	cadenceCommon "github.com/onflow/cadence/common"
+	"github.com/onflow/cadence/parser"
 	"github.com/onflow/flow-go-sdk"
 	"github.com/onflow/flow-go-sdk/access/grpc"
 

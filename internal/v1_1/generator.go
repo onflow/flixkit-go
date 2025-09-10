@@ -275,7 +275,7 @@ func getAddressImports(code []byte, name string) []string {
 		address, isAddressImport := imp.Location.(cadenceCommon.AddressLocation)
 		if isAddressImport {
 			adr := address.Address.HexWithPrefix()
-			impName := imp.Identifiers[0].Identifier
+			impName := imp.Imports[0].Identifier
 			deps = append(deps, fmt.Sprintf("%s.%s", adr, impName))
 		}
 	}

@@ -4,8 +4,8 @@ go 1.25.0
 
 require (
 	github.com/hexops/autogold/v2 v2.2.1
-	github.com/onflow/cadence v1.8.1
-	github.com/onflow/flow-go-sdk v1.9.0
+	github.com/onflow/cadence v1.8.3
+	github.com/onflow/flow-go-sdk v1.9.2
 	github.com/onflow/go-ethereum v1.15.10
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.11.1
@@ -18,7 +18,7 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
-	github.com/ethereum/go-ethereum v1.16.4 // indirect
+	github.com/ethereum/go-ethereum v1.16.5 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.8.1-0.20250402194037-6f932b086829 // indirect
 	github.com/fxamacker/circlehash v0.3.0 // indirect
@@ -57,7 +57,7 @@ require (
 	golang.org/x/tools v0.36.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250811230008-5f3141c8851a // indirect
 	google.golang.org/grpc v1.75.1 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect

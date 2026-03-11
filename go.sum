@@ -88,8 +88,8 @@ github.com/onflow/fixed-point v0.1.1 h1:j0jYZVO8VGyk1476alGudEg7XqCkeTVxb5ElRJRK
 github.com/onflow/fixed-point v0.1.1/go.mod h1:gJdoHqKtToKdOZbvryJvDZfcpzC7d2fyWuo3ZmLtcGY=
 github.com/onflow/flow-go-sdk v1.9.16 h1:M+BAifzh9g7pIjWsR5Xtx5HzO6Wg7lC7shJzMtX5q/k=
 github.com/onflow/flow-go-sdk v1.9.16/go.mod h1:UN1/6AS+TZLI1Q/uxsgTQ9dbWPHbts+EAp+l6AfGh6U=
-github.com/onflow/flow/protobuf/go/flow v0.4.20 h1:Ndq2l7Nu8p/RWNSRIRrpnBUpzfc5fYLEmHCFpJ9JGgo=
-github.com/onflow/flow/protobuf/go/flow v0.4.20/go.mod h1:NA2pX2nw8zuaxfKphhKsk00kWLwfd+tv8mS23YXO4Sk=
+github.com/onflow/flow/protobuf/go/flow v0.4.19 h1:oYQoHWT/Iu441tX908qhCy7pCWAtwDspVrWbFGoTH1o=
+github.com/onflow/flow/protobuf/go/flow v0.4.19/go.mod h1:NA2pX2nw8zuaxfKphhKsk00kWLwfd+tv8mS23YXO4Sk=
 github.com/onflow/go-ethereum v1.15.10 h1:blZBeOLJDOVWqKuhkkMh6S2PKQAJvdgbvOL9ZNggFcU=
 github.com/onflow/go-ethereum v1.15.10/go.mod h1:t2nZJtwruVjA5u5yEK8InFzjImFLHrF7ak2bw3E4LDM=
 github.com/pkg/diff v0.0.0-20210226163009-20ebb0f2a09e/go.mod h1:pJLUxLENpZxwdsKMEsNbx1VGcRFpLqf3715MtcvvzbA=

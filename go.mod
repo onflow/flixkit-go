@@ -39,7 +39,7 @@ require (
 	github.com/onflow/atree v0.12.1 // indirect
 	github.com/onflow/crypto v0.25.4 // indirect
 	github.com/onflow/fixed-point v0.1.1 // indirect
-	github.com/onflow/flow/protobuf/go/flow v0.4.20 // indirect
+	github.com/onflow/flow/protobuf/go/flow v0.4.19 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect

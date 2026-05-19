@@ -4,8 +4,8 @@ go 1.25.1
 
 require (
 	github.com/hexops/autogold/v2 v2.2.1
-	github.com/onflow/cadence v1.10.2
-	github.com/onflow/flow-go-sdk v1.10.2
+	github.com/onflow/cadence v1.10.3
+	github.com/onflow/flow-go-sdk v1.10.3
 	github.com/onflow/go-ethereum v1.15.10
 	github.com/stoewer/go-strcase v1.3.0
 	github.com/stretchr/testify v1.11.1
